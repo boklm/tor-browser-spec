@@ -1,0 +1,824 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+     "file:///usr/share/sgml/docbook/xml-dtd-4.4-1.0-30.1/docbookx.dtd">
+
+<article id="design">
+ <articleinfo>
+  <title>The Design and Implementation of the Tor Browser</title>
+   <author>
+    <firstname>Mike</firstname><surname>Perry</surname>
+    <affiliation>
+     <address><email>mikeperry#torproject org</email></address>
+    </affiliation>
+   </author>
+   <author>
+    <firstname>Erinn</firstname><surname>Clark</surname>
+    <affiliation>
+     <address><email>erinn_torproject\org</email></address>
+    </affiliation>
+   </author>
+   <author>
+    <firstname>Steven</firstname><surname>Murdoch</surname>
+    <affiliation>
+     <address><email>sjmurdoch#torproject\org</email></address>
+    </affiliation>
+   </author>
+   <pubdate>Sep 15 2011</pubdate>
+ </articleinfo>
+
+<!--
+- Introduction and Threat model: [Mostly Torbutton]
+  - [Remove the security requirements section]
+-->
+
+<sect1>
+  <title>Introduction</title>
+  <para>
+
+<!-- XXX:
+This document describes the goals, operation, and testing procedures of the
+Torbutton Firefox extension. It is current as of Torbutton 1.3.2.
+-->
+
+  </para>
+  <sect2 id="adversary">
+   <title>Adversary Model</title>
+   <para>
+
+A Tor web browser adversary has a number of goals, capabilities, and attack
+types that can be used to guide us towards a set of requirements for the
+Torbutton extension. Let's start with the goals.
+
+   </para>
+   <sect3 id="adversarygoals">
+    <title>Adversary Goals</title>
+    <orderedlist>
+<!-- These aren't really commands.. But it's the closest I could find in an
+acceptable style.. Don't really want to make my own stylesheet -->
+     <listitem><command>Bypassing proxy settings</command>
+     <para>The adversary's primary goal is direct compromise and bypass of 
+Tor, causing the user to directly connect to an IP of the adversary's
+choosing.</para>
+     </listitem>
+     <listitem><command>Correlation of Tor vs Non-Tor Activity</command>
+     <para>If direct proxy bypass is not possible, the adversary will likely
+happily settle for the ability to correlate something a user did via Tor with
+their non-Tor activity. This can be done with cookies, cache identifiers,
+javascript events, and even CSS. Sometimes the fact that a user uses Tor may
+be enough for some authorities.</para>
+     </listitem>
+     <listitem><command>History disclosure</command>
+     <para>
+The adversary may also be interested in history disclosure: the ability to
+query a user's history to see if they have issued certain censored search
+queries, or visited censored sites.
+     </para>
+     </listitem>
+     <listitem><command>Location information</command>
+     <para>
+
+Location information such as timezone and locality can be useful for the
+adversary to determine if a user is in fact originating from one of the
+regions they are attempting to control, or to zero-in on the geographical
+location of a particular dissident or whistleblower.
+
+     </para>
+     </listitem>
+     <listitem><command>Miscellaneous anonymity set reduction</command>
+     <para>
+
+Anonymity set reduction is also useful in attempting to zero in on a
+particular individual. If the dissident or whistleblower is using a rare build
+of Firefox for an obscure operating system, this can be very useful
+information for tracking them down, or at least <link
+linkend="fingerprinting">tracking their activities</link>.
+
+     </para>
+     </listitem>
+     <listitem><command>History records and other on-disk
+information</command>
+     <para>
+In some cases, the adversary may opt for a heavy-handed approach, such as
+seizing the computers of all Tor users in an area (especially after narrowing
+the field by the above two pieces of information). History records and cache
+data are the primary goals here.
+     </para>
+     </listitem>
+    </orderedlist>
+   </sect3>
+
+   <sect3 id="adversarypositioning">
+    <title>Adversary Capabilities - Positioning</title>
+    <para>
+The adversary can position themselves at a number of different locations in
+order to execute their attacks.
+    </para>
+    <orderedlist>
+     <listitem><command>Exit Node or Upstream Router</command>
+     <para>
+The adversary can run exit nodes, or alternatively, they may control routers
+upstream of exit nodes. Both of these scenarios have been observed in the
+wild.
+     </para>
+     </listitem>
+     <listitem><command>Adservers and/or Malicious Websites</command>
+     <para>
+The adversary can also run websites, or more likely, they can contract out
+ad space from a number of different adservers and inject content that way. For
+some users, the adversary may be the adservers themselves. It is not
+inconceivable that adservers may try to subvert or reduce a user's anonymity 
+through Tor for marketing purposes.
+     </para>
+     </listitem>
+     <listitem><command>Local Network/ISP/Upstream Router</command>
+     <para>
+The adversary can also inject malicious content at the user's upstream router
+when they have Tor disabled, in an attempt to correlate their Tor and Non-Tor
+activity.
+     </para>
+     </listitem>
+     <listitem><command>Physical Access</command>
+     <para>
+Some users face adversaries with intermittent or constant physical access.
+Users in Internet cafes, for example, face such a threat. In addition, in
+countries where simply using tools like Tor is illegal, users may face
+confiscation of their computer equipment for excessive Tor usage or just
+general suspicion.
+     </para>
+     </listitem>
+    </orderedlist>
+   </sect3>
+
+   <sect3 id="attacks">
+    <title>Adversary Capabilities - Attacks</title>
+    <para>
+
+The adversary can perform the following attacks from a number of different 
+positions to accomplish various aspects of their goals. It should be noted
+that many of these attacks (especially those involving IP address leakage) are
+often performed by accident by websites that simply have Javascript, dynamic 
+CSS elements, and plugins. Others are performed by adservers seeking to
+correlate users' activity across different IP addresses, and still others are
+performed by malicious agents on the Tor network and at national firewalls.
+
+    </para>
+    <orderedlist>
+     <listitem><command>Inserting Javascript</command>
+     <para>
+If not properly disabled, Javascript event handlers and timers
+can cause the browser to perform network activity after Tor has been disabled,
+thus allowing the adversary to correlate Tor and Non-Tor activity and reveal
+a user's non-Tor IP address. Javascript
+also allows the adversary to execute <ulink
+url="http://whattheinternetknowsaboutyou.com/">history disclosure attacks</ulink>:
+to query the history via the different attributes of 'visited' links to search
+for particular Google queries, sites, or even to <ulink
+url="http://www.mikeonads.com/2008/07/13/using-your-browser-url-history-estimate-gender/">profile
+users based on gender and other classifications</ulink>. Finally,
+Javascript can be used to query the user's timezone via the
+<function>Date()</function> object, and to reduce the anonymity set by querying
+the <function>navigator</function> object for operating system, CPU, locale, 
+and user agent information.
+     </para>
+     </listitem>
+
+     <listitem><command>Inserting Plugins</command>
+     <para>
+
+Plugins are abysmal at obeying the proxy settings of the browser. Every plugin
+capable of performing network activity that the author has
+investigated is also capable of performing network activity independent of
+browser proxy settings - and often independent of its own proxy settings.
+Sites that have plugin content don't even have to be malicious to obtain a
+user's
+Non-Tor IP (it usually leaks by itself), though <ulink
+url="http://decloak.net">plenty of active
+exploits</ulink> are possible as well. In addition, plugins can be used to store unique identifiers that are more
+difficult to clear than standard cookies. 
+<ulink url="http://epic.org/privacy/cookies/flash.html">Flash-based
+cookies</ulink> fall into this category, but there are likely numerous other
+examples.
+
+     </para>
+     </listitem>
+     <listitem><command>Inserting CSS</command>
+     <para>
+
+CSS can also be used to correlate Tor and Non-Tor activity and reveal a user's
+Non-Tor IP address, via the usage of
+<ulink url="http://www.tjkdesign.com/articles/css%20pop%20ups/">CSS
+popups</ulink> - essentially CSS-based event handlers that fetch content via
+CSS's onmouseover attribute. If these popups are allowed to perform network
+activity in a different Tor state than they were loaded in, they can easily
+correlate Tor and Non-Tor activity and reveal a user's IP address. In
+addition, CSS can also be used without Javascript to perform <ulink
+url="http://ha.ckers.org/weird/CSS-history.cgi">CSS-only history disclosure
+attacks</ulink>.
+     </para>
+     </listitem>
+     <listitem><command>Read and insert cookies</command>
+     <para>
+
+An adversary in a position to perform MITM content alteration can inject
+document content elements to both read and inject cookies for
+arbitrary domains. In fact, many "SSL secured" websites are vulnerable to this
+sort of <ulink url="http://seclists.org/bugtraq/2007/Aug/0070.html">active
+sidejacking</ulink>.
+
+     </para>
+     </listitem>
+     <listitem><command>Create arbitrary cached content</command>
+     <para>
+
+Likewise, the browser cache can also be used to <ulink
+url="http://crypto.stanford.edu/sameorigin/safecachetest.html">store unique
+identifiers</ulink>. Since by default the cache has no same-origin policy,
+these identifiers can be read by any domain, making them an ideal target for
+adserver-class adversaries.
+
+     </para>
+     </listitem>
+
+     <listitem id="fingerprinting"><command>Fingerprint users based on browser
+attributes</command>
+<para>
+
+There is an absurd amount of information available to websites via attributes
+of the browser. This information can be used to reduce anonymity set, or even
+<ulink url="http://mandark.fr/0x000000/articles/Total_Recall_On_Firefox..html">uniquely
+fingerprint individual users</ulink>. </para>
+<para>
+For illustration, let's perform a
+back-of-the-envelope calculation on the number of anonymity sets for just the
+resolution information available in the <ulink
+url="http://developer.mozilla.org/en/docs/DOM:window">window</ulink> and
+<ulink
+url="http://developer.mozilla.org/en/docs/DOM:window.screen">window.screen</ulink>
+objects.
+
+
+
+Browser window resolution information provides something like
+(1280-640)*(1024-480)=348160 different anonymity sets. Desktop resolution
+information contributes about another factor of 5 (for about 5 resolutions in
+typical use). In addition, the dimensions and position of the desktop taskbar
+are available, which can reveal hints on OS information. This boosts the count
+by a factor of 5 (for each of the major desktop taskbars - Windows, OSX, KDE
+and Gnome, and None). Subtracting the browser content window
+size from the browser outer window size provide yet more information.
+Firefox toolbar presence gives about a factor of 8 (3 toolbars on/off give
+2<superscript>3</superscript>=8). Interface effects such as title bar font size
+and window manager settings gives a factor of about 9 (say 3 common font sizes
+for the title bar and 3 common sizes for browser GUI element fonts).
+Multiply this all out, and you have (1280-640)*(1024-480)*5*5*8*9 ~=
+2<superscript>29</superscript>, or a 29 bit identifier based on resolution
+information alone. </para>
+
+<para>
+
+Of course, this space is non-uniform in user density and prone to incremental
+changes. The <ulink
+url="https://wiki.mozilla.org/Fingerprinting#Data">Panopticlick study
+done</ulink> by the EFF attempts to measure the actual entropy - the number of
+identifying bits of information encoded in browser properties.  Their result
+data is definitely useful, and the metric is probably the appropriate one for
+determining how identifying a particular browser property is. However, some
+quirks of their study means that they do not extract as much information as
+they could from display information: they only use desktop resolution (which
+Torbutton reports as the window resolution) and do not attempt to infer the
+size of toolbars.
+
+</para>
+<!--
+FIXME: This is no longer true. Only certain addons are now discoverable, and
+only if they want to be:
+http://webdevwonders.com/detecting-firefox-add-ons/
+https://developer.mozilla.org/en/Updating_web_applications_for_Firefox_3#section_7
+
+<para>
+
+To add insult to injury, <ulink
+url="http://pseudo-flaw.net/content/tor/torbutton/">chrome URL disclosure
+attacks</ulink> mean that each and every extension on <ulink
+url="https://addons.mozilla.org">addons.mozilla.org</ulink> adds another bit
+to that 2<superscript>29</superscript>. With hundreds of popular extensions
+and thousands of extensions total, it is easy to see that this sort of
+information is an impressively powerful identifier if used properly by a
+competent and determined adversary such as an ad network.  Again, a
+nearest-neighbor bit vector space approach here would also gracefully handle
+incremental changes to installed extensions.
+
+</para>
+-->
+     </listitem>
+     <listitem><command>Remotely or locally exploit browser and/or
+OS</command>
+     <para>
+Last, but definitely not least, the adversary can exploit either general 
+browser vulnerabilities, plugin vulnerabilities, or OS vulnerabilities to
+install malware and surveillance software. An adversary with physical access
+can perform similar actions. Regrettably, this last attack capability is
+outside of Torbutton's ability to defend against, but it is worth mentioning
+for completeness.
+     </para>
+     </listitem>
+    </orderedlist>
+   </sect3>
+
+  </sect2>
+</sect1>
+
+<!--
+- Design overview and philosophy
+  - Security requirements [Torbutton]
+    + local leaks?
+    - state issues
+  - Privacy Requirements [Mostly blog post]
+    - Avoid Cross-Domain Linkability
+      - Indentifiers  
+      - Fingerprinting
+    - 100% self-contained
+      - Does not share state with other modes/browsers
+      - Easy to remove + wipe with external tools
+    - click-to-play for "troublesome" features
+    - No filters
+-->
+
+<sect1 id="Design">
+  <title>Design and Philosophy</title>
+  <para>
+
+The Tor Browser is meant to serve as a specification and a reference
+implementation of a Private Browsing Mode that defends against both Network
+and Local adversaries. 
+
+  </para>
+  <para>
+
+There are two main categories of requirements: Security Requirements, and
+Privacy Requirements. Security Requirements are the minimum properties in
+order for a web client platform to be able to support Tor. Privacy
+requirements are the set of properties that cause us to prefer one platform
+over another.
+
+We will maintain an alternate distribution of the web client in order to
+maintain and/or restore privacy properties to our users.
+
+  </para>
+  <sect2 id="security">
+   <title>Security Requirements</title>
+   <para>
+
+   </para>
+
+<orderedlist> 
+ <listitem><command>Proxy Obedience</command> 
+ <para>The browser
+MUST NOT bypass Tor proxy settings for any content.</para></listitem>
+
+ <listitem><command>State Separation</command> 
+ <para>The browser MUST NOT provide any stored state to the content window
+from other browsing modes, including shared state from plugins, machine
+identifers, and TLS session state.
+</para></listitem>
+
+ <listitem><command>Disk Avoidance</command><para>The
+browser SHOULD NOT write any browsing history information to disk, or store it
+in memory beyond the duration of one Tor session, unless the user has
+explicitly opted to store their browsing history information to
+disk.</para></listitem>
+
+ <listitem><command>Disk Isolation</command><para>The Tor
+components of the browser MUST NOT write or cause the Operating System to
+write <emphasis>any information</emphasis> to disk outside of the application
+directory. All exceptions and shortcomings due to Operating System behavior
+MUST BE documented.
+
+</para></listitem>
+ <listitem><command>Update Safety</command><para>The browser SHOULD NOT perform unsafe updates or upgrades.</para></listitem>
+</orderedlist>
+  </sect2>
+
+  <sect2 id="Privacy">
+   <title>Privacy Requirements</title>
+   <para>
+
+   </para>
+
+<orderedlist> 
+ <listitem><command>Cross-Domain Identifier Unlinkability</command> 
+  <para>
+
+User activity on one url bar domain MUST NOT be linkable to their activity in
+any other domain by any third party. This property specifically applies to
+linkability from stored browser identifiers, authentication tokens, and shared
+state.
+
+  </para>
+ </listitem>
+ <listitem><command>Cross-Domain Fingerprinting Unlinkability</command> 
+  <para>
+
+User activity on one url bar domain MUST NOT be linkable to their activity in
+any other domain by any third party. This property specifically applies to
+linkability from fingerprinting browser behavior.
+
+  </para>
+ </listitem>
+<!--
+ <listitem id="click-to-play"><command>Click-to-play for plugins and invasive content</command>
+  <para>
+
+XXX: Generalize+clarify
+
+Certain activities are inherently fingerprintable. For example, even if
+properly proxied, the activies of closed-source plugins are very difficult to
+control. Other browser features, such as WebGL, GeoLocation, and user-allowed
+exemptions to the identifier policy MUST NOT run until the user has clicked to
+explicitly allow that object or action. If the user decides to craft an
+exemption, it MUST ONLY apply to the top level urlbar domain, and not to all
+sites, to reduce linkability.
+
+  </para>
+ </listitem>
+-->
+</orderedlist>
+
+  </sect2>
+
+</sect1>
+
+<!--
+- Implementation
+  - Section Template
+    - Sub Section
+      - "Design Goal":
+      - "Implementation Status"
+  - Local Privacy
+  - Linkability
+    - Stored State
+      - Cookies
+      - Cache
+      - DOM Storage
+      - HTTP Auth
+      - SSL state
+    - Plugins
+    - Fingerprinting
+      - Location + timezone is part of this
+  - Patches?
+-->
+
+<sect1 id="Implementation">
+  <title>Implementation</title>
+  <para>
+  </para>
+  <sect2 id="proxy-obedience">
+   <title>Proxy Obedience</title>
+   <para>
+
+Proxy obedience is assured through the following:
+
+1. Proxy settings
+2. Blocking Plugins
+3. External App Blocking
+
+   </para>
+  </sect2>
+  <sect2 id="state-separation">
+   <title>State Separation</title>
+   <para>
+Tor Browser State is separated from existing browser state through use of a
+custom Firefox profile.
+   </para>
+  </sect2>
+  <sect2 id="disk-avoidance">
+   <title>Disk Avoidance</title>
+   <para>
+<!-- XXX: Settings involved -->
+
+   </para>
+  </sect2>
+  <sect2 id="disk-isolation">
+   <title>Disk Isolation</title>
+   <para>
+   </para>
+  </sect2>
+  <sect2 id="update-safety">
+   <title>Update Safety</title>
+   <para> </para>
+  </sect2>
+  <sect2 id="identifier-linkability">
+   <title>Cross-Domain Identifier Unlinkability</title>
+   <para> </para>
+  </sect2>
+  <sect2 id="fingerprinting-linkability">
+   <title>Cross-Domain Fingerprinting Unlinkability</title>
+   <para> </para>
+  </sect2>
+  <sect2 id="click-to-play">
+   <title>Click-to-play for plugins and invasive content</title>
+   <para> </para>
+  </sect2>
+
+</sect1>
+
+<!--
+- Packaging
+  - Build Process Security
+  - External Addons
+    - Included
+      - HTTPS-E
+      - NoScript
+      - Torbutton
+    - Deliberately excluded
+      - Request Policy, AdblockPlus, etc
+    - Desired
+      - Perspectives/Convergence/etc
+  - Pref Changes
+    - Caused by Torbutton
+    - Set manually in profile
+  - Update security
+    - Thandy
+-->
+
+<sect1 id="Packaging">
+  <title>Packaging</title>
+  <para> </para>
+  <sect2 id="build-security">
+   <title>Build Process Security</title>
+   <para> </para>
+  </sect2>
+  <sect2 id="addons">
+   <title>External Addons</title>
+   <para> </para>
+   <sect3>
+    <title>Included Addons</title>
+   </sect3>
+   <sect3>
+    <title>Excluded Addons</title>
+   </sect3>
+   <sect3>
+    <title>Dangerous Addons</title>
+   </sect3>
+  </sect2>
+  <sect2 id="prefs">
+   <title>Pref Changes</title>
+   <para> </para>
+  </sect2>
+  <sect2 id="update-mechanism">
+   <title>Update Security</title>
+   <para> </para>
+  </sect2>
+</sect1>
+
+<sect1 id="TestPlan">
+  <title>Testing</title>
+  <para>
+
+The purpose of this section is to cover all the known ways that Tor browser
+security can be subverted from a penetration testing perspective. The hope
+is that it will be useful both for creating a &quot;Tor Safety Check&quot;
+page, and for developing novel tests and actively attacking Torbutton with the
+goal of finding vulnerabilities in either it or the Mozilla components,
+interfaces and settings upon which it relies.
+
+  </para>
+  <sect2 id="SingleStateTesting">
+   <title>Single state testing</title>
+   <para>
+
+Torbutton is a complicated piece of software. During development, changes to
+one component can affect a whole slough of unrelated features.  A number of
+aggregated test suites exist that can be used to test for regressions in
+Torbutton and to help aid in the development of Torbutton-like addons and
+other privacy modifications of other browsers. Some of these test suites exist
+as a single automated page, while others are a series of pages you must visit
+individually. They are provided here for reference and future regression
+testing, and also in the hope that some brave soul will one day decide to
+combine them into a comprehensive automated test suite.
+
+     <orderedlist>
+      <listitem><ulink url="http://decloak.net/">Decloak.net</ulink>
+       <para>
+
+Decloak.net is the canonical source of plugin and external-application based
+proxy-bypass exploits. It is a fully automated test suite maintained by <ulink
+url="http://digitaloffense.net/">HD Moore</ulink> as a service for people to
+use to test their anonymity systems.
+
+       </para>
+      </listitem>
+      <listitem><ulink url="http://deanonymizer.com/">Deanonymizer.com</ulink>
+       <para>
+
+Deanonymizer.com is another automated test suite that tests for proxy bypass
+and other information disclosure vulnerabilities. It is maintained by Kyle
+Williams, the author of <ulink url="http://www.janusvm.com/">JanusVM</ulink>
+and <ulink url="http://www.januspa.com/">JanusPA</ulink>.
+
+       </para>
+      </listitem>
+      <listitem><ulink url="https://www.jondos.de/en/anontest">JonDos
+AnonTest</ulink>
+       <para>
+
+The <ulink url="https://www.jondos.de">JonDos people</ulink> also provide an
+anonymity tester. It is more focused on HTTP headers than plugin bypass, and
+points out a couple of headers Torbutton could do a better job with
+obfuscating.
+
+       </para>
+      </listitem>
+      <listitem><ulink url="http://browserspy.dk">Browserspy.dk</ulink>
+       <para>
+
+Browserspy.dk provides a tremendous collection of browser fingerprinting and
+general privacy tests. Unfortunately they are only available one page at a
+time, and there is not really solid feedback on good vs bad behavior in
+the test results.
+
+       </para>
+      </listitem>
+      <listitem><ulink url="http://analyze.privacy.net/">Privacy
+Analyzer</ulink>
+       <para>
+
+The Privacy Analyzer provides a dump of all sorts of browser attributes and
+settings that it detects, including some information on your origin IP
+address. Its page layout and lack of good vs bad test result feedback makes it
+not as useful as a user-facing testing tool, but it does provide some
+interesting checks in a single page.
+
+       </para>
+      </listitem>
+      <listitem><ulink url="http://ha.ckers.org/mr-t/">Mr. T</ulink>
+       <para>
+
+Mr. T is a collection of browser fingerprinting and deanonymization exploits
+discovered by the <ulink url="http://ha.ckers.org">ha.ckers.org</ulink> crew
+and others. It is also not as user friendly as some of the above tests, but it
+is a useful collection.
+
+       </para>
+      </listitem>
+      <listitem>Gregory Fleischer's <ulink
+url="http://pseudo-flaw.net/content/tor/torbutton/">Torbutton</ulink> and
+<ulink
+url="http://pseudo-flaw.net/content/defcon/dc-17-demos/d.html">Defcon
+17</ulink> Test Cases
+       <para>
+
+Gregory Fleischer has been hacking and testing Firefox and Torbutton privacy
+issues for the past 2 years. He has an excellent collection of all his test
+cases that can be used for regression testing. In his Defcon work, he
+demonstrates ways to infer Firefox version based on arcane browser properties.
+We are still trying to determine the best way to address some of those test
+cases.
+
+       </para>
+      </listitem>
+      <listitem><ulink url="https://torcheck.xenobite.eu/index.php">Xenobite's
+TorCheck Page</ulink>
+       <para>
+
+This page checks to ensure you are using a valid Tor exit node and checks for
+some basic browser properties related to privacy. It is not very fine-grained
+or complete, but it is automated and could be turned into something useful
+with a bit of work.
+
+       </para>
+      </listitem>
+     </orderedlist>
+    </para>
+  </sect2>
+  <sect2>
+   <title>Multi-state testing</title>
+   <para>
+
+The tests in this section are geared towards a page that would instruct the
+user to toggle their Tor state after the fetch and perform some operations:
+mouseovers, stray clicks, and potentially reloads.
+
+   </para>
+   <sect3>
+    <title>Cookies and Cache Correlation</title>
+    <para>
+The most obvious test is to set a cookie, ask the user to toggle tor, and then
+have them reload the page. The cookie should no longer be set if they are
+using the default Torbutton settings. In addition, it is possible to leverage
+the cache to <ulink
+url="http://crypto.stanford.edu/sameorigin/safecachetest.html">store unique
+identifiers</ulink>. The default settings of Torbutton should also protect
+against these from persisting across Tor Toggle.
+
+    </para>
+   </sect3>
+   <sect3>
+    <title>Javascript timers and event handlers</title>
+    <para>
+
+Javascript can set timers and register event handlers in the hopes of fetching
+URLs after the user has toggled Torbutton. 
+    </para>
+   </sect3>
+   <sect3>
+    <title>CSS Popups and non-script Dynamic Content</title>
+    <para>
+
+Even if Javascript is disabled, CSS is still able to 
+<ulink url="http://www.tjkdesign.com/articles/css%20pop%20ups/">create popup-like
+windows</ulink>
+via the 'onmouseover' CSS attribute, which can cause arbitrary browser
+activity as soon as the mouse enters into the content window. It is also
+possible for meta-refresh tags to set timers long enough to make it likely
+that the user has toggled Tor before fetching content.
+
+    </para>
+   </sect3>
+  </sect2>
+  <sect2 id="HackTorbutton">
+   <title>Active testing (aka How to Hack Torbutton)</title>
+   <para>
+
+The idea behind active testing is to discover vulnerabilities in Torbutton to
+bypass proxy settings, run script in an opposite Tor state, store unique
+identifiers, leak location information, or otherwise violate <link
+linkend="requirements">its requirements</link>. Torbutton has ventured out
+into a strange and new security landscape. It depends on Firefox mechanisms
+that haven't necessarily been audited for security, certainly not for the
+threat model that Torbutton seeks to address. As such, it and the interfaces
+it depends upon still need a 'trial by fire' typical of new technologies. This
+section of the document was written with the intention of making that period
+as fast as possible. Please help us get through this period by considering
+these attacks, playing with them, and reporting what you find (and potentially
+submitting the test cases back to be run in the standard batch of Torbutton
+tests.
+
+   </para>
+   <sect3>
+    <title>Some suggested vectors to investigate</title>
+    <para>
+    <itemizedlist>
+     <listitem>Strange ways to register Javascript <ulink
+url="http://en.wikipedia.org/wiki/DOM_Events">events</ulink> and <ulink
+url="http://www.devshed.com/c/a/JavaScript/Using-Timers-in-JavaScript/">timeouts</ulink> should
+be verified to actually be ineffective after Tor has been toggled.</listitem>
+     <listitem>Other ways to cause Javascript to be executed after
+<command>javascript.enabled</command> has been toggled off.</listitem>
+     <listitem>Odd ways to attempt to load plugins. Kyle Williams has had
+some success with direct loads/meta-refreshes of plugin-handled URLs.</listitem>
+     <listitem>The Date and Timezone hooks should be verified to work with
+crazy combinations of iframes, nested iframes, iframes in frames, frames in
+iframes, and popups being loaded and
+reloaded in rapid succession, and/or from one another. Think race conditions and deep, 
+parallel nesting, involving iframes from both <ulink
+url="http://en.wikipedia.org/wiki/Same_origin_policy">same-origin and
+non-same-origin</ulink> domains.</listitem>
+     <listitem>In addition, there may be alternate ways and other
+methods to query the timezone, or otherwise use some of the Date object's
+methods in combination to deduce the timezone offset. Of course, the author
+tried his best to cover all the methods he could foresee, but it's always good
+to have another set of eyes try it out.</listitem>
+     <listitem>Similarly, is there any way to confuse the <link
+linkend="contentpolicy">content policy</link>
+mentioned above to cause it to allow certain types of page fetches? For
+example, it was recently discovered that favicons are not fetched by the
+content, but the chrome itself, hence the content policy did not look up the
+correct window to determine the current Tor tag for the favicon fetch. Are
+there other things that can do this? Popups? Bookmarklets? Active bookmarks? </listitem>
+     <listitem>Alternate ways to store and fetch unique identifiers. For example, <ulink
+url="http://developer.mozilla.org/en/docs/DOM:Storage">DOM Storage</ulink>
+caught us off guard. 
+It was
+also discovered by <ulink url="http://pseudo-flaw.net">Gregory
+Fleischer</ulink> that <ulink
+url="http://pseudo-flaw.net/content/tor/torbutton/">content window access to
+chrome</ulink> can be used to build <link linkend="fingerprinting">unique
+identifiers</link>. 
+Are there any other
+arcane or experimental ways that Firefox provides to create and store unique
+identifiers? Or perhaps unique identifiers can be queried or derived from
+properties of the machine/browser that Javascript has access to? How unique
+can these identifiers be?
+     </listitem>
+     <listitem>Is it possible to get the browser to write some history to disk
+(aside from swap) that can be retrieved later? By default, Torbutton should
+write no history, cookie, or other browsing activity information to the
+harddisk.</listitem>
+     <listitem>Do popup windows make it easier to break any of the above
+behavior? Are javascript events still canceled in popups? What about recursive
+popups from Javascript, data, and other funky URL types? What about CSS
+popups? Are they still blocked after Tor is toggled?</listitem>
+     <listitem>Chrome-escalation attacks. The interaction between the
+Torbutton chrome Javascript and the client content window javascript is pretty
+well-defined and carefully constructed, but perhaps there is a way to smuggle
+javascript back in a return value, or otherwise inject network-loaded
+javascript into the chrome (and thus gain complete control of the browser).
+</listitem>
+</itemizedlist>
+
+    </para>
+   </sect3>
+  </sect2>
+</sect1>
+</article>
