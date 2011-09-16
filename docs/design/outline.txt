@@ -1,0 +1,52 @@
+- Threat model: [Mostly Torbutton]
+  - [Remove the security requirements section]
+
+- Design overview and philosophy
+  - Security requirements [Torbutton]
+    + local leaks?
+    - state issues
+  - Privacy Requirements [Mostly blog post]
+    - Make local privacy optional
+    - Avoid Cross-Domain Linkability
+      - Indentifiers  
+      - Fingerprinting
+    - 100% self-contained
+      - Does not share state with other modes/browsers
+      - Easy to remove + wipe with external tools
+    - No filters
+
+- Implementation
+  - Section Template
+    - Sub Section
+      - "Design Goal":
+      - "Implementation Status"
+  - Local Privacy Optional
+  - Linkability
+    - Stored State
+      - Cookies
+      - Cache
+      - DOM Storage
+      - HTTP Auth
+      - SSL state
+    - Plugins
+    - Fingerprinting
+  - Patches
+
+- Packaging
+  - Build Process Security
+  - External Addons
+    - Included
+      - HTTPS-E
+      - NoScript
+      - Torbutton
+    - Deliberately excluded
+      - Request Policy, AdblockPlus, etc
+    - Desired
+      - Perspectives/Convergence/etc
+  - Pref Changes
+    - Caused by Torbutton
+    - Set manually in profile
+  - Update security
+    - Thandy
+
+
