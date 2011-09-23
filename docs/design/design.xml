@@ -477,47 +477,241 @@ sites, to reduce linkability.
    <para>
 
 Proxy obedience is assured through the following:
-
-1. Proxy settings
-2. Blocking Plugins
-3. External App Blocking
-
    </para>
+<orderedlist> 
+ <listitem>Firefox Proxy settings
+ <para>
+  The Torbutton xpi sets the Firefox proxy settings to use Tor directly as a
+SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
+<command>network.proxy.socks_version</command>, and
+<command>network.proxy.socks_port</command>.
+ </para>
+</listitem>
+
+ <listitem>Disabling plugins
+ <para>
+  Plugins have the ability to make arbitrary OS system calls. This includes
+the ability to make UDP sockets and send arbitrary data independent of the
+browser proxy settings.
+ </para>
+ <para>
+Torbutton disables plugins by using the
+<command>@mozilla.org/plugin/host;1</command> service to mark the plugin tags
+as disabled. Additionally, we set
+<command>plugin.disable_full_page_plugin_for_types</command> to the list of
+supported mime types for all currently installed plugins.
+ </para> 
+ <para>
+In addition, to prevent any unproxied activity by plugins at load time, we
+also patch the Firefox source code to <ulink
+linkend="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0007-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
+for Flash and Gnash</ulink>.
+
+ </para>
+ </listitem>
+ <listitem>External App Blocking
+  <para>
+External apps, if launched automatically, can be induced to load files that
+perform network activity. In order to prevent this, Torbutton installs a
+component to 
+<ulink
+linkend="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components/external-app-blocker.js">
+provide the user with a popup</ulink> whenever the browser attempts to
+launch a helper app. 
+  </para>
+ </listitem>
+ </orderedlist>
   </sect2>
   <sect2 id="state-separation">
    <title>State Separation</title>
    <para>
 Tor Browser State is separated from existing browser state through use of a
-custom Firefox profile.
+custom Firefox profile. Furthermore, plugins are disabled, which prevents
+Flash cookies from leaking from a pre-existing Flash directory.
    </para>
   </sect2>
   <sect2 id="disk-avoidance">
    <title>Disk Avoidance</title>
    <para>
-<!-- XXX: Settings involved -->
+
+<!-- XXX: http auth on disk??? -->
+
+dom.storage.enabled
+browser.cache.memory.enable
+network.http.use-cache
+browser.cache.disk.enable
+browser.cache.offline.enable
+general.open_location.last_url
+places.history.enabled
+browser.formfill.enable
+signon.rememberSignons
+browser.download.manager.retention <!-- XXX: needs patch -->
+network.cookie.lifetimePolicy = 2
+
+https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0002-Firefox6-Make-Permissions-Manager-memory-only.patch
+https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0003-Firefox6-Make-Intermediate-Cert-Store-memory-only.patch
+https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0008-Make-content-pref-service-memory-only-clearable.patch
 
    </para>
   </sect2>
   <sect2 id="disk-isolation">
    <title>Disk Isolation</title>
    <para>
+<!-- XXX: sjmurdoch, Erinn -->
    </para>
   </sect2>
   <sect2 id="update-safety">
    <title>Update Safety</title>
-   <para> </para>
+   <para>
+<!-- XXX: Design goal -->
+   </para>
   </sect2>
   <sect2 id="identifier-linkability">
    <title>Cross-Domain Identifier Unlinkability</title>
-   <para> </para>
+   <para>
+
+The Tor Browser MUST prevent a user's activity on one site from being
+linked to their activity on another site.
+
+<!-- XXX: Explain Why. UI simplification link -->
+
+   </para>
+   <orderedlist>
+    <listitem>Cookies
+     <para><command>Design Goal:</command>
+
+All cookies should be double-keyed to the top-level domain. There exists a
+<ulink
+linkend="https://bugzilla.mozilla.org/show_bug.cgi?id=565965">Mozilla
+bug</ulink> that contains a prototype patch, but it lacks UI, and does not
+apply to modern Firefoxes.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+As a stopgap to satisfy our design requirement of unlinkability, we currently
+entirely disable 3rd party cookies by setting
+<command>network.cookie.cookieBehavior</command> to 1. We would prefer that
+third party content continue to funtion , but we believe unlinkability.
+
+     </para>
+    </listitem>
+    <listitem>Cache
+     <para>
+Cache is isolated to the top-level url bar domain by using a technique
+pioneered by Colin Jackson et al, via their work on <ulink
+url="http://www.safecache.com/">SafeCache</ulink>. The technique re-uses the
+<ulink
+url="https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsICachingChannel">nsICachingChannel.cacheKey</ulink>
+attribute that Firefox uses internally to prevent improper caching of HTTP POST data.  
+     </para>
+     <para>
+However, to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3666">increase the
+security of the isolation</ulink> and to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3754">solve strange and
+unknown conflicts with OCSP</ulink>, we had to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0005-Add-a-string-based-cacheKey.patch">patch
+Firefox to provide a cacheDomain cache attribute</ulink>. We use the full
+url bar domain as input to this field.
+     </para>
+     <para>
+
+<!-- FIXME: This could use a few more specifics.. Maybe. The Chrome folks
+won't care, but the Mozilla folks might. -->
+Furthermore, we chose a different isolation scheme than the stanford
+implemention. First, we decoupled the cache isolation from the third party
+cookie attribute. Second, we use several machanisms to attempt to determine
+the actual location attribute of the top-level window (the url bar domain)
+used to load the page, as opposed to relying solely on the referer property.
+     </para>
+     <para>
+Therefore, <ulink
+url="http://crypto.stanford.edu/sameorigin/safecachetest.html">the original
+stanford test
+cases</ulink> are expected to fail.
+     </para>
+    </listitem>
+    <listitem>HTTP Auth
+     <para>
+
+HTTP authentication tokens are removed for third parties 
+on-modify-request observer to remove the heads. However, we also needed to
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0004-Add-HTTP-auth-headers-before-the-modify-request-obse.patch">patch
+Firefox to cause the headers to get added early enough</ulink> to allow the
+observer to modify it.
+
+     </para>
+    </listitem>
+    <listitem>DOM Storage
+     <para><command>Design Goal:</command>
+
+DOM storage for third party domains MUST BE isolated to the url bar domain,
+to prevent linkability between sites.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+Because it is isolated to third party domain as opposed to top level url bar
+domain, we entirely disable DOM storage as a stopgap to ensure unlinkability.
+
+     </para>
+     </listitem>
+    <listitem>window.name
+     <para>
+
+<ulink
+url="https://developer.mozilla.org/En/DOM/Window.name">window.name</ulink> is
+a magical DOM property that for some reason is allowed to retain a persistent value
+for the lifespan of a browser tab. It is possible to utilize this property for
+<ulink url="http://www.thomasfrank.se/sessionvars.html">identifier
+storage</ulink>.
+
+     </para>
+     <para>
+
+In order to eliminate linkability but still allow for sites that utilize this
+property to function, we reset the window.name property of tabs in Torbutton every
+time we encounter a blank referer. This behavior allows window.name to persist
+for the duration of a link-driven navigation session, but as soon as the user
+enters a new URL or navigates between https/http schemes, the property is cleared.
+
+     </para>
+    </listitem>
+    <listitem>Exit node usage
+     <para><command>Design Goal:</command>
+
+Every distinct navigation session (as defined by a non-blank referer header)
+MUST exit through a fresh Tor circuit in Tor Browser to prevent exit node
+observers from linking concurrent browsing activity.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+The Tor feature that supports this ability only exists in the 0.2.3.x-alpha
+series. <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3455">Ticket
+#3455</ulink> is the Torbutton ticket.
+
+     </para>
+    </listitem>
+   </orderedlist>
   </sect2>
   <sect2 id="fingerprinting-linkability">
    <title>Cross-Domain Fingerprinting Unlinkability</title>
-   <para> </para>
+   <para>
+   </para>
   </sect2>
   <sect2 id="click-to-play">
    <title>Click-to-play for plugins and invasive content</title>
-   <para> </para>
+   <para>
+   </para>
+  </sect2>
+  <sect2 id="firefox-patches">
+   <title>Description of Firefox Patches</title>
+   <para>
+   </para>
   </sect2>
 
 </sect1>
