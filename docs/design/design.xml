@@ -601,7 +601,6 @@ and/or what additional work or auditing needs to be done.
   </sect2>
   <sect2 id="identifier-linkability">
    <title>Cross-Domain Identifier Unlinkability</title>
-   <!-- XXX: Design goals vs implementation status -->
    <para>
 
 The Tor Browser MUST prevent a user's activity on one site from being linked
@@ -686,9 +685,10 @@ cases</ulink> are expected to fail.
     <listitem>HTTP Auth
      <para>
 
-HTTP authentication tokens are removed for third parties 
-on-modify-request observer to remove the heads. However, we also needed to
-<ulink
+HTTP authentication tokens are removed for third parties on-modify-request
+observer to remove the headers to prevent <ulink
+url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">silent
+linkability between domains</ulink>.  We also needed to <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0004-Add-HTTP-auth-headers-before-the-modify-request-obse.patch">patch
 Firefox to cause the headers to get added early enough</ulink> to allow the
 observer to modify it.
@@ -755,6 +755,25 @@ functionality.
    <para>
    </para>
   </sect2>
+  <sect2 id="new-identity">
+   <title>Provide "New Identity" button to purge all state</title>
+   <para>
+XXX: make this prettier
+ 0. Disables all open tabs and windows.
+ 1. Closes all tabs and windows
+ 2. Clears state:
+    a. OCSP
+    b. Cache
+    c. Site-specific zoom
+    d. Cookies+DOM Storage+safe browsing key
+    e. google wifi geolocation token
+    f. http auth
+    g. SSL Session IDs
+    h. last open location url
+    i. clear content prefs
+ 3. Sends tor the NEWNYM signal to get a new circuit
+   </para>
+  </sect2>
   <sect2 id="click-to-play">
    <title>Click-to-play for plugins and invasive content</title>
    <para>
@@ -774,34 +793,109 @@ audio and video objects.
   <sect2 id="firefox-patches">
    <title>Description of Firefox Patches</title>
    <para>
-https://gitweb.torproject.org/torbrowser.git/tree/refs/heads/maint-2.2:/src/current-patches
+The set of patches we have against Firefox can be found in the <ulink
+url="https://gitweb.torproject.org/torbrowser.git/tree/refs/heads/maint-2.2:/src/current-patches">current-patches
+directory of the torbrowser git repository</ulink>
    </para>
    <orderedlist>
     <listitem>Block Components.interfaces and Components.lookupMethod
-     <para> </para>
+     <para>
+
+In order to reduce fingerprinting, we block access to these two interfaces
+from content script. Components.lookupMethod can undo our javascript hooks,
+and Components.interfaces is useful for fingerprinting the platform, OS, and
+Firebox version.
+
+     </para>
     </listitem>
     <listitem>Make Permissions Manager memory only
-     <para> </para>
+     <para>
+
+This patch exposes a pref 'permissions.memory_only' that properly isolates the
+permissions manager to memory, which is responsible for all user specified
+site permissions, as well as stored HTTPS STS policy from visited sites.
+
+The pref does successfully clear the permissions manager memory if toggled. It
+does not need to be set in prefs.js, and can be handled by Torbutton.
+
+     </para>
+     <para><command>Design Goal:</command>
+
+As an additional design goal, we would like to later this patch to allow this
+information to be cleared from memory. The implementation does not currently
+allow this.
+
+     </para>
     </listitem>
     <listitem>Make Intermediate Cert Store memory-only
-     <para> </para>
+     <para>
+
+The intermediate certificate store holds information about SSL certificates
+that may only be used by a limited number of domains. in some cases
+effectively recording on disk the fact that a website owned by a certain
+organization was viewed.
+
+     </para>
+     <!-- FIXME: Should these design goals be <note> tags? -->
+     <para><command>Design Goal:</command>
+
+As an additional design goal, we would like to later this patch to allow this
+information to be cleared from memory. The implementation does not currently
+allow this.
+
+     </para>
     </listitem>
     <listitem>Add HTTP auth headers before on-modify-request fires
-     <para> </para>
+     <para>
+
+This patch provides a trivial modification to allow us to properly remove HTTP
+auth for third parties. This patch allows us to defend against an adversary
+attempting to use <ulink
+url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">HTTP
+auth to silently track users between domains</ulink>.
+
+     </para>
     </listitem>
     <listitem>Add a string-based cacheKey property for domain isolation
-     <para> </para>
+     <para>
+
+To <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3666">increase the
+security of cache isolation</ulink> and to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3754">solve strange and
+unknown conflicts with OCSP</ulink>, we had to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0005-Add-a-string-based-cacheKey.patch">patch
+Firefox to provide a cacheDomain cache attribute</ulink>. We use the full
+url bar domain as input to this field.
+
+     </para>
     </listitem>
     <listitem>Randomize HTTP pipeline order and depth
      <para>
-https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting
+As an 
+<ulink
+url="https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting">experimental
+defense against Website Traffic Fingerprinting</ulink>, we patch the standard
+HTTP pipelining code to randomize the number of requests in a
+pipeline, as well as their order.
      </para>
     </listitem>
     <listitem>Block all plugins except flash
-     <para> </para>
+     <para>
+<!-- XXX: Why allow flash at all?? Justify w/ a design goal describing a
+happy, safe-flash future... But here, or in some other section?? -->
+We cannot use the @mozilla.org/extensions/blocklist;1 service, because we
+actually want to stop plugins from ever entering the browser's process space
+and/or executing code (for example, AV plugins that collect statistics/analyse
+urls, magical toolbars that phone home or "help" the user, skype buttons that
+ruin our day, and censorship filters). Hence we rolled our own.
+     </para>
     </listitem>
     <listitem>Make content-prefs service memory only
      <para>
+This patch prevents random urls from being inserted into content-prefs.sqllite in
+the profile directory as content prefs change (includes site-zoom and perhaps
+other site prefs?).
      </para>
     </listitem>
    </orderedlist>
