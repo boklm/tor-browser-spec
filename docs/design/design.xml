@@ -35,9 +35,9 @@
   <title>Introduction</title>
   <para>
 
-<!-- XXX:
+<!-- XXX: intro + version
 This document describes the goals, operation, and testing procedures of the
-Torbutton Firefox extension. It is current as of Torbutton 1.3.2.
+Torbutton Firefox extension. It is current as of Tor Browser 2.2.32-4.
 -->
 
   </para>
@@ -592,6 +592,7 @@ computer.
    </para>
    <para>XXX: sjmurdoch, Erinn: explain what magic we do to satisfy this,
 and/or what additional work or auditing needs to be done.
+   </para>
   </sect2>
   <sect2 id="update-safety">
    <title>Update Safety</title>
@@ -978,6 +979,7 @@ individually. They are provided here for reference and future regression
 testing, and also in the hope that some brave soul will one day decide to
 combine them into a comprehensive automated test suite.
 
+     <!-- XXX: ip-check.info? -->
      <orderedlist>
       <listitem><ulink url="http://decloak.net/">Decloak.net</ulink>
        <para>
@@ -1072,6 +1074,7 @@ with a bit of work.
      </orderedlist>
     </para>
   </sect2>
+<!--
   <sect2>
    <title>Multi-state testing</title>
    <para>
@@ -1201,5 +1204,6 @@ javascript into the chrome (and thus gain complete control of the browser).
     </para>
    </sect3>
   </sect2>
+-->
 </sect1>
 </article>
