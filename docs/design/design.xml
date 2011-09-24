@@ -532,48 +532,98 @@ Flash cookies from leaking from a pre-existing Flash directory.
   </sect2>
   <sect2 id="disk-avoidance">
    <title>Disk Avoidance</title>
-   <para>
+   <para><command>Design Goal:</command>
+
+Tor Browser should optionally prevent all disk records of browser activity.
+The user should be able to optionally enable URL history and other history
+features if they so desire. Once we <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3100">simplify the
+preferences interface</ulink>, we will likely just enable Private Browsing
+mode by default to handle this goal.
+   </para>
+   <para><command>Implementation Status:</command>
+
+For now, Tor Browser blocks write access to the disk through Torbutton
+using several Firefox preferences. 
 
 <!-- XXX: http auth on disk??? -->
 
-dom.storage.enabled
-browser.cache.memory.enable
-network.http.use-cache
-browser.cache.disk.enable
-browser.cache.offline.enable
-general.open_location.last_url
-places.history.enabled
-browser.formfill.enable
-signon.rememberSignons
-browser.download.manager.retention <!-- XXX: needs patch -->
-network.cookie.lifetimePolicy = 2
+The set of prefs is:
+<command>dom.storage.enabled</command>,
+<command>browser.cache.memory.enable</command>,
+<command>network.http.use-cache</command>,
+<command>browser.cache.disk.enable</command>,
+<command>browser.cache.offline.enable</command>,
+<command>general.open_location.last_url</command>,
+<command>places.history.enabled</command>,
+<command>browser.formfill.enable</command>,
+<command>signon.rememberSignons</command>,
+<command>browser.download.manager.retention <!-- XXX: needs patch --></command>,
+and <command>network.cookie.lifetimePolicy</command>.
+    </para>
+    <para>
+In addition, three Firefox patches are needed to prevent disk writes, even if
+Private Browsing Mode is enabled. We need to
 
-https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0002-Firefox6-Make-Permissions-Manager-memory-only.patch
-https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0003-Firefox6-Make-Intermediate-Cert-Store-memory-only.patch
-https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0008-Make-content-pref-service-memory-only-clearable.patch
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0002-Firefox6-Make-Permissions-Manager-memory-only.patch">prevent
+the permissions manager from recording HTTPS STS state</ulink>,
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0003-Firefox6-Make-Intermediate-Cert-Store-memory-only.patch">prevent
+intermediate SSL certficates from being recorded</ulink>, and
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0008-Make-content-pref-service-memory-only-clearable.patch">prevent
+the content preferences service from recording site zoom</ulink>.
+
+For more details on these patches, <link linkend="firefox-patches">see the
+Firefox Patches section</link>.
 
    </para>
   </sect2>
   <sect2 id="disk-isolation">
    <title>Disk Isolation</title>
    <para>
-<!-- XXX: sjmurdoch, Erinn -->
+
+Tor Browser Bundle MUST NOT cause any information to be written outside of the
+bundle directory. This is to ensure that the user is able to completely and
+safely remove the bundle without leaving other traces of Tor usage on their
+computer.
+
    </para>
+   <para>XXX: sjmurdoch, Erinn: explain what magic we do to satisfy this,
+and/or what additional work or auditing needs to be done.
   </sect2>
   <sect2 id="update-safety">
    <title>Update Safety</title>
    <para>
-<!-- XXX: Design goal -->
+<!-- XXX: Design goal vs implementation status -->
    </para>
   </sect2>
   <sect2 id="identifier-linkability">
    <title>Cross-Domain Identifier Unlinkability</title>
+   <!-- XXX: Design goals vs implementation status -->
    <para>
 
-The Tor Browser MUST prevent a user's activity on one site from being
-linked to their activity on another site.
+The Tor Browser MUST prevent a user's activity on one site from being linked
+to their activity on another site. When this goal cannot yet be met with an
+existing web technology, that technology or functionality is disabled. Our
+design goal is to ultimately eliminate the need to disable arbitrary
+technologies, and instead simply alter them in ways that allows them to
+function in a backwards-compatible way while avoiding linkability.
 
-<!-- XXX: Explain Why. UI simplification link -->
+   </para>
+   <para>
+
+The benefit of this approach comes not only in the form of reduced
+linkability, but also in terms of simplified privacy UI. If all stored browser
+state and permissions become associated with the top-level url-bar domain, the
+six or seven different pieces of privacy UI governing these identifiers and
+permissions can become just one piece of UI. For instance, a window that lists
+the top-level url bar domains for which browser state exists with the ability
+to clear and/or block them, possibly with a context-menu option to drill down
+into specific types of state.
+
+<!-- XXX: Include graphic as a 'Design Goal' -->
 
    </para>
    <orderedlist>
@@ -592,7 +642,8 @@ apply to modern Firefoxes.
 As a stopgap to satisfy our design requirement of unlinkability, we currently
 entirely disable 3rd party cookies by setting
 <command>network.cookie.cookieBehavior</command> to 1. We would prefer that
-third party content continue to funtion , but we believe unlinkability.
+third party content continue to funtion , but we believe the requirement for 
+unlinkability trumps that desire.
 
      </para>
     </listitem>
@@ -692,7 +743,8 @@ observers from linking concurrent browsing activity.
 The Tor feature that supports this ability only exists in the 0.2.3.x-alpha
 series. <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3455">Ticket
-#3455</ulink> is the Torbutton ticket.
+#3455</ulink> is the Torbutton ticket to make use of the new Tor
+functionality.
 
      </para>
     </listitem>
@@ -706,12 +758,53 @@ url="https://trac.torproject.org/projects/tor/ticket/3455">Ticket
   <sect2 id="click-to-play">
    <title>Click-to-play for plugins and invasive content</title>
    <para>
+Some content types are too invasive and/or too opaque for us to properly
+eliminate their linkability properties. For these content types, we use
+NoScript to provide click-to-play placeholders that do not activate the
+content until the user clicks on it. This will eliminate the ability for an
+adversary to use such content types to link users in a dragnet fashion across
+arbitrary sites.
+   </para>
+   <para>
+<!-- XXX: Where do we discuss our plans w/ flash -->
+Currently, the content types isolated in this way include Flash, WebGL, and
+audio and video objects.
    </para>
   </sect2>
   <sect2 id="firefox-patches">
    <title>Description of Firefox Patches</title>
    <para>
+https://gitweb.torproject.org/torbrowser.git/tree/refs/heads/maint-2.2:/src/current-patches
    </para>
+   <orderedlist>
+    <listitem>Block Components.interfaces and Components.lookupMethod
+     <para> </para>
+    </listitem>
+    <listitem>Make Permissions Manager memory only
+     <para> </para>
+    </listitem>
+    <listitem>Make Intermediate Cert Store memory-only
+     <para> </para>
+    </listitem>
+    <listitem>Add HTTP auth headers before on-modify-request fires
+     <para> </para>
+    </listitem>
+    <listitem>Add a string-based cacheKey property for domain isolation
+     <para> </para>
+    </listitem>
+    <listitem>Randomize HTTP pipeline order and depth
+     <para>
+https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting
+     </para>
+    </listitem>
+    <listitem>Block all plugins except flash
+     <para> </para>
+    </listitem>
+    <listitem>Make content-prefs service memory only
+     <para>
+     </para>
+    </listitem>
+   </orderedlist>
   </sect2>
 
 </sect1>
