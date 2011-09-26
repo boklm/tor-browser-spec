@@ -4,7 +4,7 @@
 
 <article id="design">
  <articleinfo>
-  <title>The Design and Implementation of the Tor Browser</title>
+  <title>The Design and Implementation of the Tor Browser [DRAFT]</title>
    <author>
     <firstname>Mike</firstname><surname>Perry</surname>
     <affiliation>
@@ -220,10 +220,11 @@ attacks</ulink>.
      <para>
 
 An adversary in a position to perform MITM content alteration can inject
-document content elements to both read and inject cookies for
-arbitrary domains. In fact, many "SSL secured" websites are vulnerable to this
-sort of <ulink url="http://seclists.org/bugtraq/2007/Aug/0070.html">active
-sidejacking</ulink>.
+document content elements to both read and inject cookies for arbitrary
+domains. In fact, many "SSL secured" websites are vulnerable to this sort of
+<ulink url="http://seclists.org/bugtraq/2007/Aug/0070.html">active
+sidejacking</ulink>. In addition, the ad networks of course perform tracking
+with cookies as well.
 
      </para>
      </listitem>
@@ -234,7 +235,7 @@ Likewise, the browser cache can also be used to <ulink
 url="http://crypto.stanford.edu/sameorigin/safecachetest.html">store unique
 identifiers</ulink>. Since by default the cache has no same-origin policy,
 these identifiers can be read by any domain, making them an ideal target for
-adserver-class adversaries.
+ad network-class adversaries.
 
      </para>
      </listitem>
@@ -247,6 +248,8 @@ There is an absurd amount of information available to websites via attributes
 of the browser. This information can be used to reduce anonymity set, or even
 <ulink url="http://mandark.fr/0x000000/articles/Total_Recall_On_Firefox..html">uniquely
 fingerprint individual users</ulink>. </para>
+
+<!-- 
 <para>
 For illustration, let's perform a
 back-of-the-envelope calculation on the number of anonymity sets for just the
@@ -255,7 +258,6 @@ url="http://developer.mozilla.org/en/docs/DOM:window">window</ulink> and
 <ulink
 url="http://developer.mozilla.org/en/docs/DOM:window.screen">window.screen</ulink>
 objects.
-
 
 
 Browser window resolution information provides something like
@@ -273,11 +275,10 @@ for the title bar and 3 common sizes for browser GUI element fonts).
 Multiply this all out, and you have (1280-640)*(1024-480)*5*5*8*9 ~=
 2<superscript>29</superscript>, or a 29 bit identifier based on resolution
 information alone. </para>
-
+-->
 <para>
 
-Of course, this space is non-uniform in user density and prone to incremental
-changes. The <ulink
+The <ulink
 url="https://wiki.mozilla.org/Fingerprinting#Data">Panopticlick study
 done</ulink> by the EFF attempts to measure the actual entropy - the number of
 identifying bits of information encoded in browser properties.  Their result
@@ -287,6 +288,8 @@ quirks of their study means that they do not extract as much information as
 they could from display information: they only use desktop resolution (which
 Torbutton reports as the window resolution) and do not attempt to infer the
 size of toolbars.
+
+<!-- XXX: Also, new browser features are added regularly. -->
 
 </para>
 <!--
@@ -341,16 +344,17 @@ for completeness.
       - Does not share state with other modes/browsers
       - Easy to remove + wipe with external tools
     - click-to-play for "troublesome" features
+   - Philosophy
     - No filters
 -->
 
-<sect1 id="Design">
-  <title>Design and Philosophy</title>
+<sect1 id="DesignRequirements">
+  <title>Design Requirements and Philosophy</title>
   <para>
 
 The Tor Browser is meant to serve as a specification and a reference
 implementation of a Private Browsing Mode that defends against both Network
-and Local adversaries. 
+and Local Adversaries. 
 
   </para>
   <para>
@@ -360,14 +364,20 @@ Privacy Requirements. Security Requirements are the minimum properties in
 order for a web client platform to be able to support Tor. Privacy
 requirements are the set of properties that cause us to prefer one platform
 over another.
+  </para>
+  <para>
 
 We will maintain an alternate distribution of the web client in order to
-maintain and/or restore privacy properties to our users.
+maintain and/or restore privacy properties to our users. 
 
   </para>
   <sect2 id="security">
    <title>Security Requirements</title>
    <para>
+
+The security requirements are primarily concerned with ensuring the safe use
+of Tor. Violations in these properties typically result in serious risk for
+the user in terms of immediate deanonymization and/or observability.
 
    </para>
 
@@ -377,9 +387,10 @@ maintain and/or restore privacy properties to our users.
 MUST NOT bypass Tor proxy settings for any content.</para></listitem>
 
  <listitem><command>State Separation</command> 
+
  <para>The browser MUST NOT provide any stored state to the content window
-from other browsing modes, including shared state from plugins, machine
-identifers, and TLS session state.
+from other browsers or other browsing modes, including shared state from
+plugins, machine identifers, and TLS session state.
 </para></listitem>
 
  <listitem><command>Disk Avoidance</command><para>The
@@ -388,7 +399,7 @@ in memory beyond the duration of one Tor session, unless the user has
 explicitly opted to store their browsing history information to
 disk.</para></listitem>
 
- <listitem><command>Disk Isolation</command><para>The Tor
+ <listitem><command>Application Data Isolation</command><para>The Tor
 components of the browser MUST NOT write or cause the Operating System to
 write <emphasis>any information</emphasis> to disk outside of the application
 directory. All exceptions and shortcomings due to Operating System behavior
@@ -399,9 +410,13 @@ MUST BE documented.
 </orderedlist>
   </sect2>
 
-  <sect2 id="Privacy">
+  <sect2 id="privacy">
    <title>Privacy Requirements</title>
    <para>
+
+The privacy requirements are primarily concerned with reducing linkability:
+the ability for a user's actvitity on one site to be linked with their
+activity on another site without their knowledge or explicit consent.
 
    </para>
 
@@ -412,7 +427,8 @@ MUST BE documented.
 User activity on one url bar domain MUST NOT be linkable to their activity in
 any other domain by any third party. This property specifically applies to
 linkability from stored browser identifiers, authentication tokens, and shared
-state.
+state. This functionality SHOULD NOT interfere with federated login in a
+substantial way.
 
   </para>
  </listitem>
@@ -425,6 +441,57 @@ linkability from fingerprinting browser behavior.
 
   </para>
  </listitem>
+ <listitem><command>Long-Term Unlinkability</command> 
+  <para>
+
+Users SHOULD have an obvious, easy way to remove all of their authentication
+tokens and browser state and obtain a fresh identity. Additionally, this
+should happen by default automatically upon browser restart.
+
+  </para>
+ </listitem>
+</orderedlist>
+
+  </sect2>
+  <sect2 id="philosophy">
+  <title>Philosophy</title>
+   <para>
+
+In addition to the above design requirements, the technology decisions about
+Tor Browser are also guided by some philosophical positions about technology.
+
+   </para>
+   <orderedlist>
+     <listitem>Preserve existing user model
+      <para>
+
+The existing way that the user expects to use a browser must be preserved. If
+the user has to maintain a different mental model of how the sites they are
+using behave depending on tab, browser state, or anything else that would not
+normally be what they experience in their default browser, the user will
+inevitably be confused. They will become confused, make mistakes, and reduce
+their privacy as a result. Worse, they may just stop using the browser,
+assuming it is broken.
+
+      </para>
+      <para>
+
+User model breakage was one of the failures of Torbutton: Even if users
+managed to install everything properly, the toggle model was too hard for the
+average user to understand, especially in the face of accumulating tabs from
+multiple states crossed with the current tor-state of the browser. 
+
+      </para>
+     </listitem>
+     <listitem>Minimal breakage to support requirements
+      <para>
+
+Minimal
+
+
+      </para>
+     </listitem>
+     <listitem>Plugins must be restricted
 <!--
  <listitem id="click-to-play"><command>Click-to-play for plugins and invasive content</command>
   <para>
@@ -442,10 +509,22 @@ sites, to reduce linkability.
   </para>
  </listitem>
 -->
-</orderedlist>
 
+      <para>
+      </para>
+     </listitem>
+     <listitem>No filters</listitem>
+     <para>
+     </para>
+     <listitem>Stay Current</listitem>
+     <para>
+We believe that if we do not stay current with the support of new web
+technologies, we cannot hope to substantially influence or be involved in
+their proper deployment or realization. However, we will likely disable
+certain new features (where possible) pending analysis and audit.
+     </para>
+   </orderedlist>
   </sect2>
-
 </sect1>
 
 <!--
@@ -547,6 +626,7 @@ For now, Tor Browser blocks write access to the disk through Torbutton
 using several Firefox preferences. 
 
 <!-- XXX: http auth on disk??? -->
+<!-- XXX: can general.open_location.last_url hit disk??? -->
 
 The set of prefs is:
 <command>dom.storage.enabled</command>,
@@ -580,8 +660,8 @@ Firefox Patches section</link>.
 
    </para>
   </sect2>
-  <sect2 id="disk-isolation">
-   <title>Disk Isolation</title>
+  <sect2 id="app-data-isolation">
+   <title>Application Data Isolation</title>
    <para>
 
 Tor Browser Bundle MUST NOT cause any information to be written outside of the
@@ -602,6 +682,7 @@ and/or what additional work or auditing needs to be done.
   </sect2>
   <sect2 id="identifier-linkability">
    <title>Cross-Domain Identifier Unlinkability</title>
+   <!-- XXX: Mention web-send?? -->
    <para>
 
 The Tor Browser MUST prevent a user's activity on one site from being linked
@@ -609,7 +690,11 @@ to their activity on another site. When this goal cannot yet be met with an
 existing web technology, that technology or functionality is disabled. Our
 design goal is to ultimately eliminate the need to disable arbitrary
 technologies, and instead simply alter them in ways that allows them to
-function in a backwards-compatible way while avoiding linkability.
+function in a backwards-compatible way while avoiding linkability. Users
+should be able to use federated login of various kinds to explicitly inform
+sites who they are, but that information should not transparently allow a
+third party to record their activity from site to site without their prior
+consent.
 
    </para>
    <para>
@@ -755,24 +840,49 @@ functionality.
    <title>Cross-Domain Fingerprinting Unlinkability</title>
    <para>
    </para>
+   <!-- XXX: Panopticlick set + others -->
+   <orderedlist>
+    <listitem>Desktop resolution
+     <para>
+     </para>
+    </listitem>
+    <listitem>Timezone and clock offset
+     <para>
+     </para>
+    </listitem>
+    <listitem>WebGL
+     <para>
+     </para>
+    </listitem>
+    <listitem>Fonts
+     <para>
+     </para>
+    </listitem>
+   </orderedlist>
   </sect2>
   <sect2 id="new-identity">
-   <title>Provide "New Identity" button to purge all state</title>
+   <title>Long-Term Unlinkability via "New Identity" button</title>
    <para>
-XXX: make this prettier
- 0. Disables all open tabs and windows.
- 1. Closes all tabs and windows
- 2. Clears state:
-    a. OCSP
-    b. Cache
-    c. Site-specific zoom
-    d. Cookies+DOM Storage+safe browsing key
-    e. google wifi geolocation token
-    f. http auth
-    g. SSL Session IDs
-    h. last open location url
-    i. clear content prefs
- 3. Sends tor the NEWNYM signal to get a new circuit
+In order to avoid long-term linkability, we provide a "New Identity" context
+menu option in Torbutton.
+   </para>
+
+   <para> <command>Implementation Status:</command> First, Torbutton disables
+all open tabs and windows via nsIContentPolicy blocking, and then closes each
+tab and window. The extra step for blocking tabs is done as a precaution to
+ensure that any asynchornous Javascript is in fact properly disabled. After
+closing all of the windows, we then clear the following state: OCSP (by
+toggling security.OCSP.enabled), cache, site-specific zoom and content
+preferences, Cookies, DOM storage, safe browsing key, the google wifi
+geolocation token (if exists), HTTP auth, SSL Session IDs, and the last opened URL
+field (via the pref general.open_location.last_url). After clearing the
+browser state, we then send the NEWNYM signal to the Tor control port to cause
+a new circuit to be created.
+
+   </para>
+   <para>
+XXX: Cookie protections..
+XXX: Missing pieces: DOM Storage?
    </para>
   </sect2>
   <sect2 id="click-to-play">
@@ -938,6 +1048,7 @@ other site prefs?).
    </sect3>
    <sect3>
     <title>Excluded Addons</title>
+    <!-- XXX: Adblock, RequestPolicy, ShareMeNot, priv3 -->
    </sect3>
    <sect3>
     <title>Dangerous Addons</title>
