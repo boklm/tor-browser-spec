@@ -292,27 +292,6 @@ size of toolbars.
 <!-- XXX: Also, new browser features are added regularly. -->
 
 </para>
-<!--
-FIXME: This is no longer true. Only certain addons are now discoverable, and
-only if they want to be:
-http://webdevwonders.com/detecting-firefox-add-ons/
-https://developer.mozilla.org/en/Updating_web_applications_for_Firefox_3#section_7
-
-<para>
-
-To add insult to injury, <ulink
-url="http://pseudo-flaw.net/content/tor/torbutton/">chrome URL disclosure
-attacks</ulink> mean that each and every extension on <ulink
-url="https://addons.mozilla.org">addons.mozilla.org</ulink> adds another bit
-to that 2<superscript>29</superscript>. With hundreds of popular extensions
-and thousands of extensions total, it is easy to see that this sort of
-information is an impressively powerful identifier if used properly by a
-competent and determined adversary such as an ad network.  Again, a
-nearest-neighbor bit vector space approach here would also gracefully handle
-incremental changes to installed extensions.
-
-</para>
--->
      </listitem>
      <listitem><command>Remotely or locally exploit browser and/or
 OS</command>
@@ -462,67 +441,102 @@ Tor Browser are also guided by some philosophical positions about technology.
 
    </para>
    <orderedlist>
-     <listitem>Preserve existing user model
+     <listitem><command>Preserve existing user model</command>
       <para>
 
 The existing way that the user expects to use a browser must be preserved. If
 the user has to maintain a different mental model of how the sites they are
 using behave depending on tab, browser state, or anything else that would not
 normally be what they experience in their default browser, the user will
-inevitably be confused. They will become confused, make mistakes, and reduce
-their privacy as a result. Worse, they may just stop using the browser,
-assuming it is broken.
+inevitably be confused. They will make mistakes and reduce their privacy as a
+result. Worse, they may just stop using the browser, assuming it is broken.
 
       </para>
       <para>
 
-User model breakage was one of the failures of Torbutton: Even if users
-managed to install everything properly, the toggle model was too hard for the
-average user to understand, especially in the face of accumulating tabs from
-multiple states crossed with the current tor-state of the browser. 
+User model breakage was one of the <ulink
+url="https://blog.torproject.org/blog/toggle-or-not-toggle-end-torbutton">failures
+of Torbutton</ulink>: Even if users managed to install everything properly,
+the toggle model was too hard for the average user to understand, especially
+in the face of accumulating tabs from multiple states crossed with the current
+tor-state of the browser. 
 
       </para>
      </listitem>
-     <listitem>Minimal breakage to support requirements
+     <listitem><command>Minimal breakage to support requirements</command>
       <para>
 
-Minimal
-
+In general, we try to find solutions to privacy issues that will not induce
+site breakage, though this is not always possible.
 
       </para>
      </listitem>
-     <listitem>Plugins must be restricted
-<!--
- <listitem id="click-to-play"><command>Click-to-play for plugins and invasive content</command>
-  <para>
+     <listitem><command>Plugins must be restricted</command>
+      <para>
+Even if plugins always properly used the browser proxy settings (which none of
+them do) and can't be induced to bypass them (which all of them can), the
+activies of closed-source plugins are very difficult to audit and control.
+They can obtain and transmit all manner of system information to websites, and
+often have their own identifier storage for tracking users.
+      </para>
+      <para>
 
-XXX: Generalize+clarify
+Therefore, if plugins are to be enabled in private browsing modes, they must
+be restricted from running automatically on every page (via click-to-play
+placeholders), and/or be sandboxed to restrict the types of system calls they
+can execute. If the user decides to craft an exemption, it MUST ONLY apply to
+the top level urlbar domain, and not to all sites, to reduce linkability.
 
-Certain activities are inherently fingerprintable. For example, even if
-properly proxied, the activies of closed-source plugins are very difficult to
-control. Other browser features, such as WebGL, GeoLocation, and user-allowed
-exemptions to the identifier policy MUST NOT run until the user has clicked to
-explicitly allow that object or action. If the user decides to craft an
-exemption, it MUST ONLY apply to the top level urlbar domain, and not to all
-sites, to reduce linkability.
+       </para>
+     </listitem>
+     <listitem><command>Minimize Global Privacy Options</command>
+      <para>
 
+<ulink url="https://trac.torproject.org/projects/tor/ticket/3100">Another
+failure of Torbutton</ulink> was (and still is) the options panel. Each option
+that detectably alters browser behavior can be used as a fingerprinting tool
+on the part of ad networks. Similarly, all extensions <ulink
+url="http://blog.chromium.org/2010/06/extensions-in-incognito.html">should be
+disabled in the mode</ulink> except as an opt-in basis. We should not load
+system addons or plugins.
+
+     </para>
+     <para>
+Instead of global browser privacy options, privacy decisions should be made
+<ulink
+url="https://wiki.mozilla.org/Privacy/Features/Site-based_data_management_UI">per
+top-level url-bar domain</ulink> to eliminate the possibility of linkability
+between domains. For example, when a plugin object (or a JavaScript access of
+window.plugins) is present in a page, the user should be given the choice of
+allowing that plugin object for that top-level url-bar domain only. The same
+goes for exemptions to third party cookie policy, geo-location, and any other
+privacy permissions.
+     </para>
+     <para>
+If the user has indicated they do not care about local history storage, these
+permissions can be written to disk. Otherwise, they should remain memory-only. 
+     </para>
   </para>
  </listitem>
--->
-
       <para>
       </para>
      </listitem>
-     <listitem>No filters</listitem>
-     <para>
-     </para>
-     <listitem>Stay Current</listitem>
-     <para>
+     <listitem><command>No filters</command>
+      <para>
+
+<!-- XXX: Might want to briefly explain why -->
+We don't need no stinking filters.
+
+      </para>
+     </listitem>
+     <listitem><command>Stay Current</command>
+      <para>
 We believe that if we do not stay current with the support of new web
 technologies, we cannot hope to substantially influence or be involved in
 their proper deployment or realization. However, we will likely disable
 certain new features (where possible) pending analysis and audit.
-     </para>
+      </para>
+     </listitem>
    </orderedlist>
   </sect2>
 </sect1>
@@ -611,17 +625,20 @@ Flash cookies from leaking from a pre-existing Flash directory.
   </sect2>
   <sect2 id="disk-avoidance">
    <title>Disk Avoidance</title>
-   <para><command>Design Goal:</command>
-
+   <sect3>
+    <title>Design Goal:</title>
+    <para>
 Tor Browser should optionally prevent all disk records of browser activity.
 The user should be able to optionally enable URL history and other history
 features if they so desire. Once we <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3100">simplify the
 preferences interface</ulink>, we will likely just enable Private Browsing
 mode by default to handle this goal.
-   </para>
-   <para><command>Implementation Status:</command>
-
+    </para>
+   </sect3>
+   <sect3>
+    <title>Implementation Status:</title>
+    <para>
 For now, Tor Browser blocks write access to the disk through Torbutton
 using several Firefox preferences. 
 
@@ -641,6 +658,7 @@ The set of prefs is:
 <command>browser.download.manager.retention <!-- XXX: needs patch --></command>,
 and <command>network.cookie.lifetimePolicy</command>.
     </para>
+   </sect3>
     <para>
 In addition, three Firefox patches are needed to prevent disk writes, even if
 Private Browsing Mode is enabled. We need to
@@ -867,6 +885,7 @@ In order to avoid long-term linkability, we provide a "New Identity" context
 menu option in Torbutton.
    </para>
 
+<!-- XXX: Note tag? -->
    <para> <command>Implementation Status:</command> First, Torbutton disables
 all open tabs and windows via nsIContentPolicy blocking, and then closes each
 tab and window. The extra step for blocking tabs is done as a precaution to
@@ -896,7 +915,6 @@ adversary to use such content types to link users in a dragnet fashion across
 arbitrary sites.
    </para>
    <para>
-<!-- XXX: Where do we discuss our plans w/ flash -->
 Currently, the content types isolated in this way include Flash, WebGL, and
 audio and video objects.
    </para>
@@ -947,7 +965,7 @@ effectively recording on disk the fact that a website owned by a certain
 organization was viewed.
 
      </para>
-     <!-- FIXME: Should these design goals be <note> tags? -->
+     <!-- FIXME: Should this be a <note> tag too? -->
      <para><command>Design Goal:</command>
 
 As an additional design goal, we would like to later this patch to allow this
