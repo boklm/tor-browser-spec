@@ -728,13 +728,14 @@ computer.
 and/or what additional work or auditing needs to be done.
    </para>
   </sect2>
+<!-- XXX: Write me... 
   <sect2 id="update-safety">
    <title>Update Safety</title>
    <para>
-<!-- XXX: Design goal vs implementation status -->
 XXX: Write me..
    </para>
   </sect2>
+-->
   <sect2 id="identifier-linkability">
    <title>Cross-Domain Identifier Unlinkability</title>
    <!-- XXX: Mention web-send?? -->
@@ -915,9 +916,9 @@ functionality.
    <title>Cross-Domain Fingerprinting Unlinkability</title>
    <para>
 
-In order to properly address the network adversary on a technical level, we
-need a metric to measure linkability of the various browser properties that
-extend beyond any stored origin-related state. <ulink
+In order to properly address the fingerprinting adversary on a technical
+level, we need a metric to measure linkability of the various browser
+properties that extend beyond any stored origin-related state. <ulink
 url="https://panopticlick.eff.org/about.php">The Panopticlick Project</ulink>
 by the EFF provides us with exactly this metric. The researchers conducted a
 survey of volunteers who were asked to visit an experiment page that harvested
@@ -947,12 +948,25 @@ fingerprinting issues, at least not at this stage.
    </para>
    <orderedlist>
     <listitem>Plugins
+     <para>
+
+Plugins add to fingerprinting risk via two main vectors: their mere presence in
+window.navigator.plugins, as well as their internal functionality.
+
+     </para>
      <para><command>Design Goal:</command>
+All plugins that have not been specifically audited or sandboxed must be
+disabled. Additionally, version information should be obfuscated until the
+plugin object is loaded... <!-- XXX: finish -->
      </para>
      <para><command>Implementation Status:</command>
      </para>
     </listitem>
     <listitem>Fonts
+     <para>
+
+
+     </para>
      <para><command>Design Goal:</command>
      </para>
      <para><command>Implementation Status:</command>
