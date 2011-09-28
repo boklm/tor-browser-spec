@@ -700,10 +700,10 @@ In addition, three Firefox patches are needed to prevent disk writes, even if
 Private Browsing Mode is enabled. We need to
 
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0002-Firefox6-Make-Permissions-Manager-memory-only.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0002-Make-Permissions-Manager-memory-only.patch">prevent
 the permissions manager from recording HTTPS STS state</ulink>,
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0003-Firefox6-Make-Intermediate-Cert-Store-memory-only.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0003-Make-Intermediate-Cert-Store-memory-only.patch">prevent
 intermediate SSL certficates from being recorded</ulink>, and
 <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0008-Make-content-pref-service-memory-only-clearable.patch">prevent
