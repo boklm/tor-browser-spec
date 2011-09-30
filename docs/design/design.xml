@@ -383,7 +383,7 @@ MUST NOT bypass Tor proxy settings for any content.</para></listitem>
 
  <para>The browser MUST NOT provide any stored state to the content window
 from other browsers or other browsing modes, including shared state from
-plugins, machine identifers, and TLS session state.
+plugins, machine identifiers, and TLS session state.
 </para></listitem>
 
  <listitem><command>Disk Avoidance</command><para>The
@@ -408,7 +408,7 @@ MUST BE documented.
    <para>
 
 The privacy requirements are primarily concerned with reducing linkability:
-the ability for a user's actvitity on one site to be linked with their
+the ability for a user's activity on one site to be linked with their
 activity on another site without their knowledge or explicit consent.
 
    </para>
@@ -491,7 +491,7 @@ site breakage, though this is not always possible.
 
 Even if plugins always properly used the browser proxy settings (which none of
 them do) and could not be induced to bypass them (which all of them can), the
-activies of closed-source plugins are very difficult to audit and control.
+activities of closed-source plugins are very difficult to audit and control.
 They can obtain and transmit all manner of system information to websites,
 often have their own identifier storage for tracking users, and also
 contribute to fingerprinting.
@@ -525,7 +525,7 @@ Instead of global browser privacy options, privacy decisions should be made
 <ulink
 url="https://wiki.mozilla.org/Privacy/Features/Site-based_data_management_UI">per
 top-level url-bar domain</ulink> to eliminate the possibility of linkability
-between domains. For example, when a plugin object (or a JavaScript access of
+between domains. For example, when a plugin object (or a Javascript access of
 window.plugins) is present in a page, the user should be given the choice of
 allowing that plugin object for that top-level url-bar domain only. The same
 goes for exemptions to third party cookie policy, geo-location, and any other
@@ -559,7 +559,7 @@ Furthermore, we are generally opposed to shipping an always-on Ad blocker with
 Tor Browser. We feel that this would damage our credibility in terms of
 demonstrating that we are providing privacy through a sound design alone, as
 well as damage the acceptance of Tor users by sites who support themselves
-through advertizing revenue.
+through advertising revenue.
       </para>
       <para>
 Users are free to install these addons if they wish, but doing
@@ -705,7 +705,7 @@ url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src
 the permissions manager from recording HTTPS STS state</ulink>,
 <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0003-Make-Intermediate-Cert-Store-memory-only.patch">prevent
-intermediate SSL certficates from being recorded</ulink>, and
+intermediate SSL certificates from being recorded</ulink>, and
 <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0008-Make-content-pref-service-memory-only-clearable.patch">prevent
 the content preferences service from recording site zoom</ulink>.
@@ -784,7 +784,7 @@ apply to modern Firefoxes.
 As a stopgap to satisfy our design requirement of unlinkability, we currently
 entirely disable 3rd party cookies by setting
 <command>network.cookie.cookieBehavior</command> to 1. We would prefer that
-third party content continue to funtion , but we believe the requirement for 
+third party content continue to function , but we believe the requirement for 
 unlinkability trumps that desire.
 
      </para>
@@ -812,16 +812,16 @@ url bar domain as input to this field.
 
 <!-- FIXME: This could use a few more specifics.. Maybe. The Chrome folks
 won't care, but the Mozilla folks might. -->
-Furthermore, we chose a different isolation scheme than the stanford
-implemention. First, we decoupled the cache isolation from the third party
-cookie attribute. Second, we use several machanisms to attempt to determine
+Furthermore, we chose a different isolation scheme than the Stanford
+implementation. First, we decoupled the cache isolation from the third party
+cookie attribute. Second, we use several mechanisms to attempt to determine
 the actual location attribute of the top-level window (the url bar domain)
 used to load the page, as opposed to relying solely on the referer property.
      </para>
      <para>
 Therefore, <ulink
 url="http://crypto.stanford.edu/sameorigin/safecachetest.html">the original
-stanford test
+Stanford test
 cases</ulink> are expected to fail. Functionality can still be verified by
 navigating to <ulink url="about:cache">about:cache</ulink> and viewing the key
 used for each cache entry. Each third party element should have an additional
@@ -947,7 +947,7 @@ should be repeated to include them.
    <para>
 
 On the other hand, to avoid an infinite sinkhole, we reduce the efforts for
-fingerprinting resistence by only concerning ourselves with reducing the
+fingerprinting resistance by only concerning ourselves with reducing the
 fingerprintable differences <emphasis>among</emphasis> Tor Browser users. We
 do not believe it is productive to concern ourselves with cross-browser
 fingerprinting issues, at least not at this stage.
@@ -987,7 +987,7 @@ features that likely bypass proxy settings.
      <para>
 
 According to the Panopticlick study, fonts provide the most linkability when
-they are provided as an enumeratable list in filesystem order, via either the
+they are provided as an enumerable list in filesystem order, via either the
 Flash or Java plugins. However, it is still possible to use CSS and/or
 Javascript to query for the existence of specific fonts. With a large enough
 pre-built list to query, a large amount of fingerprintable information may
@@ -1005,7 +1005,7 @@ remote fonts once the limit is reached.
      <para><command>Implementation Status:</command>
 
 Aside from disabling plugins to prevent enumeration, we have not yet
-implmented any defense against CSS or Javascript fonts.
+implemented any defense against CSS or Javascript fonts.
 
      </para>
     </listitem>
@@ -1107,7 +1107,7 @@ url="http://w2spconf.com/2011/papers/jspriv.pdf">Mowery et al</ulink> found that
 even with the default precision in most browsers, they required up to 120
 seconds of amortization and repeated trials to get stable results from their
 feature set. We intend to work with the research community to establish the
-optimum tradeoff between quantization+jitter and amoritization time.
+optimum tradeoff between quantization+jitter and amortization time.
 
 
      </para>
@@ -1147,7 +1147,7 @@ fingerprinting.
 Because of the large amount of potential fingerprinting vectors, we intend to
 deploy a similar strategy against WebGL as for plugins. First, WebGL canvases
 will have click-to-play placeholders, and will not run until authorized by the
-user. Second, we indend to <ulink
+user. Second, we intend to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3323">obfuscate driver
 information</ulink> by hooking
 <command>getParameter()</command>,
@@ -1187,10 +1187,10 @@ All linkable identifiers and browser state should be cleared by this feature.
    First, Torbutton disables
 all open tabs and windows via nsIContentPolicy blocking, and then closes each
 tab and window. The extra step for blocking tabs is done as a precaution to
-ensure that any asynchornous Javascript is in fact properly disabled. After
+ensure that any asynchronous Javascript is in fact properly disabled. After
 closing all of the windows, we then clear the following state: OCSP (by
 toggling security.OCSP.enabled), cache, site-specific zoom and content
-preferences, Cookies, DOM storage, safe browsing key, the google wifi
+preferences, Cookies, DOM storage, safe browsing key, the Google wifi
 geolocation token (if exists), HTTP auth, SSL Session IDs, and the last opened URL
 field (via the pref general.open_location.last_url). After clearing the
 browser state, we then send the NEWNYM signal to the Tor control port to cause
@@ -1319,14 +1319,14 @@ We cannot use the <ulink
 url="http://www.oxymoronical.com/experiments/xpcomref/applications/Firefox/3.5/components/@mozilla.org/extensions/blocklist%3B1">
 @mozilla.org/extensions/blocklist;1</ulink> service, because we
 actually want to stop plugins from ever entering the browser's process space
-and/or executing code (for example, AV plugins that collect statistics/analyse
-urls, magical toolbars that phone home or "help" the user, skype buttons that
+and/or executing code (for example, AV plugins that collect statistics/analyze
+URLs, magical toolbars that phone home or "help" the user, skype buttons that
 ruin our day, and censorship filters). Hence we rolled our own.
      </para>
     </listitem>
     <listitem>Make content-prefs service memory only
      <para>
-This patch prevents random urls from being inserted into content-prefs.sqllite in
+This patch prevents random URLs from being inserted into content-prefs.sqllite in
 the profile directory as content prefs change (includes site-zoom and perhaps
 other site prefs?).
      </para>
