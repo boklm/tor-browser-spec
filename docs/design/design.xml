@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject\org</email></address>
     </affiliation>
    </author>
-   <pubdate>Sep 15 2011</pubdate>
+   <pubdate>Sep 29 2011</pubdate>
  </articleinfo>
 
 <!--
@@ -552,6 +552,7 @@ addons can introduce strange breakage and cause usability nightmares, and will a
 fail to do their job if an adversary simply registers a new domain or creates
 a new url path.
 
+<!-- XXX: Don't forget: Filters are also crazy fingerprintable -->
       </para>
       <para>
 Furthermore, we are generally opposed to shipping an always-on Ad blocker with
@@ -821,14 +822,20 @@ used to load the page, as opposed to relying solely on the referer property.
 Therefore, <ulink
 url="http://crypto.stanford.edu/sameorigin/safecachetest.html">the original
 stanford test
-cases</ulink> are expected to fail.
+cases</ulink> are expected to fail. Functionality can still be verified by
+navigating to <ulink url="about:cache">about:cache</ulink> and viewing the key
+used for each cache entry. Each third party element should have an additional
+"domain=string" property prepended, which will list the top-level urlbar
+domain that was used to source the third party element.
      </para>
     </listitem>
     <listitem>HTTP Auth
      <para>
 
-HTTP authentication tokens are removed for third parties on-modify-request
-observer to remove the headers to prevent <ulink
+HTTP authentication tokens are removed for third party elements using the
+<ulink
+url="https://developer.mozilla.org/en/Setting_HTTP_request_headers#Observers">http-on-modify-request
+observer</ulink> to remove the Authorization headers to prevent <ulink
 url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">silent
 linkability between domains</ulink>.  We also needed to <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0004-Add-HTTP-auth-headers-before-the-modify-request-obse.patch">patch
@@ -922,7 +929,7 @@ properties that extend beyond any stored origin-related state. <ulink
 url="https://panopticlick.eff.org/about.php">The Panopticlick Project</ulink>
 by the EFF provides us with exactly this metric. The researchers conducted a
 survey of volunteers who were asked to visit an experiment page that harvested
-many of the above compo- nents. They then computed the Shannon Entropy of the
+many of the above components. They then computed the Shannon Entropy of the
 resulting distribution of each of several key attributes to determine how many
 bits of identifying information each attribute provided.
 
@@ -931,10 +938,10 @@ bits of identifying information each attribute provided.
 
 The study is not exhaustive, though. In particular, the test does not take in
 all aspects of resolution information. It did not calculate the size of
-widgets, window decoration, or toolbar size. We believe this may add high
-amounts of entropy to the screen field. It also did not measure clock offset
-and other time-based fingerprints. Furthermore, as new browser features are
-added, this experiment should be repeated to include them.
+widgets, window decoration, or toolbar size, which we believe may add high
+amounts of entropy. It also did not measure clock offset and other time-based
+fingerprints. Furthermore, as new browser features are added, this experiment
+should be repeated to include them.
 
    </para>
    <para>
@@ -955,57 +962,205 @@ window.navigator.plugins, as well as their internal functionality.
 
      </para>
      <para><command>Design Goal:</command>
+
 All plugins that have not been specifically audited or sandboxed must be
-disabled. Additionally, version information should be obfuscated until the
-plugin object is loaded... <!-- XXX: finish -->
+disabled. To reduce linkability potential, even sandboxed plugins should not
+be allowed to load objects until the user has clicked through a click-to-play
+barrier.  Additionally, version information should be reduced or obfuscated
+until the plugin object is loaded.
+
      </para>
      <para><command>Implementation Status:</command>
+
+Currently, we entirely disable all plugins in Tor Browser. However, as a
+compromise due to the popularity of Flash, we intend to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3974">work
+towards</ulink> a
+click-to-play barrier using NoScript that is available only after the user has
+specifically enabled plugins. Flash will be the only plugin available, and we
+will ship a settings.sol file to disable Flash cookies, and to restrict P2P
+features that likely bypass proxy settings.
+
      </para>
     </listitem>
     <listitem>Fonts
      <para>
 
+According to the Panopticlick study, fonts provide the most linkability when
+they are provided as an enumeratable list in filesystem order, via either the
+Flash or Java plugins. However, it is still possible to use CSS and/or
+Javascript to query for the existence of specific fonts. With a large enough
+pre-built list to query, a large amount of fingerprintable information may
+still be available.
 
      </para>
      <para><command>Design Goal:</command>
+
+To address the Javascript issue, we intend to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/2872">limit the number of
+fonts</ulink> an origin can load, gracefully degrading to built-in and/or
+remote fonts once the limit is reached.
+
      </para>
      <para><command>Implementation Status:</command>
+
+Aside from disabling plugins to prevent enumeration, we have not yet
+implmented any defense against CSS or Javascript fonts.
+
      </para>
     </listitem>
     <listitem>User Agent and HTTP Headers
      <para><command>Design Goal:</command>
+
+All Tor Browser users should provide websites with an identical user agent and
+HTTP header set for a given request type. We omit the Firefox minor revision,
+and report a popular Windows platform. If the software is kept up to date,
+these headers should remain identical across the population even when updated.
+
      </para>
      <para><command>Implementation Status:</command>
-     </para>
+
+Firefox provides several options for controlling the browser user agent string
+which we leverage. We also set similar prefs for controlling the
+Accept-Language and Accept-Charset headers, which we spoof to English by default. Additionally, we
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0001-Block-Components.interfaces-lookupMethod-from-conten.patch">remove
+content script access</ulink> to Components.interfaces, which <ulink
+url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
+used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
+
     </listitem>
     <listitem>Desktop resolution and CSS Media Queries
+     <para>
+
+Both CSS and Javascript have a lot of irrelevant information about the screen
+resolution, usable desktop size, OS widget size, toolbar size, title bar size, and
+other desktop features that are not at all relevant to rendering and serve
+only to provide information for fingerprinting.
+
+     </para>
      <para><command>Design Goal:</command>
+
+Our design goal here is to reduce the resolution information down to the bare
+minimum required for properly rendering inside a content window. We intend to 
+report all rendering information correctly with respect to the size and
+properties of the content window, but report an effective size of 0 for all
+border material, and also report that the desktop is only as big as the
+inner content window. Additionally, new browser windows are sized such that 
+their content windows are one of ~5 fixed sizes based on the user's
+desktop resolution.
+
      </para>
      <para><command>Implementation Status:</command>
+
+We have implemented the above strategy for Javascript using Torbutton's <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">JavaScript
+hooks</ulink> as well as a window observer to <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l4002">resize
+new windows based on desktop resolution</ulink>. However, CSS Media Queries
+still <ulink url="https://trac.torproject.org/projects/tor/ticket/2875">need
+to be dealt with</ulink>.
+
      </para>
     </listitem>
     <listitem>Timezone and clock offset
      <para><command>Design Goal:</command>
+
+All Tor Browser users should report the same timezone to websites. Currently,
+we choose UTC for this purpose, although an equally valid argument could be
+made for EDT/EST due to the large English-speaking population density.
+Additionally, the Tor software should detect if the users clock is
+significantly divergent from the clocks of the relays that it connects to, and
+use this to reset the clock values used in Tor Browser to something reasonably
+accurate.
+
      </para>
      <para><command>Implementation Status:</command>
+
+We set the timezone using the TZ environment variable, which is supported on
+all platforms. Additionally, we plan to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3652">obtain a clock
+offset from Tor</ulink>, but this won't be available until Tor 0.2.3.x is in
+use.
+
      </para>
     </listitem>
     <listitem>Javascript performance fingerprinting
+     <para>
+
+<ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">Javascript performance
+fingerprinting</ulink> is the act of profiling the performance
+of various Javascript functions for the purpose of fingerprinting the
+Javascript engine and the CPU.
+
+     </para>
      <para><command>Design Goal:</command>
+
+We have <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3059">several potential
+mitigation approaches</ulink> to reduce the accuracy of performance
+fingerprinting without risking too much damage to functionality. Our current
+favorite is to reduce the resolution of the Event.timeStamp and the Javascript
+Date() object, while also introducing jitter. Our goal is to increase the
+amount of time it takes to mount a successful attack. <ulink
+url="http://w2spconf.com/2011/papers/jspriv.pdf">Mowery et al</ulink> found that
+even with the default precision in most browsers, they required up to 120
+seconds of amortization and repeated trials to get stable results from their
+feature set. We intend to work with the research community to establish the
+optimum tradeoff between quantization+jitter and amoritization time.
+
+
      </para>
      <para><command>Implementation Status:</command>
+
+We have no implementation as of yet.
+
      </para>
     </listitem>
     <listitem>Keystroke fingerprinting
+     <para>
+
+Keystroke fingerprinting is the act of measuring key strike time and key
+flight time. It is seeing increasing use as a biometric.
+
+     </para>
      <para><command>Design Goal:</command>
+
+We intend to rely on the same mechanisms for defeating Javascript performance
+fingerprinting: timestamp quantization and jitter.
+
      </para>
      <para><command>Implementation Status:</command>
+We have no implementation as of yet.
      </para>
     </listitem>
     <listitem>WebGL
+     <para>
+
+WebGL is fingerprintable both through information that is exposed about the
+underlying driver and optimizations, as well as through performance
+fingerprinting.
+
+     </para>
      <para><command>Design Goal:</command>
+
+Because of the large amount of potential fingerprinting vectors, we intend to
+deploy a similar strategy against WebGL as for plugins. First, WebGL canvases
+will have click-to-play placeholders, and will not run until authorized by the
+user. Second, we indend to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3323">obfuscate driver
+information</ulink> by hooking
+<command>getParameter()</command>,
+<command>getSupportedExtensions()</command>,
+<command>getExtension()</command>, and
+<command>getContextAttributes()</command> to provide standard minimal,
+driver-neutral information.
+
      </para>
      <para><command>Implementation Status:</command>
+
+Currently we simply disable WebGL. 
+
      </para>
     </listitem>
    </orderedlist>
@@ -1017,8 +1172,19 @@ In order to avoid long-term linkability, we provide a "New Identity" context
 menu option in Torbutton.
    </para>
 
-<!-- XXX: Note tag? -->
-   <para> <command>Implementation Status:</command> First, Torbutton disables
+   <sect3>
+    <title>Design Goal:</title>
+    <blockquote>
+
+All linkable identifiers and browser state should be cleared by this feature.
+
+    </blockquote>
+   </sect3>
+
+   <sect3>
+    <title>Implementation Status:</title>
+    <blockquote>
+   First, Torbutton disables
 all open tabs and windows via nsIContentPolicy blocking, and then closes each
 tab and window. The extra step for blocking tabs is done as a precaution to
 ensure that any asynchornous Javascript is in fact properly disabled. After
@@ -1029,8 +1195,9 @@ geolocation token (if exists), HTTP auth, SSL Session IDs, and the last opened U
 field (via the pref general.open_location.last_url). After clearing the
 browser state, we then send the NEWNYM signal to the Tor control port to cause
 a new circuit to be created.
+    </blockquote>
+   </sect3>
 
-   </para>
    <para>
 XXX: Cookie protections..
 <!-- XXX: Missing pieces: 
@@ -1059,16 +1226,18 @@ audio and video objects.
    <para>
 The set of patches we have against Firefox can be found in the <ulink
 url="https://gitweb.torproject.org/torbrowser.git/tree/refs/heads/maint-2.2:/src/current-patches">current-patches
-directory of the torbrowser git repository</ulink>
+directory of the torbrowser git repository</ulink>. They are:
    </para>
    <orderedlist>
     <listitem>Block Components.interfaces and Components.lookupMethod
      <para>
 
 In order to reduce fingerprinting, we block access to these two interfaces
-from content script. Components.lookupMethod can undo our javascript hooks,
-and Components.interfaces is useful for fingerprinting the platform, OS, and
-Firebox version.
+from content script. Components.lookupMethod can undo our <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">Javascript
+hooks</ulink>,
+and Components.interfaces can be used for fingerprinting the platform, OS, and
+Firebox version, but not much else.
 
      </para>
     </listitem>
@@ -1085,7 +1254,7 @@ does not need to be set in prefs.js, and can be handled by Torbutton.
      </para>
      <para><command>Design Goal:</command>
 
-As an additional design goal, we would like to later this patch to allow this
+As an additional design goal, we would like to later alter this patch to allow this
 information to be cleared from memory. The implementation does not currently
 allow this.
 
@@ -1095,7 +1264,7 @@ allow this.
      <para>
 
 The intermediate certificate store holds information about SSL certificates
-that may only be used by a limited number of domains. in some cases
+that may only be used by a limited number of domains. In some cases
 effectively recording on disk the fact that a website owned by a certain
 organization was viewed.
 
@@ -1103,7 +1272,7 @@ organization was viewed.
      <!-- FIXME: Should this be a <note> tag too? -->
      <para><command>Design Goal:</command>
 
-As an additional design goal, we would like to later this patch to allow this
+As an additional design goal, we would like to later alter this patch to allow this
 information to be cleared from memory. The implementation does not currently
 allow this.
 
@@ -1146,9 +1315,9 @@ pipeline, as well as their order.
     </listitem>
     <listitem>Block all plugins except flash
      <para>
-<!-- XXX: Why allow flash at all?? Justify w/ a design goal describing a
-happy, safe-flash future... But here, or in some other section?? -->
-We cannot use the @mozilla.org/extensions/blocklist;1 service, because we
+We cannot use the <ulink
+url="http://www.oxymoronical.com/experiments/xpcomref/applications/Firefox/3.5/components/@mozilla.org/extensions/blocklist%3B1">
+@mozilla.org/extensions/blocklist;1</ulink> service, because we
 actually want to stop plugins from ever entering the browser's process space
 and/or executing code (for example, AV plugins that collect statistics/analyse
 urls, magical toolbars that phone home or "help" the user, skype buttons that
