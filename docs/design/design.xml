@@ -551,7 +551,7 @@ prevented from tracking users between sites by the implementation.
 Filter-based addons can also introduce strange breakage and cause usability
 nightmares, and will also fail to do their job if an adversary simply
 registers a new domain or creates a new url path. Worse still, the unique
-filter sets that each user is liable to create/install likely provide a wealth
+filter sets that each user creates or installs will provide a wealth
 of fingerprinting targets.
 
       </para>
@@ -637,7 +637,7 @@ supported mime types for all currently installed plugins.
  <para>
 In addition, to prevent any unproxied activity by plugins at load time, we
 also patch the Firefox source code to <ulink
-linkend="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0007-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
+url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0007-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
 for Flash and Gnash</ulink>.
 
  </para>
@@ -648,7 +648,7 @@ External apps, if launched automatically, can be induced to load files that
 perform network activity. In order to prevent this, Torbutton installs a
 component to 
 <ulink
-linkend="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components/external-app-blocker.js">
+url="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components/external-app-blocker.js">
 provide the user with a popup</ulink> whenever the browser attempts to
 launch a helper app. 
   </para>
@@ -794,7 +794,7 @@ site.
 
 All cookies should be double-keyed to the top-level domain. There exists a
 <ulink
-linkend="https://bugzilla.mozilla.org/show_bug.cgi?id=565965">Mozilla
+url="https://bugzilla.mozilla.org/show_bug.cgi?id=565965">Mozilla
 bug</ulink> that contains a prototype patch, but it lacks UI, and does not
 apply to modern Firefoxes.
 
