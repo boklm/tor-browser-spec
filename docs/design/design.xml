@@ -370,7 +370,9 @@ maintain and/or restore privacy properties to our users.
 
 The security requirements are primarily concerned with ensuring the safe use
 of Tor. Violations in these properties typically result in serious risk for
-the user in terms of immediate deanonymization and/or observability.
+the user in terms of immediate deanonymization and/or observability. With
+respect to platform support, security requirements are the minimum properties
+in order for Tor to support the use of a web client platform.
 
    </para>
 
@@ -408,8 +410,10 @@ MUST BE documented.
    <para>
 
 The privacy requirements are primarily concerned with reducing linkability:
-the ability for a user's activity on one site to be linked with their
-activity on another site without their knowledge or explicit consent.
+the ability for a user's activity on one site to be linked with their activity
+on another site without their knowledge or explicit consent. With respect to
+platform support, privacy requirements are the set of properties that cause us
+to prefer one platform over another. 
 
    </para>
 
