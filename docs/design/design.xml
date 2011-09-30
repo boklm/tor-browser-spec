@@ -540,26 +540,29 @@ permissions can be written to disk. Otherwise, they should remain memory-only.
       <para>
 
 Filter-based addons such as <ulink
-url="https://addons.mozilla.org/en-US/firefox/addon/adblock-plus/">AdBlock Plus</ulink>, <ulink
-url="">Request Policy</ulink>, <ulink url="http://priv3.icsi.berkeley.edu/">Priv3</ulink>, and <ulink
+url="https://addons.mozilla.org/en-US/firefox/addon/adblock-plus/">AdBlock
+Plus</ulink>, <ulink url="">Request Policy</ulink>, <ulink
+url="http://priv3.icsi.berkeley.edu/">Priv3</ulink>, and <ulink
 url="http://sharemenot.cs.washington.edu/">Sharemenot</ulink> are to be
-avoided. We believe
-that these addons do not add any real privacy to a proper <link
-linkend="Implementation">implementation</link> of
-the above <link linkend="privacy">privacy requirements</link>, as all third parties are prevented from
-tracking users between sites by the implementation. Furthermore, filter-based 
-addons can introduce strange breakage and cause usability nightmares, and will also
-fail to do their job if an adversary simply registers a new domain or creates
-a new url path.
+avoided. We believe that these addons do not add any real privacy to a proper
+<link linkend="Implementation">implementation</link> of the above <link
+linkend="privacy">privacy requirements</link>, as all third parties are
+prevented from tracking users between sites by the implementation.
+Filter-based addons can also introduce strange breakage and cause usability
+nightmares, and will also fail to do their job if an adversary simply
+registers a new domain or creates a new url path. Worse still, the unique
+filter sets that each user is liable to create/install likely provide a wealth
+of fingerprinting targets.
 
-<!-- XXX: Don't forget: Filters are also crazy fingerprintable -->
       </para>
       <para>
-Furthermore, we are generally opposed to shipping an always-on Ad blocker with
-Tor Browser. We feel that this would damage our credibility in terms of
-demonstrating that we are providing privacy through a sound design alone, as
-well as damage the acceptance of Tor users by sites who support themselves
-through advertising revenue.
+
+As a general matter, we are also generally opposed to shipping an always-on Ad
+blocker with Tor Browser. We feel that this would damage our credibility in
+terms of demonstrating that we are providing privacy through a sound design
+alone, as well as damage the acceptance of Tor users by sites who support
+themselves through advertising revenue.
+
       </para>
       <para>
 Users are free to install these addons if they wish, but doing
@@ -739,7 +742,7 @@ XXX: Write me..
 -->
   <sect2 id="identifier-linkability">
    <title>Cross-Domain Identifier Unlinkability</title>
-   <!-- XXX: Mention web-send?? -->
+   <!-- FIXME: Mention web-send?? -->
    <para>
 
 The Tor Browser MUST prevent a user's activity on one site from being linked
@@ -763,11 +766,28 @@ six or seven different pieces of privacy UI governing these identifiers and
 permissions can become just one piece of UI. For instance, a window that lists
 the top-level url bar domains for which browser state exists with the ability
 to clear and/or block them, possibly with a context-menu option to drill down
-into specific types of state.
-
-<!-- XXX: Include graphic as a 'Design Goal' -->
+into specific types of state. An exmaple of this simplifcation can be seen in
+Figure 1.
 
    </para>
+   <figure><title>Improving the Privacy UI</title>
+    <mediaobject>
+      <imageobject>
+       <imagedata align="center" fileref="CookieManagers.png"/>
+      </imageobject>
+    </mediaobject>
+    <caption> <para/>
+
+On the left is the standard Firefox cookie manager. On the right is a mock-up
+of how isolating identifiers to the URL bar domain might simplify the privacy
+UI for all data - not just cookies. Both windows represent the set of
+Cookies accomulated after visiting just five sites, but the window on the
+right has the option of also representing history, DOM Storage, HTTP Auth,
+search form history, login values, and so on within a context menu for each
+site.
+
+</caption>
+   </figure>
    <orderedlist>
     <listitem>Cookies
      <para><command>Design Goal:</command>
@@ -1198,13 +1218,11 @@ a new circuit to be created.
     </blockquote>
    </sect3>
 
-   <para>
-XXX: Cookie protections..
 <!-- XXX: Missing pieces: 
           1. DOM Storage? IIRC, it is cleared, but also disabled anyway. 
           2. Do we kill keep-alive connections properly?
+XXX: Cookie protections..
   -->
-   </para>
   </sect2>
   <sect2 id="click-to-play">
    <title>Click-to-play for plugins and invasive content</title>
