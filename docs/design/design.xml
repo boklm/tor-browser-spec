@@ -218,7 +218,7 @@ determining how identifying a particular browser property is. However, some
 quirks of their study means that they do not extract as much information as
 they could from display information: they only use desktop resolution (which
 Torbutton reports as the window resolution) and do not attempt to infer the
-size of toolbars. In the other direction, they may be overcounting in some
+size of toolbars. In the other direction, they may be over-counting in some
 areas, as they did not compute joint entropy over multiple attributes that may
 exhibit a high degree of correlation. Also, new browser features are added
 regularly, so the data should not be taken as final.
@@ -235,8 +235,8 @@ attack vectors:
      <para>
 
 Properties of the user's request behavior comprise the bulk of low-hanging
-fingerprintig targets. These include: User agent, Accept-* headers, pipeline
-useage, and request ordering. Additionally, the use of custom filters such as
+fingerprinting targets. These include: User agent, Accept-* headers, pipeline
+usage, and request ordering. Additionally, the use of custom filters such as
 AdBlock and other privacy filters can be used to fingerprint request patterns
 (as an extreme example).
 
@@ -263,7 +263,7 @@ and interpreter speed</ulink>.
 
 The Panopticlick project found that the mere list of installed plugins (in
 navigator.plugins) was sufficient to provide a large degree of
-fingerprintability. Additionally, plugins are capable of extracing font lists,
+fingerprintability. Additionally, plugins are capable of extracting font lists,
 interface addresses, and other machine information that is beyond what the
 browser would normally provide to content. In addition, plugins can be used to
 store unique identifiers that are more difficult to clear than standard
@@ -523,7 +523,7 @@ Therefore, if plugins are to be enabled in private browsing modes, they must
 be restricted from running automatically on every page (via click-to-play
 placeholders), and/or be sandboxed to restrict the types of system calls they
 can execute. If the user decides to craft an exemption to allow a plugin to be
-used, it MUST ONLY apply to the top level urlbar domain, and not to all sites,
+used, it MUST ONLY apply to the top level url bar domain, and not to all sites,
 to reduce linkability.
 
        </para>
@@ -793,7 +793,7 @@ seven different pieces of privacy UI governing these identifiers and
 permissions can become just one piece of UI. For instance, a window that lists
 the url bar origin for which browser state exists, possibly with a
 context-menu option to drill down into specific types of state or permissions.
-An example of this simplifcation can be seen in Figure 1.
+An example of this simplification can be seen in Figure 1.
 
    </para>
    <figure><title>Improving the Privacy UI</title>
@@ -807,7 +807,7 @@ An example of this simplifcation can be seen in Figure 1.
 On the left is the standard Firefox cookie manager. On the right is a mock-up
 of how isolating identifiers to the URL bar origin might simplify the privacy
 UI for all data - not just cookies. Both windows represent the set of
-Cookies accomulated after visiting just five sites, but the window on the
+Cookies accumulated after visiting just five sites, but the window on the
 right has the option of also representing history, DOM Storage, HTTP Auth,
 search form history, login values, and so on within a context menu for each
 site.
@@ -945,7 +945,7 @@ automatically navigate between two different url bar origins.
     <para><command>Implementation status:</command>
 
 There are numerous ways for the user to be redirected, and the Firefox API
-suport to detect each of them is poor. We have a <ulink
+support to detect each of them is poor. We have a <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3600">trac bug
 open</ulink> to implement what we can.
 
@@ -1512,7 +1512,7 @@ AnonTest</ulink>
        <para>
 
 The <ulink url="https://anonymous-proxy-servers.net/">JonDos people</ulink> also provide an
-anonymity tester. It is more focused on HTTP headers than plugin bypass, and
+anonymity tester. It is more focused on HTTP headers and behaviors than plugin bypass, and
 points out a couple of headers Torbutton could do a better job with
 obfuscating.
 
