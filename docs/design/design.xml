@@ -226,6 +226,7 @@ url="http://ha.ckers.org/weird/CSS-history.cgi">CSS-only history disclosure
 attacks</ulink>.
      </para>
      </listitem>
+     <!-- XXX: Generalize to just identifiers -->
      <listitem><command>Read and insert cookies</command>
      <para>
 
@@ -449,7 +450,7 @@ to be the entire fully qualified domain name
    </para>
 
 <orderedlist> 
- <listitem><command>Cross-Domain Identifier Unlinkability</command> 
+ <listitem><command>Cross-Origin Identifier Unlinkability</command> 
   <para>
 
 User activity on one url bar origin MUST NOT be linkable to their activity in
@@ -460,7 +461,7 @@ substantial way.
 
   </para>
  </listitem>
- <listitem><command>Cross-Domain Fingerprinting Unlinkability</command> 
+ <listitem><command>Cross-Origin Fingerprinting Unlinkability</command> 
   <para>
 
 User activity on one url bar origin MUST NOT be linkable to their activity in
@@ -551,13 +552,13 @@ to reduce linkability.
 failure of Torbutton</ulink> was (and still is) the options panel. Each option
 that detectably alters browser behavior can be used as a fingerprinting tool.
 Similarly, all extensions <ulink
-url="http://blog.chromium.org/2010/06/extensions-in-incognito.html">should be
+url="http://blog.chromium.org/2010/06/extensions-in-incognito.html">SHOULD be
 disabled in the mode</ulink> except as an opt-in basis. We should not load
 system-wide addons or plugins.
 
      </para>
      <para>
-Instead of global browser privacy options, privacy decisions should be made
+Instead of global browser privacy options, privacy decisions SHOULD be made
 <ulink
 url="https://wiki.mozilla.org/Privacy/Features/Site-based_data_management_UI">per
 url bar origin</ulink> to eliminate the possibility of linkability
@@ -704,7 +705,7 @@ Flash cookies from leaking from a pre-existing Flash directory.
    <sect3>
     <title>Design Goal:</title>
     <blockquote>
-Tor Browser should optionally prevent all disk records of browser activity.
+Tor Browser MUST (at user option) prevent all disk records of browser activity.
 The user should be able to optionally enable URL history and other history
 features if they so desire. Once we <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3100">simplify the
@@ -776,7 +777,7 @@ and/or what additional work or auditing needs to be done.
   </sect2>
 -->
   <sect2 id="identifier-linkability">
-   <title>Cross-Domain Identifier Unlinkability</title>
+   <title>Cross-Origin Identifier Unlinkability</title>
    <!-- FIXME: Mention web-send?? -->
    <para>
 
@@ -826,7 +827,7 @@ site.
     <listitem>Cookies
      <para><command>Design Goal:</command>
 
-All cookies should be double-keyed to the url bar origin and third-party
+All cookies MUST be double-keyed to the url bar origin and third-party
 origin. There exists a <ulink
 url="https://bugzilla.mozilla.org/show_bug.cgi?id=565965">Mozilla bug</ulink>
 that contains a prototype patch, but it lacks UI, and does not apply to modern
@@ -922,13 +923,13 @@ origin, we entirely disable DOM storage as a stopgap to ensure unlinkability.
      </listitem>
     <listitem>TLS session resumption and HTTP Keep-Alive
      <para>
-TLS session resumption and HTTP Keep-Alive must not allow third party origins
+TLS session resumption and HTTP Keep-Alive MUST NOT allow third party origins
 to track users via either TLS session IDs, or the fact that different requests
 arrive on the same TCP connection.
      </para>
      <para><command>Design Goal:</command>
 
-TLS session resumption IDs must be limited to the url bar origin.
+TLS session resumption IDs MUST be limited to the url bar origin.
 HTTP Keep-Alive connections from a third party in one url bar origin must
 not be reused for that same third party in another url bar origin.
 
@@ -941,26 +942,33 @@ disable</ulink> TLS session resumption, and limit HTTP Keep-alive duration.
      </para>
     </listitem>
 
-    <listitem>User Confirmation for cross-domain redirects
-    <para>
-
-    <!--
-
-XXX: Cross-domain redirects should prompt.
-https://trac.torproject.org/projects/tor/ticket/3600
-
-XXX:
-
-Not concerned with explicit user interaction because it is assumed that
-private browsing sessions will be relatively short-lived with frequent use of
-the "New Identity" button.
-
--->
-    </para>
+    <listitem>User confirmation for cross-origin redirects
     <para><command>Design Goal:</command>
+
+To prevent attacks aimed at subverting the Cross-Origin Identifier
+Unlinkability <link linkend="privacy">privacy requirement</link>, the browser
+MUST prompt users before following redirects that would cause the user to
+automatically navigate between two different url bar origins.
+
     </para>
-    <para><command>Implementation Status:</command>
+    <para><command>Implementation status:</command>
+
+There are numerous ways for the user to be redirected, and the Firefox API
+suport to detect each of them is poor. We have a <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3600">trac bug
+open</ulink> to implement what we can.
+
     </para>
+     <para>
+
+We are not concerned with linkability due to explicit user action (either by
+accepting cross-origin redirects, or by clicking normal links) because it is
+assumed that private browsing sessions will be relatively short-lived,
+especially with frequent use of the <link linkend="new-identity">New
+Identity</link> button.
+
+    </para>
+    </listitem>
      <listitem>window.name
      <para>
 
@@ -1003,7 +1011,7 @@ functionality.
    </orderedlist>
   </sect2>
   <sect2 id="fingerprinting-linkability">
-   <title>Cross-Domain Fingerprinting Unlinkability</title>
+   <title>Cross-Origin Fingerprinting Unlinkability</title>
    <para>
 
 In order to properly address the fingerprinting adversary on a technical
@@ -1046,7 +1054,7 @@ window.navigator.plugins, as well as their internal functionality.
      </para>
      <para><command>Design Goal:</command>
 
-All plugins that have not been specifically audited or sandboxed must be
+All plugins that have not been specifically audited or sandboxed MUST be
 disabled. To reduce linkability potential, even sandboxed plugins should not
 be allowed to load objects until the user has clicked through a click-to-play
 barrier.  Additionally, version information should be reduced or obfuscated
@@ -1095,7 +1103,7 @@ implemented any defense against CSS or Javascript fonts.
     <listitem>User Agent and HTTP Headers
      <para><command>Design Goal:</command>
 
-All Tor Browser users should provide websites with an identical user agent and
+All Tor Browser users MUST provide websites with an identical user agent and
 HTTP header set for a given request type. We omit the Firefox minor revision,
 and report a popular Windows platform. If the software is kept up to date,
 these headers should remain identical across the population even when updated.
@@ -1149,13 +1157,13 @@ to be dealt with</ulink>.
     <listitem>Timezone and clock offset
      <para><command>Design Goal:</command>
 
-All Tor Browser users should report the same timezone to websites. Currently,
-we choose UTC for this purpose, although an equally valid argument could be
-made for EDT/EST due to the large English-speaking population density.
-Additionally, the Tor software should detect if the users clock is
-significantly divergent from the clocks of the relays that it connects to, and
-use this to reset the clock values used in Tor Browser to something reasonably
-accurate.
+All Tor Browser users MUST report the same timezone to websites. Currently, we
+choose UTC for this purpose, although an equally valid argument could be made
+for EDT/EST due to the large English-speaking population density (coupled with
+the fact that we spoof a US English user agent).  Additionally, the Tor
+software should detect if the users clock is significantly divergent from the
+clocks of the relays that it connects to, and use this to reset the clock
+values used in Tor Browser to something reasonably accurate.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1259,7 +1267,7 @@ menu option in Torbutton.
     <title>Design Goal:</title>
     <blockquote>
 
-All linkable identifiers and browser state should be cleared by this feature.
+All linkable identifiers and browser state MUST be cleared by this feature.
 
     </blockquote>
    </sect3>
