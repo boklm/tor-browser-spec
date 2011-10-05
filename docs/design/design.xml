@@ -173,136 +173,119 @@ performed by malicious agents on the Tor network and at national firewalls.
 
     </para>
     <orderedlist>
-     <listitem><command>Inserting Javascript</command>
-     <para>
-If not properly disabled, Javascript event handlers and timers
-can cause the browser to perform network activity after Tor has been disabled,
-thus allowing the adversary to correlate Tor and Non-Tor activity and reveal
-a user's non-Tor IP address. Javascript
-also allows the adversary to execute <ulink
-url="http://whattheinternetknowsaboutyou.com/">history disclosure attacks</ulink>:
-to query the history via the different attributes of 'visited' links to search
-for particular Google queries, sites, or even to <ulink
-url="http://www.mikeonads.com/2008/07/13/using-your-browser-url-history-estimate-gender/">profile
-users based on gender and other classifications</ulink>. Finally,
-Javascript can be used to query the user's timezone via the
-<function>Date()</function> object, and to reduce the anonymity set by querying
-the <function>navigator</function> object for operating system, CPU, locale, 
-and user agent information.
-     </para>
-     </listitem>
-
-     <listitem><command>Inserting Plugins</command>
+     <listitem><command>Read and insert identifiers</command>
      <para>
 
-Plugins are abysmal at obeying the proxy settings of the browser. Every plugin
-capable of performing network activity that the author has
-investigated is also capable of performing network activity independent of
-browser proxy settings - and often independent of its own proxy settings.
-Sites that have plugin content don't even have to be malicious to obtain a
-user's
-Non-Tor IP (it usually leaks by itself), though <ulink
-url="http://decloak.net">plenty of active
-exploits</ulink> are possible as well. In addition, plugins can be used to store unique identifiers that are more
-difficult to clear than standard cookies. 
-<ulink url="http://epic.org/privacy/cookies/flash.html">Flash-based
-cookies</ulink> fall into this category, but there are likely numerous other
-examples.
+The browser contains multiple facilities for storing identifiers that the
+adversary creates for the purposes of tracking users. These identifiers are
+most obviously cookies, but also include HTTP auth, DOM storage, cached
+scripts and other elements with embedded identifiers, client certificates, and
+even TLS Session IDs.
 
      </para>
-     </listitem>
-     <listitem><command>Inserting CSS</command>
-     <para>
-
-CSS can also be used to correlate Tor and Non-Tor activity and reveal a user's
-Non-Tor IP address, via the usage of
-<ulink url="http://www.tjkdesign.com/articles/css%20pop%20ups/">CSS
-popups</ulink> - essentially CSS-based event handlers that fetch content via
-CSS's onmouseover attribute. If these popups are allowed to perform network
-activity in a different Tor state than they were loaded in, they can easily
-correlate Tor and Non-Tor activity and reveal a user's IP address. In
-addition, CSS can also be used without Javascript to perform <ulink
-url="http://ha.ckers.org/weird/CSS-history.cgi">CSS-only history disclosure
-attacks</ulink>.
-     </para>
-     </listitem>
-     <!-- XXX: Generalize to just identifiers -->
-     <listitem><command>Read and insert cookies</command>
      <para>
 
 An adversary in a position to perform MITM content alteration can inject
 document content elements to both read and inject cookies for arbitrary
-domains. In fact, many "SSL secured" websites are vulnerable to this sort of
+domains. In fact, even many "SSL secured" websites are vulnerable to this sort of
 <ulink url="http://seclists.org/bugtraq/2007/Aug/0070.html">active
 sidejacking</ulink>. In addition, the ad networks of course perform tracking
 with cookies as well.
 
      </para>
      </listitem>
-     <listitem><command>Create arbitrary cached content</command>
-     <para>
-
-Likewise, the browser cache can also be used to <ulink
-url="http://crypto.stanford.edu/sameorigin/safecachetest.html">store unique
-identifiers</ulink>. Since by default the cache has no same-origin policy,
-these identifiers can be read by any domain, making them an ideal target for
-ad network-class adversaries.
-
-     </para>
-     </listitem>
-
      <listitem id="fingerprinting"><command>Fingerprint users based on browser
 attributes</command>
 <para>
 
 There is an absurd amount of information available to websites via attributes
 of the browser. This information can be used to reduce anonymity set, or even
-<ulink url="http://mandark.fr/0x000000/articles/Total_Recall_On_Firefox..html">uniquely
-fingerprint individual users</ulink>. </para>
+uniquely fingerprint individual users. Fingerprinting is an intimidating
+problem to attempt to tackle, especially without a metric to determine or at
+least intuitively understand and estimate which features will most contribute
+to linkability between visits.
 
-<!-- 
-<para>
-For illustration, let's perform a
-back-of-the-envelope calculation on the number of anonymity sets for just the
-resolution information available in the <ulink
-url="http://developer.mozilla.org/en/docs/DOM:window">window</ulink> and
-<ulink
-url="http://developer.mozilla.org/en/docs/DOM:window.screen">window.screen</ulink>
-objects.
+</para>
 
-
-Browser window resolution information provides something like
-(1280-640)*(1024-480)=348160 different anonymity sets. Desktop resolution
-information contributes about another factor of 5 (for about 5 resolutions in
-typical use). In addition, the dimensions and position of the desktop taskbar
-are available, which can reveal hints on OS information. This boosts the count
-by a factor of 5 (for each of the major desktop taskbars - Windows, OSX, KDE
-and Gnome, and None). Subtracting the browser content window
-size from the browser outer window size provide yet more information.
-Firefox toolbar presence gives about a factor of 8 (3 toolbars on/off give
-2<superscript>3</superscript>=8). Interface effects such as title bar font size
-and window manager settings gives a factor of about 9 (say 3 common font sizes
-for the title bar and 3 common sizes for browser GUI element fonts).
-Multiply this all out, and you have (1280-640)*(1024-480)*5*5*8*9 ~=
-2<superscript>29</superscript>, or a 29 bit identifier based on resolution
-information alone. </para>
--->
 <para>
 
-The <ulink
-url="https://wiki.mozilla.org/Fingerprinting#Data">Panopticlick study
-done</ulink> by the EFF attempts to measure the actual entropy - the number of
-identifying bits of information encoded in browser properties.  Their result
-data is definitely useful, and the metric is probably the appropriate one for
+The <ulink url="https://panopticlick.eff.org/about.php">Panopticlick study
+done</ulink> by the EFF uses the actual entropy - the number of identifying
+bits of information encoded in browser properties - as this metric. Their
+<ulink url="https://wiki.mozilla.org/Fingerprinting#Data">result data</ulink>
+is definitely useful, and the metric is probably the appropriate one for
 determining how identifying a particular browser property is. However, some
 quirks of their study means that they do not extract as much information as
 they could from display information: they only use desktop resolution (which
 Torbutton reports as the window resolution) and do not attempt to infer the
-size of toolbars.
+size of toolbars. In the other direction, they may be overcounting in some
+areas, as they did not compute joint entropy over multiple attributes that may
+exhibit a high degree of correlation. Also, new browser features are added
+regularly, so the data should not be taken as final.
 
-<!-- XXX: Also, new browser features are added regularly. -->
+      </para>
+     <para>
 
-</para>
+Despite the uncertainty, all fingerprinting attacks leverage the following
+attack vectors:
+
+     </para>
+     <orderedlist>
+     <listitem><command>Observing Request Behavior</command>
+     <para>
+
+Properties of the user's request behavior comprise the bulk of low-hanging
+fingerprintig targets. These include: User agent, Accept-* headers, pipeline
+useage, and request ordering. Additionally, the use of custom filters such as
+AdBlock and other privacy filters can be used to fingerprint request patterns
+(as an extreme example).
+
+     </para>
+     </listitem>
+
+     <listitem><command>Inserting Javascript</command>
+     <para>
+
+Javascript can reveal a lot of fingerprinting information. It provides DOM
+objects, just as window.screen and window.navigator to extract information
+about the useragent. Also, Javascript can be used to query the user's timezone
+via the <function>Date()</function> object, and to use timing information to
+<ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU
+and interpreter speed</ulink>.
+
+<!-- FIXME: resource-timing stuff?  -->
+
+     </para>
+     </listitem>
+
+     <listitem><command>Inserting Plugins</command>
+     <para>
+
+The Panopticlick project found that the mere list of installed plugins (in
+navigator.plugins) was sufficient to provide a large degree of
+fingerprintability. Additionally, plugins are capable of extracing font lists,
+interface addresses, and other machine information that is beyond what the
+browser would normally provide to content. In addition, plugins can be used to
+store unique identifiers that are more difficult to clear than standard
+cookies.  <ulink url="http://epic.org/privacy/cookies/flash.html">Flash-based
+cookies</ulink> fall into this category, but there are likely numerous other
+examples. Beyond fingerprinting, plugins are also abysmal at obeying the proxy
+settings of the browser. 
+
+
+     </para>
+     </listitem>
+     <listitem><command>Inserting CSS</command>
+     <para>
+
+<ulink url="https://developer.mozilla.org/En/CSS/Media_queries">CSS media
+queries</ulink> can be inserted to gather information about the desktop size,
+widget size, display type, DPI, user agent type, and other information that
+was formerly available only to Javascript.
+
+     </para>
+     </listitem>
+     </orderedlist>
      </listitem>
      <listitem><command>Remotely or locally exploit browser and/or
 OS</command>
@@ -659,8 +642,9 @@ SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
 </listitem>
 
  <listitem>Disabling plugins
- <para>
-  Plugins have the ability to make arbitrary OS system calls. This includes
+
+ <para>Plugins have the ability to make arbitrary OS system calls and  <ulink
+url="http://decloak.net/">bypass proxy settings</ulink>. This includes
 the ability to make UDP sockets and send arbitrary data independent of the
 browser proxy settings.
  </para>
@@ -676,6 +660,13 @@ In addition, to prevent any unproxied activity by plugins at load time, we
 also patch the Firefox source code to <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0007-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
 for Flash and Gnash</ulink>.
+
+ </para>
+ <para>
+
+Finally, even if the user alters their browser settings to re-enable the Flash
+plugin, we have configured NoScript to provide click-to-play placeholders, so
+that only desired objects will be loaded, and only after user confirmation.
 
  </para>
  </listitem>
