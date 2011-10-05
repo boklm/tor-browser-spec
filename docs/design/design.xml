@@ -912,6 +912,25 @@ origin, we entirely disable DOM storage as a stopgap to ensure unlinkability.
 
      </para>
      </listitem>
+    <listitem>Flash cookies
+     <para><command>Design Goal:</command>
+
+Users should be able to click-to-play flash objects from trusted sites. To
+make this behavior unlinkable, we wish to include a settings file for all platforms that disables flash
+cookies using the <ulink
+url="http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager03.html">Flash
+settings manager</ulink>.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+We are currently <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3974">having
+difficulties</ulink> causing Flash player to use this settings
+file on Windows.
+
+     </para>
+    </listitem>
     <listitem>TLS session resumption and HTTP Keep-Alive
      <para>
 TLS session resumption and HTTP Keep-Alive MUST NOT allow third party origins
@@ -932,7 +951,6 @@ disable</ulink> TLS session resumption, and limit HTTP Keep-alive duration.
 
      </para>
     </listitem>
-
     <listitem>User confirmation for cross-origin redirects
     <para><command>Design Goal:</command>
 
