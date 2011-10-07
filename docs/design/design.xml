@@ -131,12 +131,12 @@ upstream of exit nodes. Both of these scenarios have been observed in the
 wild.
      </para>
      </listitem>
-     <listitem><command>Adservers and/or Malicious Websites</command>
+     <listitem><command>Ad servers and/or Malicious Websites</command>
      <para>
 The adversary can also run websites, or more likely, they can contract out
-ad space from a number of different adservers and inject content that way. For
-some users, the adversary may be the adservers themselves. It is not
-inconceivable that adservers may try to subvert or reduce a user's anonymity 
+ad space from a number of different ad servers and inject content that way. For
+some users, the adversary may be the ad servers themselves. It is not
+inconceivable that ad servers may try to subvert or reduce a user's anonymity 
 through Tor for marketing purposes.
      </para>
      </listitem>
@@ -167,7 +167,7 @@ The adversary can perform the following attacks from a number of different
 positions to accomplish various aspects of their goals. It should be noted
 that many of these attacks (especially those involving IP address leakage) are
 often performed by accident by websites that simply have Javascript, dynamic 
-CSS elements, and plugins. Others are performed by adservers seeking to
+CSS elements, and plugins. Others are performed by ad servers seeking to
 correlate users' activity across different IP addresses, and still others are
 performed by malicious agents on the Tor network and at national firewalls.
 
@@ -331,7 +331,8 @@ adversary.
   <para>
 
 The Tor Browser Design Requirements are meant to describe the properties of a
-Private Browsing Mode that defends against both network and forensic adversaries. 
+Private Browsing Mode that defends against both network and local forensic
+adversaries. 
 
   </para>
   <para>
@@ -392,7 +393,6 @@ duration of one browsing session, unless the user has explicitly opted to
 store their browsing history information to disk.
 
 </para></listitem>
-
  <listitem><command>Application Data Isolation</command><para>
 
 The components involved in providing private browsing MUST BE self-contained,
@@ -402,7 +402,9 @@ operating system to write <emphasis>any information</emphasis> about the use
 of private browsing to disk outside of the application's control. The user
 must be able to ensure that secure removal of the software is sufficient to
 remove evidence of the use of the software. All exceptions and shortcomings
-due to operating system behavior MUST BE wiped by an uninstaller.
+due to operating system behavior MUST BE wiped by an uninstaller. However, due
+to permissions issues with access to swap, implementations MAY choose to leave
+it out of scope, and/or leave it to the user to implement encrypted swap.
 
 </para></listitem>
  <listitem><command>Update Safety</command><para>The browser SHOULD NOT perform unsafe updates or upgrades.</para></listitem>
@@ -437,10 +439,12 @@ to be the entire fully qualified domain name
   <para>
 
 User activity on one url bar origin MUST NOT be linkable to their activity in
-any other url bar origin by any third party. This property specifically applies to
-linkability from stored browser identifiers, authentication tokens, and shared
-state. This functionality SHOULD NOT interfere with federated login in a
-substantial way.
+any other url bar origin by any third party automatically or without user
+interaction or approval. This requirement specifically applies to linkability
+from stored browser identifiers, authentication tokens, and shared state. The
+requirement does not apply to linkable information the user manually submits
+to sites, or due information submitted during manual link traversal. This
+functionality SHOULD NOT interfere with federated login in a substantial way.
 
   </para>
  </listitem>
@@ -796,6 +800,7 @@ context-menu option to drill down into specific types of state or permissions.
 An example of this simplification can be seen in Figure 1.
 
    </para>
+   <!-- XXX-pde: "Wtf are those protect buttons??" -->
    <figure><title>Improving the Privacy UI</title>
     <mediaobject>
       <imageobject>
@@ -959,13 +964,18 @@ Unlinkability <link linkend="privacy">privacy requirement</link>, the browser
 MUST prompt users before following redirects that would cause the user to
 automatically navigate between two different url bar origins.
 
-    </para>
-    <para><command>Implementation status:</command>
+</para>
+<para>
 
-There are numerous ways for the user to be redirected, and the Firefox API
-support to detect each of them is poor. We have a <ulink
-url="https://trac.torproject.org/projects/tor/ticket/3600">trac bug
-open</ulink> to implement what we can.
+However, to
+reduce the occurrence of warning fatigue, these warning messages MAY be limited
+to automated redirect cycles only. For example, the automated redirect
+sequence <command>User Click -> t.co -> bit.ly -> cnn.com</command> can be
+assumed to be benign, but the redirect sequence <command>User Click -> t.co ->
+bit.ly -> cnn.com -> 2o7.net -> scorecardresearch.net -> cnn.com</command> is
+clearly due to tracking. Non-automated redirect cycles that require
+user input at some step (such as federated login systems) need not be
+interrupted by the UI.
 
     </para>
      <para>
@@ -975,6 +985,14 @@ accepting cross-origin redirects, or by clicking normal links) because it is
 assumed that private browsing sessions will be relatively short-lived,
 especially with frequent use of the <link linkend="new-identity">New
 Identity</link> button.
+
+    </para>
+    <para><command>Implementation status:</command>
+
+There are numerous ways for the user to be redirected, and the Firefox API
+support to detect each of them is poor. We have a <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3600">trac bug
+open</ulink> to implement what we can.
 
     </para>
     </listitem>
@@ -999,6 +1017,43 @@ enters a new URL or navigates between https/http schemes, the property is cleare
 
      </para>
     </listitem>
+    <listitem>Auto form-fill
+     <para>
+
+We disable the password saving functionality in the browser as part of our
+<link linkend="disk-avoidance">Disk Avoidance</link> requirement. However,
+since users may decide to re-enable disk history records and password saving,
+we also set the <ulink
+url="http://kb.mozillazine.org/Signon.autofillForms">signon.autofillForms</ulink>
+preference to false to prevent saved values from immediately populating
+fields upon page load. Since Javascript can read these values as soon as they
+appear, setting this preference prevents automatic linkability from stored passwords.
+
+     </para>
+    </listitem>
+     <listitem>HSTS supercookies
+      <para>
+An extreme (but not impossible) attack to mount is the creation of <ulink
+url="https://secure.wikimedia.org/wikipedia/en/wiki/HTTP_Strict_Transport_Security">HSTS</ulink>
+supercookies. Since HSTS effectively stores one bit of information per domain
+name, an adversary in possession of numerous domains can use them to construct
+cookies based on stored HSTS state.
+
+      </para>
+      <para><command>Design Goal:</command>
+
+There appears to be three options for us: 1. Disable HSTS entirely, and rely
+instead on HTTPS-Everywhere. 2. Restrict the number of HSTS-enabled third
+parties allowed per url bar origin. 3. Prevent third parties from storing HSTS
+rules. We have not yet decided upon the best approach.
+
+      </para>
+      <para><command>Implementation Status:</command> Currently, HSTS state is
+cleared by <link linkend="new-identity">New Identity</link>, but we don't
+defend against the creation of these cookies between <command>New
+Identity</command> invocations.
+      </para>
+     </listitem>
     <listitem>Exit node usage
      <para><command>Design Goal:</command>
 
@@ -1094,12 +1149,25 @@ pre-built list to query, a large amount of fingerprintable information may
 still be available.
 
      </para>
+     <para>
+
+The sure-fire way to address font linkability is to ship the browser with a
+font for every language, typeface, and style in use in the world, and to only
+use those fonts at the exclusion of system fonts.  However, this set may be
+impractically large. It is possible that a smaller <ulink
+url="https://secure.wikimedia.org/wikipedia/en/wiki/Unicode_typeface#List_of_Unicode_fonts">common
+subset</ulink> may be found that provides total coverage. However, we believe
+that with strong url bar origin identifier isolation, a simpler approach can reduce the
+number of bits available to the adversary while avoiding the rendering and
+language issues of supporting a global font set.
+
+     </para>
      <para><command>Design Goal:</command>
 
-To address the Javascript issue, we intend to <ulink
+We intend to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/2872">limit the number of
-fonts</ulink> an origin can load, gracefully degrading to built-in and/or
-remote fonts once the limit is reached.
+fonts</ulink> a url bar origin can load, gracefully degrading to built-in
+and/or remote fonts once the limit is reached.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1207,7 +1275,7 @@ url="http://w2spconf.com/2011/papers/jspriv.pdf">Mowery et al</ulink> found that
 even with the default precision in most browsers, they required up to 120
 seconds of amortization and repeated trials to get stable results from their
 feature set. We intend to work with the research community to establish the
-optimum tradeoff between quantization+jitter and amortization time.
+optimum trade-off between quantization+jitter and amortization time.
 
 
      </para>
@@ -1284,17 +1352,19 @@ All linkable identifiers and browser state MUST be cleared by this feature.
    <sect3>
     <title>Implementation Status:</title>
     <blockquote>
-   First, Torbutton disables
-all open tabs and windows via nsIContentPolicy blocking, and then closes each
-tab and window. The extra step for blocking tabs is done as a precaution to
-ensure that any asynchronous Javascript is in fact properly disabled. After
-closing all of the windows, we then clear the following state: OCSP (by
-toggling security.OCSP.enabled), cache, site-specific zoom and content
-preferences, Cookies, DOM storage, safe browsing key, the Google wifi
-geolocation token (if exists), HTTP auth, SSL Session IDs, and the last opened URL
-field (via the pref general.open_location.last_url). After clearing the
-browser state, we then send the NEWNYM signal to the Tor control port to cause
-a new circuit to be created.
+
+   First, Torbutton disables all open tabs and windows via nsIContentPolicy
+blocking, and then closes each tab and window. The extra step for blocking
+tabs is done as a precaution to ensure that any asynchronous Javascript is in
+fact properly disabled. After closing all of the windows, we then clear the
+following state: OCSP (by toggling security.OCSP.enabled), cache,
+site-specific zoom and content preferences, Cookies, DOM storage, safe
+browsing key, the Google wifi geolocation token (if exists), HTTP auth, SSL
+Session IDs, HSTS state, and the last opened URL field (via the pref
+general.open_location.last_url). After clearing the browser state, we then
+send the NEWNYM signal to the Tor control port to cause a new circuit to be
+created.
+
     </blockquote>
    </sect3>
 
@@ -1344,7 +1414,9 @@ Firebox version, but not much else.
 
 This patch exposes a pref 'permissions.memory_only' that properly isolates the
 permissions manager to memory, which is responsible for all user specified
-site permissions, as well as stored HTTPS STS policy from visited sites.
+site permissions, as well as stored <ulink
+url="https://secure.wikimedia.org/wikipedia/en/wiki/HTTP_Strict_Transport_Security">HSTS</ulink>
+policy from visited sites.
 
 The pref does successfully clear the permissions manager memory if toggled. It
 does not need to be set in prefs.js, and can be handled by Torbutton.
