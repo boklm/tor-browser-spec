@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>Oct 6 2011</pubdate>
+   <pubdate>Oct 7 2011</pubdate>
  </articleinfo>
 
 <!--
@@ -403,14 +403,14 @@ store their browsing history information to disk.
 </para></listitem>
  <listitem><command>Application Data Isolation</command><para>
 
-The components involved in providing private browsing MUST BE self-contained,
+The components involved in providing private browsing MUST be self-contained,
 or MUST provide a mechanism for rapid, complete removal of all evidence of the
 use of the mode. In other words, the browser MUST NOT write or cause the
 operating system to write <emphasis>any information</emphasis> about the use
 of private browsing to disk outside of the application's control. The user
 must be able to ensure that secure removal of the software is sufficient to
 remove evidence of the use of the software. All exceptions and shortcomings
-due to operating system behavior MUST BE wiped by an uninstaller. However, due
+due to operating system behavior MUST be wiped by an uninstaller. However, due
 to permissions issues with access to swap, implementations MAY choose to leave
 it out of scope, and/or leave it to the user to implement encrypted swap.
 
@@ -438,7 +438,7 @@ the descriptions in the <link linkend="Implementation">implementation
 section</link>, a <command>url bar origin</command> means at least the
 second-level DNS name.  For example, for mail.google.com, the origin would be
 google.com. Implementations MAY, at their option, restrict the url bar origin
-to be the entire fully qualified domain name
+to be the entire fully qualified domain name.
 
    </para>
 
@@ -468,7 +468,7 @@ linkability from fingerprinting browser behavior.
  <listitem><command>Long-Term Unlinkability</command> 
   <para>
 
-The browser SHOULD provide an obvious, easy way to remove all of their
+The browser SHOULD provide an obvious, easy way to remove all of its
 authentication tokens and browser state and obtain a fresh identity.
 Additionally, the browser SHOULD clear linkable state by default automatically
 upon browser restart, except at user option.
@@ -535,7 +535,7 @@ Therefore, if plugins are to be enabled in private browsing modes, they must
 be restricted from running automatically on every page (via click-to-play
 placeholders), and/or be sandboxed to restrict the types of system calls they
 can execute. If the user decides to craft an exemption to allow a plugin to be
-used, it MUST ONLY apply to the top level url bar domain, and not to all sites,
+used, it MUST only apply to the top level url bar domain, and not to all sites,
 to reduce linkability.
 
        </para>
@@ -914,7 +914,7 @@ observer to modify it.
     <listitem>DOM Storage
      <para><command>Design Goal:</command>
 
-DOM storage for third party domains MUST BE isolated to the url bar origin,
+DOM storage for third party domains MUST be isolated to the url bar origin,
 to prevent linkability between sites.
 
      </para>
@@ -971,14 +971,16 @@ Identity</link>.
 
 To prevent attacks aimed at subverting the Cross-Origin Identifier
 Unlinkability <link linkend="privacy">privacy requirement</link>, the browser
-MUST prompt users before following redirects that would cause the user to
-automatically navigate between two different url bar origins.
+MUST prompt the user before following redirects that would cause the user to
+automatically navigate between two different url bar origins. The prompt
+SHOULD inform the user about the ability to use <link
+linkend="new-identity">New Identity</link> to clear the linked identifiers
+created by the redirect.
 
 </para>
 <para>
 
-However, to
-reduce the occurrence of warning fatigue, these warning messages MAY be limited
+To reduce the occurrence of warning fatigue, these warning messages MAY be limited
 to automated redirect cycles only. For example, the automated redirect
 sequence <command>User Click -> t.co -> bit.ly -> cnn.com</command> can be
 assumed to be benign, but the redirect sequence <command>User Click -> t.co ->
@@ -1043,9 +1045,10 @@ appear, setting this preference prevents automatic linkability from stored passw
     </listitem>
      <listitem>HSTS supercookies
       <para>
+
 An extreme (but not impossible) attack to mount is the creation of <ulink
-url="https://secure.wikimedia.org/wikipedia/en/wiki/HTTP_Strict_Transport_Security">HSTS</ulink>
-supercookies. Since HSTS effectively stores one bit of information per domain
+url="http://www.leviathansecurity.com/blog/archives/12-The-Double-Edged-Sword-of-HSTS-Persistence-and-Privacy.html">HSTS
+supercookies</ulink>. Since HSTS effectively stores one bit of information per domain
 name, an adversary in possession of numerous domains can use them to construct
 cookies based on stored HSTS state.
 
@@ -1053,9 +1056,10 @@ cookies based on stored HSTS state.
       <para><command>Design Goal:</command>
 
 There appears to be three options for us: 1. Disable HSTS entirely, and rely
-instead on HTTPS-Everywhere. 2. Restrict the number of HSTS-enabled third
-parties allowed per url bar origin. 3. Prevent third parties from storing HSTS
-rules. We have not yet decided upon the best approach.
+instead on HTTPS-Everywhere to crawl and ship rules for HSTS sites. 2.
+Restrict the number of HSTS-enabled third parties allowed per url bar origin.
+3. Prevent third parties from storing HSTS rules. We have not yet decided upon
+the best approach.
 
       </para>
       <para><command>Implementation Status:</command> Currently, HSTS state is
