@@ -247,11 +247,19 @@ AdBlock and other privacy filters can be used to fingerprint request patterns
      <para>
 
 Javascript can reveal a lot of fingerprinting information. It provides DOM
-objects, just as window.screen and window.navigator to extract information
-about the useragent. Also, Javascript can be used to query the user's timezone
-via the <function>Date()</function> object, and to use timing information to
-<ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU
-and interpreter speed</ulink>.
+objects such as window.screen and window.navigator to extract information
+about the useragent. 
+
+Also, Javascript can be used to query the user's timezone via the
+<function>Date()</function> object, <ulink
+url="https://www.khronos.org/registry/webgl/specs/1.0/#5.13">WebGL</ulink> can
+reveal information about the video cart in use, and high precision timing
+information can be used to <ulink
+url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU and
+interpreter speed</ulink>. In the future, new JavaScript features such as
+<ulink url="http://w3c-test.org/webperf/specs/ResourceTiming/">Resource
+Timing</ulink> may leak an unknown amount of network timing related
+information.
 
 <!-- FIXME: resource-timing stuff?  -->
 
@@ -952,7 +960,9 @@ not be reused for that same third party in another url bar origin.
      <para><command>Implementation Status:</command>
 
 We <ulink url="https://trac.torproject.org/projects/tor/ticket/4099">plan to
-disable</ulink> TLS session resumption, and limit HTTP Keep-alive duration. 
+disable</ulink> TLS session resumption, and limit HTTP Keep-alive duration. We
+currently clear TLS Session IDs upon <link linkend="new-identity">New
+Identity</link>.
 
      </para>
     </listitem>
