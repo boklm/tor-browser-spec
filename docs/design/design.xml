@@ -216,12 +216,12 @@ bits of information encoded in browser properties - as this metric. Their
 is definitely useful, and the metric is probably the appropriate one for
 determining how identifying a particular browser property is. However, some
 quirks of their study means that they do not extract as much information as
-they could from display information: they only use desktop resolution (which
-Torbutton reports as the window resolution) and do not attempt to infer the
-size of toolbars. In the other direction, they may be over-counting in some
-areas, as they did not compute joint entropy over multiple attributes that may
-exhibit a high degree of correlation. Also, new browser features are added
-regularly, so the data should not be taken as final.
+they could from display information: they only use desktop resolution and do
+not attempt to infer the size of toolbars. In the other direction, they may be
+over-counting in some areas, as they did not compute joint entropy over
+multiple attributes that may exhibit a high degree of correlation. Also, new
+browser features are added regularly, so the data should not be taken as
+final.
 
       </para>
      <para>
