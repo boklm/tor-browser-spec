@@ -843,7 +843,7 @@ Firefoxes.
 As a stopgap to satisfy our design requirement of unlinkability, we currently
 entirely disable 3rd party cookies by setting
 <command>network.cookie.cookieBehavior</command> to 1. We would prefer that
-third party content continue to function , but we believe the requirement for 
+third party content continue to function, but we believe the requirement for 
 unlinkability trumps that desire.
 
      </para>
