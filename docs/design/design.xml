@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>Oct 7 2011</pubdate>
+   <pubdate>Oct 11 2011</pubdate>
  </articleinfo>
 
 <!--
@@ -650,6 +650,26 @@ Proxy obedience is assured through the following:
 SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
 <command>network.proxy.socks_version</command>, and
 <command>network.proxy.socks_port</command>.
+ </para>
+ <para>
+
+We have verified that these settings properly proxy HTTPS, OCSP, HTTP, FTP,
+gopher (now defunct), DNS, SafeBrowsing Queries, all javascript activity,
+including HTML5 audio and video objects, addon updates, wifi geolocation
+queries, searchbox queries, XPCOM addon HTTPS/HTTP activity, and live bookmark
+updates. We have also verified that IPv6 connections are not attempted,
+through the proxy or otherwise (Tor does not yet support IPv6). We have also
+verified that external protocol helpers, such as smb urls and other custom
+protocol handers are all blocked.
+
+ </para>
+ <para>
+
+Numerous other third parties have also reviewed and <link
+linkend="SingleStateTesting">tested</link> the proxy settings
+and have provided test cases based on their work. See in particular <ulink
+url="http://decloak.net/">decloak.net</ulink>. 
+
  </para>
 </listitem>
 
