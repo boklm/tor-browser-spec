@@ -959,10 +959,14 @@ not be reused for that same third party in another url bar origin.
      </para>
      <para><command>Implementation Status:</command>
 
-We <ulink url="https://trac.torproject.org/projects/tor/ticket/4099">plan to
-disable</ulink> TLS session resumption, and limit HTTP Keep-alive duration. We
-currently clear TLS Session IDs upon <link linkend="new-identity">New
-Identity</link>.
+We currently clear TLS Session IDs upon <link linkend="new-identity">New
+Identity</link>, but we have no origin restriction implementation as of yet.
+We plan to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/4099">disable TLS session
+resumption</ulink>, and limit HTTP Keep-alive duration as stopgaps to limit
+linkability until we can implement <ulink
+url="https://trac.torproject.org/projects/tor/ticket/4100">true origin
+isolation</ulink> (the latter we feel will be fairly tricky).
 
      </para>
     </listitem>
