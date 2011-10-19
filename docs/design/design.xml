@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>Oct 11 2011</pubdate>
+   <pubdate>Oct 19 2011</pubdate>
  </articleinfo>
 
 <!--
@@ -382,18 +382,23 @@ in order for Tor to support the use of a web client platform.
    </para>
 
 <orderedlist> 
- <listitem><command>Proxy Obedience</command> 
+ <listitem><link linkend="proxy-obedience"><command>Proxy
+Obedience</command></link>
  <para>The browser
 MUST NOT bypass Tor proxy settings for any content.</para></listitem>
 
- <listitem><command>State Separation</command> 
+ <listitem><link linkend="state-separation"><command>State
+Separation</command></link>
 
  <para>The browser MUST NOT provide any stored state to the content window
 from other browsers or other browsing modes, including shared state from
 plugins, machine identifiers, and TLS session state.
 </para></listitem>
 
- <listitem><command>Disk Avoidance</command><para>
+ <listitem><link linkend="disk-avoidance"><command>Disk
+Avoidance</command></link>
+
+<para>
 
 The browser MUST NOT write any information that is derived from or that
 reveals browsing activity to the disk, or store it in memory beyond the
@@ -401,7 +406,10 @@ duration of one browsing session, unless the user has explicitly opted to
 store their browsing history information to disk.
 
 </para></listitem>
- <listitem><command>Application Data Isolation</command><para>
+ <listitem><link linkend="app-data-isolation"><command>Application Data
+Isolation</command></link>
+
+<para>
 
 The components involved in providing private browsing MUST be self-contained,
 or MUST provide a mechanism for rapid, complete removal of all evidence of the
@@ -415,8 +423,15 @@ to permissions issues with access to swap, implementations MAY choose to leave
 it out of scope, and/or leave it to the user to implement encrypted swap.
 
 </para></listitem>
- <listitem><command>Update Safety</command><para>The browser SHOULD NOT perform unsafe updates or upgrades.</para></listitem>
+
+<!--
+ <listitem><link linkend="update-safety"><command>Update
+Safety</command></link>
+
+<para>The browser SHOULD NOT perform unsafe updates or upgrades.</para></listitem>
+-->
 </orderedlist>
+
   </sect2>
 
   <sect2 id="privacy">
@@ -443,7 +458,8 @@ to be the entire fully qualified domain name.
    </para>
 
 <orderedlist> 
- <listitem><command>Cross-Origin Identifier Unlinkability</command> 
+ <listitem><link linkend="identifier-linkability"><command>Cross-Origin
+Identifier Unlinkability</command></link> 
   <para>
 
 User activity on one url bar origin MUST NOT be linkable to their activity in
@@ -456,7 +472,8 @@ functionality SHOULD NOT interfere with federated login in a substantial way.
 
   </para>
  </listitem>
- <listitem><command>Cross-Origin Fingerprinting Unlinkability</command> 
+ <listitem><link linkend="fingerprinting-linkability"><command>Cross-Origin
+Fingerprinting Unlinkability</command></link> 
   <para>
 
 User activity on one url bar origin MUST NOT be linkable to their activity in
@@ -465,7 +482,8 @@ linkability from fingerprinting browser behavior.
 
   </para>
  </listitem>
- <listitem><command>Long-Term Unlinkability</command> 
+ <listitem><link linkend="new-identity"><command>Long-Term
+Unlinkability</command></link>
   <para>
 
 The browser SHOULD provide an obvious, easy way to remove all of its
@@ -636,6 +654,23 @@ certain new features (where possible) pending analysis and audit.
 <sect1 id="Implementation">
   <title>Implementation</title>
   <para>
+
+The Implementation section is divided into subsections, each of which
+corresponds to a <link linkend="DesignRequirements">Design Requirement</link>.
+Each subsection is divided into specific web technologies or properties. The
+implementation is then described for that property.
+
+  </para>
+  <para>
+
+In some cases, the implementation meets the design requirements in a non-ideal
+way (for example, by disabling features). In rare cases, there may be no
+implementation at all. Both of these cases are denoted by differentiating
+between the <command>Design Goal</command> and the <command>Implementation
+Status</command> for each property. Corresponding bugs in the <ulink
+url="https://trac.torproject.org/projects/tor/report">Tor bug tracker</ulink>
+are typically linked for these cases.
+
   </para>
   <sect2 id="proxy-obedience">
    <title>Proxy Obedience</title>
