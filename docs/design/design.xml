@@ -1008,8 +1008,8 @@ arrive on the same TCP connection.
      <para><command>Design Goal:</command>
 
 TLS session resumption IDs MUST be limited to the url bar origin.
-HTTP Keep-Alive connections from a third party in one url bar origin must
-not be reused for that same third party in another url bar origin.
+HTTP Keep-Alive connections from a third party in one url bar origin MUST
+NOT be reused for that same third party in another url bar origin.
 
      </para>
      <para><command>Implementation Status:</command>
