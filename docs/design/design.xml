@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>Oct 19 2011</pubdate>
+   <pubdate>Dec 16 2011</pubdate>
  </articleinfo>
 
 <!--
@@ -40,7 +40,7 @@ This document describes the <link linkend="adversary">adversary model</link>,
 <link linkend="Implementation">implementation</link>, <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
 procedures</link> of the Tor Browser. It is
-current as of Tor Browser 2.2.33-3.
+current as of Tor Browser 2.2.35-1 and Torbutton 1.4.5.
 
   </para>
   <para>
@@ -253,7 +253,7 @@ about the useragent.
 Also, Javascript can be used to query the user's timezone via the
 <function>Date()</function> object, <ulink
 url="https://www.khronos.org/registry/webgl/specs/1.0/#5.13">WebGL</ulink> can
-reveal information about the video cart in use, and high precision timing
+reveal information about the video card in use, and high precision timing
 information can be used to <ulink
 url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU and
 interpreter speed</ulink>. In the future, new JavaScript features such as
@@ -746,6 +746,11 @@ component to
 url="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components/external-app-blocker.js">
 provide the user with a popup</ulink> whenever the browser attempts to
 launch a helper app. 
+<!-- FIXME: We should file a bug with Ubuntu about this and link to it -->
+Additionally, due primarily to an issue with Ubuntu Unity, url-based drag and drop is
+filtered by this component. Unity was pre-fetching URLs without using the
+browser's proxy settings during a drag action, even if the drop was ultimately
+canceled by the user.
   </para>
  </listitem>
  </orderedlist>
@@ -995,33 +1000,39 @@ settings manager</ulink>.
 We are currently <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3974">having
 difficulties</ulink> causing Flash player to use this settings
-file on Windows.
+file on Windows, so Flash remains difficult to enable.
 
      </para>
     </listitem>
-    <listitem>TLS session resumption and HTTP Keep-Alive
-     <para>
-TLS session resumption and HTTP Keep-Alive MUST NOT allow third party origins
-to track users via either TLS session IDs, or the fact that different requests
-arrive on the same TCP connection.
-     </para>
+    <listitem>SSL+TLS session resumption and HTTP Keep-Alive
      <para><command>Design Goal:</command>
 
-TLS session resumption IDs MUST be limited to the url bar origin.
-HTTP Keep-Alive connections from a third party in one url bar origin MUST
-NOT be reused for that same third party in another url bar origin.
+TLS session resumption tickets and SSL Session IDs MUST be limited to the url
+bar origin.  HTTP Keep-Alive connections from a third party in one url bar
+origin MUST NOT be reused for that same third party in another url bar origin.
 
      </para>
      <para><command>Implementation Status:</command>
 
-We currently clear TLS Session IDs upon <link linkend="new-identity">New
-Identity</link>, but we have no origin restriction implementation as of yet.
-We plan to <ulink
-url="https://trac.torproject.org/projects/tor/ticket/4099">disable TLS session
-resumption</ulink>, and limit HTTP Keep-alive duration as stopgaps to limit
-linkability until we can implement <ulink
-url="https://trac.torproject.org/projects/tor/ticket/4100">true origin
-isolation</ulink> (the latter we feel will be fairly tricky).
+We currently clear SSL Session IDs upon <link linkend="new-identity">New
+Identity</link>, we disable TLS Session Tickets via the Firefox Pref
+<command>security.enable_tls_session_tickets</command>. We disable SSL Session
+IDs via a <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0010-Disable-SSL-Session-ID-tracking.patch">patch
+to Firefox</ulink>. To compensate for the increased round trip latency from disabling
+these performance optimizations, we also enable
+<ulink url="https://tools.ietf.org/html/draft-bmoeller-tls-falsestart-00">TLS
+False Start</ulink> via the Firefox Pref 
+<command>security.ssl.enable_false_start</command>.
+    </para>
+    <para>
+
+Becuase of the extreme performance benefits of HTTP Keep-Alive for interactive
+web apps, and because of the difficulties of conveying urlbar origin
+information down into the Firefox HTTP layer, as a compromise we currently
+merely reduce the HTTP Keep-Alive timeout to 20 seconds (which is measured
+from the last packet read on the connection) using the Firefox preference
+<command>network.http.keep-alive.timeout</command>.
 
      </para>
     </listitem>
@@ -1034,9 +1045,11 @@ MUST prompt the user before following redirects that would cause the user to
 automatically navigate between two different url bar origins. The prompt
 SHOULD inform the user about the ability to use <link
 linkend="new-identity">New Identity</link> to clear the linked identifiers
-created by the redirect.
+created by the redirect. 
 
 </para>
+XXX: Should redirects be allowed to set cookies? The *redirecting* domain
+probably shouldn't, but the destination domain should.
 <para>
 
 To reduce the occurrence of warning fatigue, these warning messages MAY be limited
@@ -1046,7 +1059,7 @@ assumed to be benign, but the redirect sequence <command>User Click -> t.co ->
 bit.ly -> cnn.com -> 2o7.net -> scorecardresearch.net -> cnn.com</command> is
 clearly due to tracking. Non-automated redirect cycles that require
 user input at some step (such as federated login systems) need not be
-interrupted by the UI.
+interrupted by the UI, and SHOULD still allow identifiers to persist.
 
     </para>
      <para>
@@ -1426,26 +1439,26 @@ All linkable identifiers and browser state MUST be cleared by this feature.
     <title>Implementation Status:</title>
     <blockquote>
 
-   First, Torbutton disables all open tabs and windows via nsIContentPolicy
-blocking, and then closes each tab and window. The extra step for blocking
-tabs is done as a precaution to ensure that any asynchronous Javascript is in
-fact properly disabled. After closing all of the windows, we then clear the
-following state: OCSP (by toggling security.OCSP.enabled), cache,
-site-specific zoom and content preferences, Cookies, DOM storage, safe
-browsing key, the Google wifi geolocation token (if exists), HTTP auth, SSL
-Session IDs, HSTS state, and the last opened URL field (via the pref
-general.open_location.last_url). After clearing the browser state, we then
+First, Torbutton disables all open tabs and windows by tagging them and
+blocking them via the nsIContentPolicy, and then closes each tab and
+window. The extra step for blocking tabs is done as a precaution to ensure
+that any asynchronous Javascript is in fact properly disabled. After closing
+all of the windows, we then clear the following state: OCSP (by toggling
+security.OCSP.enabled), cache, site-specific zoom and content preferences,
+Cookies, DOM storage, safe browsing key, the Google wifi geolocation token (if
+exists), HTTP auth, SSL Session IDs, HSTS state, close all remaining HTTP
+keep-alive connections, and clear the last opened URL field (via the pref
+general.open_location.last_url).  After clearing the browser state, we then
 send the NEWNYM signal to the Tor control port to cause a new circuit to be
 created.
 
     </blockquote>
+    <blockquote>
+Additionally, the user is allowed to "protect" cookies of their choosing from
+deletion during New Identity by using the Torbutton Cookie Protections UI to
+protect the cookies they would like to keep across New Identity invocations.
+    </blockquote>
    </sect3>
-
-<!-- XXX: Missing pieces: 
-          1. DOM Storage? IIRC, it is cleared, but also disabled anyway. 
-          2. Do we kill keep-alive connections properly?
-XXX: Cookie protections..
-  -->
   </sect2>
   <sect2 id="click-to-play">
    <title>Click-to-play for plugins and invasive content</title>
