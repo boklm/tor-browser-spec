@@ -350,7 +350,7 @@ linkend="security">Security Requirements</link>, and <link
 linkend="privacy">Privacy Requirements</link>. Security Requirements are the
 minimum properties in order for a browser to be able to support Tor and
 similar privacy proxies safely. Privacy requirements are the set of properties
-that cause us to prefer one browser platform over another. 
+that cause us to prefer one browser over another. 
 
   </para>
   <para>
@@ -376,8 +376,8 @@ browser distribution.
 The security requirements are primarily concerned with ensuring the safe use
 of Tor. Violations in these properties typically result in serious risk for
 the user in terms of immediate deanonymization and/or observability. With
-respect to platform support, security requirements are the minimum properties
-in order for Tor to support the use of a web client platform.
+respect to browser support, security requirements are the minimum properties
+in order for Tor to support the use of a particular browser.
 
    </para>
 
@@ -416,11 +416,12 @@ or MUST provide a mechanism for rapid, complete removal of all evidence of the
 use of the mode. In other words, the browser MUST NOT write or cause the
 operating system to write <emphasis>any information</emphasis> about the use
 of private browsing to disk outside of the application's control. The user
-must be able to ensure that secure removal of the software is sufficient to
+must be able to ensure that secure deletion of the software is sufficient to
 remove evidence of the use of the software. All exceptions and shortcomings
 due to operating system behavior MUST be wiped by an uninstaller. However, due
 to permissions issues with access to swap, implementations MAY choose to leave
-it out of scope, and/or leave it to the user to implement encrypted swap.
+it out of scope, and/or leave it to the Operating System/platform to implement
+ephemeral-keyed encrypted swap.
 
 </para></listitem>
 
@@ -441,8 +442,8 @@ Safety</command></link>
 The privacy requirements are primarily concerned with reducing linkability:
 the ability for a user's activity on one site to be linked with their activity
 on another site without their knowledge or explicit consent. With respect to
-platform support, privacy requirements are the set of properties that cause us
-to prefer one platform over another. 
+browser support, privacy requirements are the set of properties that cause us
+to prefer one browser over another. 
 
    </para>
 
@@ -467,7 +468,7 @@ any other url bar origin by any third party automatically or without user
 interaction or approval. This requirement specifically applies to linkability
 from stored browser identifiers, authentication tokens, and shared state. The
 requirement does not apply to linkable information the user manually submits
-to sites, or due information submitted during manual link traversal. This
+to sites, or due to information submitted during manual link traversal. This
 functionality SHOULD NOT interfere with federated login in a substantial way.
 
   </para>
@@ -566,7 +567,7 @@ failure of Torbutton</ulink> was (and still is) the options panel. Each option
 that detectably alters browser behavior can be used as a fingerprinting tool.
 Similarly, all extensions <ulink
 url="http://blog.chromium.org/2010/06/extensions-in-incognito.html">SHOULD be
-disabled in the mode</ulink> except as an opt-in basis. We should not load
+disabled in the mode</ulink> except as an opt-in basis. We SHOULD NOT load
 system-wide addons or plugins.
 
      </para>
@@ -591,7 +592,8 @@ permissions can be written to disk. Otherwise, they should remain memory-only.
 
 Filter-based addons such as <ulink
 url="https://addons.mozilla.org/en-US/firefox/addon/adblock-plus/">AdBlock
-Plus</ulink>, <ulink url="">Request Policy</ulink>, <ulink
+Plus</ulink>, <ulink url="http://requestpolicy.com/">Request Policy</ulink>,
+<ulink url="http://www.ghostery.com/about">Ghostery</ulink>, <ulink
 url="http://priv3.icsi.berkeley.edu/">Priv3</ulink>, and <ulink
 url="http://sharemenot.cs.washington.edu/">Sharemenot</ulink> are to be
 avoided. We believe that these addons do not add any real privacy to a proper
@@ -601,8 +603,8 @@ prevented from tracking users between sites by the implementation.
 Filter-based addons can also introduce strange breakage and cause usability
 nightmares, and will also fail to do their job if an adversary simply
 registers a new domain or creates a new url path. Worse still, the unique
-filter sets that each user creates or installs will provide a wealth
-of fingerprinting targets.
+filter sets that each user creates or installs will provide a wealth of
+fingerprinting targets.
 
       </para>
       <para>
@@ -624,7 +626,7 @@ so is not recommended, as it will alter the browser request fingerprint.
 We believe that if we do not stay current with the support of new web
 technologies, we cannot hope to substantially influence or be involved in
 their proper deployment or privacy realization. However, we will likely disable
-certain new features (where possible) pending analysis and audit.
+high-risk features pending analysis, audit, and mitigation.
       </para>
      </listitem>
    </orderedlist>
