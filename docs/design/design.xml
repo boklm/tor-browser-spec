@@ -1296,11 +1296,18 @@ We have implemented the above strategy for Javascript using Torbutton's <ulink
 url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">JavaScript
 hooks</ulink> as well as a window observer to <ulink
 url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l4002">resize
-new windows based on desktop resolution</ulink>. However, CSS Media Queries
-still <ulink url="https://trac.torproject.org/projects/tor/ticket/2875">need
-to be dealt with</ulink>.
+new windows based on desktop resolution</ulink>. Additionally, we patch
+Firefox to cause CSS Media Queries to use the client content window size
+for all desktop size related media queries. <!-- FIXME: link patch --> 
 
      </para>
+     <para>
+
+As far as we know, this fully satisfies our design goals for desktop
+resolution information.
+
+     </para>
+
     </listitem>
     <listitem>Timezone and clock offset
      <para><command>Design Goal:</command>
