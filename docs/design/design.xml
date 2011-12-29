@@ -1233,18 +1233,17 @@ number of bits available to the adversary while avoiding the rendering and
 language issues of supporting a global font set.
 
      </para>
-     <para><command>Design Goal:</command>
-
-We intend to <ulink
-url="https://trac.torproject.org/projects/tor/ticket/2872">limit the number of
-fonts</ulink> a url bar origin can load, gracefully degrading to built-in
-and/or remote fonts once the limit is reached.
-
-     </para>
      <para><command>Implementation Status:</command>
 
-Aside from disabling plugins to prevent enumeration, we have not yet
-implemented any defense against CSS or Javascript fonts.
+We disable plugins, which prevents font enumeration. Additionally, we limit
+both the number of font queries from CSS, as well as the total number of 
+fonts that can be used in a document by patching Firefox. We create two prefs,
+<command>browser.display.max_font_attempts</command> and
+<command>browser.display.max_font_count</command> for this purpose. Once these
+limits are reached, the browser behaves as if
+<command>browser.display.use_document_fonts</command> was reached. We are
+still working to determine optimal values for these prefs. <!-- XXX: Link
+patch and document pref values. -->
 
      </para>
     </listitem>
@@ -1298,7 +1297,7 @@ hooks</ulink> as well as a window observer to <ulink
 url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l4002">resize
 new windows based on desktop resolution</ulink>. Additionally, we patch
 Firefox to cause CSS Media Queries to use the client content window size
-for all desktop size related media queries. <!-- FIXME: link patch --> 
+for all desktop size related media queries. <!-- XXX: link patch --> 
 
      </para>
      <para>
