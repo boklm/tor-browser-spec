@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>Dec 28 2011</pubdate>
+   <pubdate>Dec 30 2012</pubdate>
  </articleinfo>
 
 <!--
@@ -39,8 +39,8 @@ This document describes the <link linkend="adversary">adversary model</link>,
 <link linkend="DesignRequirements">design requirements</link>,
 <link linkend="Implementation">implementation</link>, <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
-procedures</link> of the Tor Browser. It is
-current as of Tor Browser 2.2.35-1 and Torbutton 1.4.5.
+procedures</link> of the Tor Browser. <!-- XXX: It is
+current as of Tor Browser 2.2.35-1 and Torbutton 1.4.5. -->
 
   </para>
   <para>
@@ -51,268 +51,32 @@ against active network adversaries, in addition to the passive forensic local
 adversary currently addressed by the major browsers.
 
   </para>
-  <sect2 id="adversary">
-   <title>Adversary Model</title>
+  <sect2 id="components">
+   <title>Browser Component Overview</title>
    <para>
 
-A Tor web browser adversary has a number of goals, capabilities, and attack
-types that can be used to guide us towards a set of requirements for the
-Tor Browser. Let's start with the goals.
+The Tor Browser is based on <ulink
+url="https://www.mozilla.org/en-US/firefox/organizations/">Mozilla's Extended
+Support Release (ESR) Firefox branch</ulink>. We have a <link
+linkend="firefox-patches">series of patches</link> against this browser to
+enhance privacy and security. Browser behavior is additionally augmented
+through the <ulink
+url="https://gitweb.torproject.org/torbutton.git/tree/master">Torbutton
+extension</ulink>, though we are in the process of moving this
+functionality into direct Firefox patches. We also <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/prefs.js">change
+a number of Firefox preferences</ulink> from their defaults.
 
    </para>
-   <sect3 id="adversarygoals">
-    <title>Adversary Goals</title>
-    <orderedlist>
-<!-- These aren't really commands.. But it's the closest I could find in an
-acceptable style.. Don't really want to make my own stylesheet -->
-     <listitem><command>Bypassing proxy settings</command>
-     <para>The adversary's primary goal is direct compromise and bypass of 
-Tor, causing the user to directly connect to an IP of the adversary's
-choosing.</para>
-     </listitem>
-     <listitem><command>Correlation of Tor vs Non-Tor Activity</command>
-     <para>If direct proxy bypass is not possible, the adversary will likely
-happily settle for the ability to correlate something a user did via Tor with
-their non-Tor activity. This can be done with cookies, cache identifiers,
-javascript events, and even CSS. Sometimes the fact that a user uses Tor may
-be enough for some authorities.</para>
-     </listitem>
-     <listitem><command>History disclosure</command>
-     <para>
-The adversary may also be interested in history disclosure: the ability to
-query a user's history to see if they have issued certain censored search
-queries, or visited censored sites.
-     </para>
-     </listitem>
-     <listitem><command>Location information</command>
-     <para>
+   <para>
 
-Location information such as timezone and locality can be useful for the
-adversary to determine if a user is in fact originating from one of the
-regions they are attempting to control, or to zero-in on the geographical
-location of a particular dissident or whistleblower.
+To help protect against potential Tor Exit Node eavesdroppers, we include
+<ulink url="https://www.eff.org/https-everywhere">HTTPS-Everywhere</ulink>. To
+provide users with optional defense-in-depth against Javascript and other
+potential exploit vectors, we also include <ulink
+url="http://noscript.net/">NoScript</ulink>
 
-     </para>
-     </listitem>
-     <listitem><command>Miscellaneous anonymity set reduction</command>
-     <para>
-
-Anonymity set reduction is also useful in attempting to zero in on a
-particular individual. If the dissident or whistleblower is using a rare build
-of Firefox for an obscure operating system, this can be very useful
-information for tracking them down, or at least <link
-linkend="fingerprinting">tracking their activities</link>.
-
-     </para>
-     </listitem>
-     <listitem><command>History records and other on-disk
-information</command>
-     <para>
-In some cases, the adversary may opt for a heavy-handed approach, such as
-seizing the computers of all Tor users in an area (especially after narrowing
-the field by the above two pieces of information). History records and cache
-data are the primary goals here.
-     </para>
-     </listitem>
-    </orderedlist>
-   </sect3>
-
-   <sect3 id="adversarypositioning">
-    <title>Adversary Capabilities - Positioning</title>
-    <para>
-The adversary can position themselves at a number of different locations in
-order to execute their attacks.
-    </para>
-    <orderedlist>
-     <listitem><command>Exit Node or Upstream Router</command>
-     <para>
-The adversary can run exit nodes, or alternatively, they may control routers
-upstream of exit nodes. Both of these scenarios have been observed in the
-wild.
-     </para>
-     </listitem>
-     <listitem><command>Ad servers and/or Malicious Websites</command>
-     <para>
-The adversary can also run websites, or more likely, they can contract out
-ad space from a number of different ad servers and inject content that way. For
-some users, the adversary may be the ad servers themselves. It is not
-inconceivable that ad servers may try to subvert or reduce a user's anonymity 
-through Tor for marketing purposes.
-     </para>
-     </listitem>
-     <listitem><command>Local Network/ISP/Upstream Router</command>
-     <para>
-The adversary can also inject malicious content at the user's upstream router
-when they have Tor disabled, in an attempt to correlate their Tor and Non-Tor
-activity.
-     </para>
-     </listitem>
-     <listitem><command>Physical Access</command>
-     <para>
-Some users face adversaries with intermittent or constant physical access.
-Users in Internet cafes, for example, face such a threat. In addition, in
-countries where simply using tools like Tor is illegal, users may face
-confiscation of their computer equipment for excessive Tor usage or just
-general suspicion.
-     </para>
-     </listitem>
-    </orderedlist>
-   </sect3>
-
-   <sect3 id="attacks">
-    <title>Adversary Capabilities - Attacks</title>
-    <para>
-
-The adversary can perform the following attacks from a number of different 
-positions to accomplish various aspects of their goals. It should be noted
-that many of these attacks (especially those involving IP address leakage) are
-often performed by accident by websites that simply have Javascript, dynamic 
-CSS elements, and plugins. Others are performed by ad servers seeking to
-correlate users' activity across different IP addresses, and still others are
-performed by malicious agents on the Tor network and at national firewalls.
-
-    </para>
-    <orderedlist>
-     <listitem><command>Read and insert identifiers</command>
-     <para>
-
-The browser contains multiple facilities for storing identifiers that the
-adversary creates for the purposes of tracking users. These identifiers are
-most obviously cookies, but also include HTTP auth, DOM storage, cached
-scripts and other elements with embedded identifiers, client certificates, and
-even TLS Session IDs.
-
-     </para>
-     <para>
-
-An adversary in a position to perform MITM content alteration can inject
-document content elements to both read and inject cookies for arbitrary
-domains. In fact, even many "SSL secured" websites are vulnerable to this sort of
-<ulink url="http://seclists.org/bugtraq/2007/Aug/0070.html">active
-sidejacking</ulink>. In addition, the ad networks of course perform tracking
-with cookies as well.
-
-     </para>
-     </listitem>
-     <listitem id="fingerprinting"><command>Fingerprint users based on browser
-attributes</command>
-<para>
-
-There is an absurd amount of information available to websites via attributes
-of the browser. This information can be used to reduce anonymity set, or even
-uniquely fingerprint individual users. Fingerprinting is an intimidating
-problem to attempt to tackle, especially without a metric to determine or at
-least intuitively understand and estimate which features will most contribute
-to linkability between visits.
-
-</para>
-
-<para>
-
-The <ulink url="https://panopticlick.eff.org/about.php">Panopticlick study
-done</ulink> by the EFF uses the actual entropy - the number of identifying
-bits of information encoded in browser properties - as this metric. Their
-<ulink url="https://wiki.mozilla.org/Fingerprinting#Data">result data</ulink>
-is definitely useful, and the metric is probably the appropriate one for
-determining how identifying a particular browser property is. However, some
-quirks of their study means that they do not extract as much information as
-they could from display information: they only use desktop resolution and do
-not attempt to infer the size of toolbars. In the other direction, they may be
-over-counting in some areas, as they did not compute joint entropy over
-multiple attributes that may exhibit a high degree of correlation. Also, new
-browser features are added regularly, so the data should not be taken as
-final.
-
-      </para>
-     <para>
-
-Despite the uncertainty, all fingerprinting attacks leverage the following
-attack vectors:
-
-     </para>
-     <orderedlist>
-     <listitem><command>Observing Request Behavior</command>
-     <para>
-
-Properties of the user's request behavior comprise the bulk of low-hanging
-fingerprinting targets. These include: User agent, Accept-* headers, pipeline
-usage, and request ordering. Additionally, the use of custom filters such as
-AdBlock and other privacy filters can be used to fingerprint request patterns
-(as an extreme example).
-
-     </para>
-     </listitem>
-
-     <listitem><command>Inserting Javascript</command>
-     <para>
-
-Javascript can reveal a lot of fingerprinting information. It provides DOM
-objects such as window.screen and window.navigator to extract information
-about the useragent. 
-
-Also, Javascript can be used to query the user's timezone via the
-<function>Date()</function> object, <ulink
-url="https://www.khronos.org/registry/webgl/specs/1.0/#5.13">WebGL</ulink> can
-reveal information about the video card in use, and high precision timing
-information can be used to <ulink
-url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU and
-interpreter speed</ulink>. In the future, new JavaScript features such as
-<ulink url="http://w3c-test.org/webperf/specs/ResourceTiming/">Resource
-Timing</ulink> may leak an unknown amount of network timing related
-information.
-
-<!-- FIXME: resource-timing stuff?  -->
-
-     </para>
-     </listitem>
-
-     <listitem><command>Inserting Plugins</command>
-     <para>
-
-The Panopticlick project found that the mere list of installed plugins (in
-navigator.plugins) was sufficient to provide a large degree of
-fingerprintability. Additionally, plugins are capable of extracting font lists,
-interface addresses, and other machine information that is beyond what the
-browser would normally provide to content. In addition, plugins can be used to
-store unique identifiers that are more difficult to clear than standard
-cookies.  <ulink url="http://epic.org/privacy/cookies/flash.html">Flash-based
-cookies</ulink> fall into this category, but there are likely numerous other
-examples. Beyond fingerprinting, plugins are also abysmal at obeying the proxy
-settings of the browser. 
-
-
-     </para>
-     </listitem>
-     <listitem><command>Inserting CSS</command>
-     <para>
-
-<ulink url="https://developer.mozilla.org/En/CSS/Media_queries">CSS media
-queries</ulink> can be inserted to gather information about the desktop size,
-widget size, display type, DPI, user agent type, and other information that
-was formerly available only to Javascript.
-
-     </para>
-     </listitem>
-     </orderedlist>
-     </listitem>
-     <listitem><command>Remotely or locally exploit browser and/or
-OS</command>
-     <para>
-
-Last, but definitely not least, the adversary can exploit either general
-browser vulnerabilities, plugin vulnerabilities, or OS vulnerabilities to
-install malware and surveillance software. An adversary with physical access
-can perform similar actions. Regrettably, this last attack capability is
-outside of our ability to defend against, but it is worth mentioning for
-completeness. <ulink url="http://tails.boum.org/contribute/design/">The Tails
-system</ulink> however can provide some limited defenses against this
-adversary.
-
-     </para>
-     </listitem>
-    </orderedlist>
-   </sect3>
-
+   </para>
   </sect2>
 </sect1>
 
@@ -652,6 +416,269 @@ high-risk features pending analysis, audit, and mitigation.
       - Location + timezone is part of this
   - Patches?
 -->
+  <sect1 id="adversary">
+   <title>Adversary Model</title>
+   <para>
+
+A Tor web browser adversary has a number of goals, capabilities, and attack
+types that can be used to guide us towards a set of requirements for the
+Tor Browser. Let's start with the goals.
+
+   </para>
+   <sect2 id="adversarygoals">
+    <title>Adversary Goals</title>
+    <orderedlist>
+<!-- These aren't really commands.. But it's the closest I could find in an
+acceptable style.. Don't really want to make my own stylesheet -->
+     <listitem><command>Bypassing proxy settings</command>
+     <para>The adversary's primary goal is direct compromise and bypass of 
+Tor, causing the user to directly connect to an IP of the adversary's
+choosing.</para>
+     </listitem>
+     <listitem><command>Correlation of Tor vs Non-Tor Activity</command>
+     <para>If direct proxy bypass is not possible, the adversary will likely
+happily settle for the ability to correlate something a user did via Tor with
+their non-Tor activity. This can be done with cookies, cache identifiers,
+javascript events, and even CSS. Sometimes the fact that a user uses Tor may
+be enough for some authorities.</para>
+     </listitem>
+     <listitem><command>History disclosure</command>
+     <para>
+The adversary may also be interested in history disclosure: the ability to
+query a user's history to see if they have issued certain censored search
+queries, or visited censored sites.
+     </para>
+     </listitem>
+     <listitem><command>Location information</command>
+     <para>
+
+Location information such as timezone and locality can be useful for the
+adversary to determine if a user is in fact originating from one of the
+regions they are attempting to control, or to zero-in on the geographical
+location of a particular dissident or whistleblower.
+
+     </para>
+     </listitem>
+     <listitem><command>Miscellaneous anonymity set reduction</command>
+     <para>
+
+Anonymity set reduction is also useful in attempting to zero in on a
+particular individual. If the dissident or whistleblower is using a rare build
+of Firefox for an obscure operating system, this can be very useful
+information for tracking them down, or at least <link
+linkend="fingerprinting">tracking their activities</link>.
+
+     </para>
+     </listitem>
+     <listitem><command>History records and other on-disk
+information</command>
+     <para>
+In some cases, the adversary may opt for a heavy-handed approach, such as
+seizing the computers of all Tor users in an area (especially after narrowing
+the field by the above two pieces of information). History records and cache
+data are the primary goals here.
+     </para>
+     </listitem>
+    </orderedlist>
+   </sect2>
+
+   <sect2 id="adversarypositioning">
+    <title>Adversary Capabilities - Positioning</title>
+    <para>
+The adversary can position themselves at a number of different locations in
+order to execute their attacks.
+    </para>
+    <orderedlist>
+     <listitem><command>Exit Node or Upstream Router</command>
+     <para>
+The adversary can run exit nodes, or alternatively, they may control routers
+upstream of exit nodes. Both of these scenarios have been observed in the
+wild.
+     </para>
+     </listitem>
+     <listitem><command>Ad servers and/or Malicious Websites</command>
+     <para>
+The adversary can also run websites, or more likely, they can contract out
+ad space from a number of different ad servers and inject content that way. For
+some users, the adversary may be the ad servers themselves. It is not
+inconceivable that ad servers may try to subvert or reduce a user's anonymity 
+through Tor for marketing purposes.
+     </para>
+     </listitem>
+     <listitem><command>Local Network/ISP/Upstream Router</command>
+     <para>
+The adversary can also inject malicious content at the user's upstream router
+when they have Tor disabled, in an attempt to correlate their Tor and Non-Tor
+activity.
+     </para>
+     </listitem>
+     <listitem><command>Physical Access</command>
+     <para>
+Some users face adversaries with intermittent or constant physical access.
+Users in Internet cafes, for example, face such a threat. In addition, in
+countries where simply using tools like Tor is illegal, users may face
+confiscation of their computer equipment for excessive Tor usage or just
+general suspicion.
+     </para>
+     </listitem>
+    </orderedlist>
+   </sect2>
+
+   <sect2 id="attacks">
+    <title>Adversary Capabilities - Attacks</title>
+    <para>
+
+The adversary can perform the following attacks from a number of different 
+positions to accomplish various aspects of their goals. It should be noted
+that many of these attacks (especially those involving IP address leakage) are
+often performed by accident by websites that simply have Javascript, dynamic 
+CSS elements, and plugins. Others are performed by ad servers seeking to
+correlate users' activity across different IP addresses, and still others are
+performed by malicious agents on the Tor network and at national firewalls.
+
+    </para>
+    <orderedlist>
+     <listitem><command>Read and insert identifiers</command>
+     <para>
+
+The browser contains multiple facilities for storing identifiers that the
+adversary creates for the purposes of tracking users. These identifiers are
+most obviously cookies, but also include HTTP auth, DOM storage, cached
+scripts and other elements with embedded identifiers, client certificates, and
+even TLS Session IDs.
+
+     </para>
+     <para>
+
+An adversary in a position to perform MITM content alteration can inject
+document content elements to both read and inject cookies for arbitrary
+domains. In fact, even many "SSL secured" websites are vulnerable to this sort of
+<ulink url="http://seclists.org/bugtraq/2007/Aug/0070.html">active
+sidejacking</ulink>. In addition, the ad networks of course perform tracking
+with cookies as well.
+
+     </para>
+     </listitem>
+     <listitem id="fingerprinting"><command>Fingerprint users based on browser
+attributes</command>
+<para>
+
+There is an absurd amount of information available to websites via attributes
+of the browser. This information can be used to reduce anonymity set, or even
+uniquely fingerprint individual users. Fingerprinting is an intimidating
+problem to attempt to tackle, especially without a metric to determine or at
+least intuitively understand and estimate which features will most contribute
+to linkability between visits.
+
+</para>
+
+<para>
+
+The <ulink url="https://panopticlick.eff.org/about.php">Panopticlick study
+done</ulink> by the EFF uses the actual entropy - the number of identifying
+bits of information encoded in browser properties - as this metric. Their
+<ulink url="https://wiki.mozilla.org/Fingerprinting#Data">result data</ulink>
+is definitely useful, and the metric is probably the appropriate one for
+determining how identifying a particular browser property is. However, some
+quirks of their study means that they do not extract as much information as
+they could from display information: they only use desktop resolution and do
+not attempt to infer the size of toolbars. In the other direction, they may be
+over-counting in some areas, as they did not compute joint entropy over
+multiple attributes that may exhibit a high degree of correlation. Also, new
+browser features are added regularly, so the data should not be taken as
+final.
+
+      </para>
+     <para>
+
+Despite the uncertainty, all fingerprinting attacks leverage the following
+attack vectors:
+
+     </para>
+     <orderedlist>
+     <listitem><command>Observing Request Behavior</command>
+     <para>
+
+Properties of the user's request behavior comprise the bulk of low-hanging
+fingerprinting targets. These include: User agent, Accept-* headers, pipeline
+usage, and request ordering. Additionally, the use of custom filters such as
+AdBlock and other privacy filters can be used to fingerprint request patterns
+(as an extreme example).
+
+     </para>
+     </listitem>
+
+     <listitem><command>Inserting Javascript</command>
+     <para>
+
+Javascript can reveal a lot of fingerprinting information. It provides DOM
+objects such as window.screen and window.navigator to extract information
+about the useragent. 
+
+Also, Javascript can be used to query the user's timezone via the
+<function>Date()</function> object, <ulink
+url="https://www.khronos.org/registry/webgl/specs/1.0/#5.13">WebGL</ulink> can
+reveal information about the video card in use, and high precision timing
+information can be used to <ulink
+url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU and
+interpreter speed</ulink>. In the future, new JavaScript features such as
+<ulink url="http://w3c-test.org/webperf/specs/ResourceTiming/">Resource
+Timing</ulink> may leak an unknown amount of network timing related
+information.
+
+<!-- FIXME: resource-timing stuff?  -->
+
+     </para>
+     </listitem>
+
+     <listitem><command>Inserting Plugins</command>
+     <para>
+
+The Panopticlick project found that the mere list of installed plugins (in
+navigator.plugins) was sufficient to provide a large degree of
+fingerprintability. Additionally, plugins are capable of extracting font lists,
+interface addresses, and other machine information that is beyond what the
+browser would normally provide to content. In addition, plugins can be used to
+store unique identifiers that are more difficult to clear than standard
+cookies.  <ulink url="http://epic.org/privacy/cookies/flash.html">Flash-based
+cookies</ulink> fall into this category, but there are likely numerous other
+examples. Beyond fingerprinting, plugins are also abysmal at obeying the proxy
+settings of the browser. 
+
+
+     </para>
+     </listitem>
+     <listitem><command>Inserting CSS</command>
+     <para>
+
+<ulink url="https://developer.mozilla.org/En/CSS/Media_queries">CSS media
+queries</ulink> can be inserted to gather information about the desktop size,
+widget size, display type, DPI, user agent type, and other information that
+was formerly available only to Javascript.
+
+     </para>
+     </listitem>
+     </orderedlist>
+     </listitem>
+     <listitem><command>Remotely or locally exploit browser and/or
+OS</command>
+     <para>
+
+Last, but definitely not least, the adversary can exploit either general
+browser vulnerabilities, plugin vulnerabilities, or OS vulnerabilities to
+install malware and surveillance software. An adversary with physical access
+can perform similar actions. Regrettably, this last attack capability is
+outside of our ability to defend against, but it is worth mentioning for
+completeness. <ulink url="http://tails.boum.org/contribute/design/">The Tails
+system</ulink> however can provide some limited defenses against this
+adversary.
+
+     </para>
+     </listitem>
+    </orderedlist>
+   </sect2>
+
+</sect1>
 
 <sect1 id="Implementation">
   <title>Implementation</title>
@@ -789,35 +816,53 @@ using several Firefox preferences.
 
 The set of prefs is:
 <command>dom.storage.enabled</command>,
-<command>browser.cache.memory.enable</command>,
 <command>network.http.use-cache</command>,
 <command>browser.cache.disk.enable</command>,
+<command>browser.cache.disk.capacity</command>,
 <command>browser.cache.offline.enable</command>,
 <command>general.open_location.last_url</command>,
 <command>places.history.enabled</command>,
 <command>browser.formfill.enable</command>,
 <command>signon.rememberSignons</command>,
 <command>browser.download.manager.retention</command>,
+<command>dom.indexedDB.enabled</command>,
 and <command>network.cookie.lifetimePolicy</command>.
     </blockquote>
    </sect3>
     <para>
+
+Torbutton also <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/components/tbSessionStore.js">contains
+code</ulink> to prevent the Firefox session store from writing to disk.
+
+    </para>
+    <para>
 In addition, three Firefox patches are needed to prevent disk writes, even if
 Private Browsing Mode is enabled. We need to
 
+<!-- XXX: Firefox 17 will mess up all these patch links -->
 <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0002-Make-Permissions-Manager-memory-only.patch">prevent
 the permissions manager from recording HTTPS STS state</ulink>,
 <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0003-Make-Intermediate-Cert-Store-memory-only.patch">prevent
-intermediate SSL certificates from being recorded</ulink>, and
+intermediate SSL certificates from being recorded</ulink>,
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0008-Make-content-pref-service-memory-only-clearable.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0013-Make-Download-manager-memory-only.patch">prevent
+download history from being recorded</ulink>, and
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">prevent
 the content preferences service from recording site zoom</ulink>.
+
+<!-- XXX: DOM Storage patch, too. -->
 
 For more details on these patches, <link linkend="firefox-patches">see the
 Firefox Patches section</link>.
 
+   </para>
+   <para>
+For more details on disk leak bugs and enhancements, see the <ulink
+url="https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=owner&col=type&col=status&col=priority&keywords=~tbb-disk-leak">tbb-disk-leak tag in our bugtracker</ulink>
    </para>
   </sect2>
   <sect2 id="app-data-isolation">

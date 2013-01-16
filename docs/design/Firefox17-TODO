@@ -1,0 +1,54 @@
+- Cleanups
+  + We specify browser.cache.memory.enable under disk avoidance. That's
+    wrong. We don't even set it at all. Torbutton relic?
+  + Disk leak documentation
+  - Firefox 17 will mess up all patch links
+ 
+- Heavy Writing by section
+  + Intro:
+    + We target Firefox ESR
+  - Adversary Goals
+    - Describe how each adversary attack violates design goals
+    - "Correlate activity across multiple site visits" as one of the adversary
+      goals. This is the primary goal of the ad networks, though. We need to
+      explicitly mention it in the Adversary Goals section for completeness.
+  - Misc implementation
+    - document the environment variables and settings used to provide a non-grey "New Identity" button.
+    - Link to prefs.js
+    - Mockup privacy UI
+  - Identifier Linkability 
+    - 3.5.8 is not clear that what we're trying to limit is non-click
+      driven/non-interactive linkability rather than linkability in all cases.
+      Other sections may have this problem, too.
+      - This is a subtlety that arises from both the impossibility of satisfying
+        unlinkability due to covert channels in GET/POST, as well as the desire
+        to avoid breaking thinks like consensual federated login.
+    - He reminded me about documenting disabling IndexedDB, but that is just one
+      of the many prefs.js changes we need to document.
+    - We should only preserve window.name if the url bar domain remains the
+      same. I could be convinced of this, but it's going to be trickier to
+      implement and I think it's not really possible to remove linkability for user
+      clicks in general.
+  - Fingerprinting
+    - describe our resolution defenses
+    - Explain why panopticlick is weirdsauce
+    - provide an entropy count estimate for fingerprinting defenses
+    - We should perhaps be more vocal about the fingerprinting issues with
+      some or all of  http://www.w3.org/TR/navigation-timing/. I think I agree.
+  - Deprecation List/Future Philosophy:
+    - Linkability Transparency from
+      https://trac.torproject.org/projects/tor/ticket/5273#comment:12
+    - Referer Header
+    - Window.name
+
+- List links to design violations/enhancements:
+  - https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability
+  - https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting
+
+- Tests
+  - Sync with QA pages
+  - Many are out of date
+  - http://www.stayinvisible.com/
+  - Evercookie test page, and perhaps also
+    http://jeremiahgrossman.blogspot.de/2007/04/tracking-users-without-cookies.html
+
