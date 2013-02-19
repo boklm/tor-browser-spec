@@ -747,14 +747,19 @@ browser proxy settings.
  <para>
 Torbutton disables plugins by using the
 <command>@mozilla.org/plugin/host;1</command> service to mark the plugin tags
-as disabled. Additionally, we set
-<command>plugin.disable_full_page_plugin_for_types</command> to the list of
-supported mime types for all currently installed plugins.
- </para> 
+as disabled. This block can be undone through both the Torbutton Security UI,
+and the Firefox Plugin Preferences.
+ </para>
  <para>
-In addition, to prevent any unproxied activity by plugins at load time, we
+If the user does enable plugins in this way, plugin-handled objects are still
+restricted from automatic load through Firefox's click-to-play preference
+<command>plugins.click_to_play</command>.
+ </para>
+ <para>
+In addition, to reduce any unproxied activity by arbitrary plugins at load
+time, and to reduce the fingerprintability of the installed plugin list, we
 also patch the Firefox source code to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0007-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0005-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
 for Flash and Gnash</ulink>.
 
  </para>
@@ -842,16 +847,16 @@ Private Browsing Mode is enabled. We need to
 
 <!-- XXX: Firefox 17 will mess up all these patch links -->
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0002-Make-Permissions-Manager-memory-only.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0002-Make-Permissions-Manager-memory-only.patch">prevent
 the permissions manager from recording HTTPS STS state</ulink>,
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0003-Make-Intermediate-Cert-Store-memory-only.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0003-Make-Intermediate-Cert-Store-memory-only.patch">prevent
 intermediate SSL certificates from being recorded</ulink>,
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0013-Make-Download-manager-memory-only.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0013-Make-Download-manager-memory-only.patch">prevent
 download history from being recorded</ulink>, and
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">prevent
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">prevent
 the content preferences service from recording site zoom</ulink>.
 
 <!-- XXX: DOM Storage patch, too. -->
@@ -862,7 +867,7 @@ Firefox Patches section</link>.
    </para>
    <para>
 For more details on disk leak bugs and enhancements, see the <ulink
-url="https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=owner&col=type&col=status&col=priority&keywords=~tbb-disk-leak">tbb-disk-leak tag in our bugtracker</ulink>
+url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-disk-leak&amp;status=!closed">tbb-disk-leak tag in our bugtracker</ulink>
    </para>
   </sect2>
   <sect2 id="app-data-isolation">
@@ -975,7 +980,7 @@ security of the isolation</ulink> and to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3754">solve conflicts
 with OCSP relying the cacheKey property for reuse of POST requests</ulink>, we
 had to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0005-Add-a-string-based-cacheKey.patch">patch
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0004-Add-a-string-based-cacheKey.patch">patch
 Firefox to provide a cacheDomain cache attribute</ulink>. We use the fully
 qualified url bar domain as input to this field.
 
@@ -1011,11 +1016,7 @@ HTTP authentication tokens are removed for third party elements using the
 url="https://developer.mozilla.org/en/Setting_HTTP_request_headers#Observers">http-on-modify-request
 observer</ulink> to remove the Authorization headers to prevent <ulink
 url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">silent
-linkability between domains</ulink>.  We also needed to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0004-Add-HTTP-auth-headers-before-the-modify-request-obse.patch">patch
-Firefox to cause the headers to get added early enough</ulink> to allow the
-observer to modify it.
-
+linkability between domains</ulink>. 
      </para>
     </listitem>
     <listitem>DOM Storage
@@ -1065,7 +1066,7 @@ We currently clear SSL Session IDs upon <link linkend="new-identity">New
 Identity</link>, we disable TLS Session Tickets via the Firefox Pref
 <command>security.enable_tls_session_tickets</command>. We disable SSL Session
 IDs via a <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0010-Disable-SSL-Session-ID-tracking.patch">patch
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0008-Disable-SSL-Session-ID-tracking.patch">patch
 to Firefox</ulink>. To compensate for the increased round trip latency from disabling
 these performance optimizations, we also enable
 <ulink url="https://tools.ietf.org/html/draft-bmoeller-tls-falsestart-00">TLS
@@ -1307,7 +1308,7 @@ Firefox provides several options for controlling the browser user agent string
 which we leverage. We also set similar prefs for controlling the
 Accept-Language and Accept-Charset headers, which we spoof to English by default. Additionally, we
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/firefox/0001-Block-Components.interfaces-lookupMethod-from-conten.patch">remove
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0001-Block-Components.interfaces-from-content.patch">remove
 content script access</ulink> to Components.interfaces, which <ulink
 url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
@@ -1515,7 +1516,7 @@ audio and video objects.
    <title>Description of Firefox Patches</title>
    <para>
 The set of patches we have against Firefox can be found in the <ulink
-url="https://gitweb.torproject.org/torbrowser.git/tree/maint-2.2:/src/current-patches/firefox">current-patches directory of the torbrowser git repository</ulink>. They are:
+url="https://gitweb.torproject.org/torbrowser.git/tree/maint-2.4:/src/current-patches/firefox">current-patches directory of the torbrowser git repository</ulink>. They are:
    </para>
    <orderedlist>
     <listitem>Block Components.interfaces and Components.lookupMethod
@@ -1563,17 +1564,6 @@ allow this.
 
      </para>
     </listitem>
-    <listitem>Add HTTP auth headers before on-modify-request fires
-     <para>
-
-This patch provides a trivial modification to allow us to properly remove HTTP
-auth for third parties. This patch allows us to defend against an adversary
-attempting to use <ulink
-url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">HTTP
-auth to silently track users between domains</ulink>.
-
-     </para>
-    </listitem>
     <listitem>Add a string-based cacheKey property for domain isolation
      <para>
 
@@ -1581,21 +1571,10 @@ To <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3666">increase the
 security of cache isolation</ulink> and to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3754">solve strange and
-unknown conflicts with OCSP</ulink>, we had to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/refs/heads/maint-2.2:/src/current-patches/0005-Add-a-string-based-cacheKey.patch">patch
-Firefox to provide a cacheDomain cache attribute</ulink>. We use the url bar
+unknown conflicts with OCSP</ulink>, we had to patch
+Firefox to provide a cacheDomain cache attribute. We use the url bar
 FQDN as input to this field.
 
-     </para>
-    </listitem>
-    <listitem>Randomize HTTP pipeline order and depth
-     <para>
-As an 
-<ulink
-url="https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting">experimental
-defense against Website Traffic Fingerprinting</ulink>, we patch the standard
-HTTP pipelining code to randomize the number of requests in a
-pipeline, as well as their order.
      </para>
     </listitem>
     <listitem>Block all plugins except flash
@@ -1648,6 +1627,18 @@ by the <link linkend="new-identity">New Identity</link> button.
 
      </para>
     </listitem>
+    <listitem>Randomize HTTP pipeline order and depth
+     <para>
+As an 
+<ulink
+url="https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting">experimental
+defense against Website Traffic Fingerprinting</ulink>, we patch the standard
+HTTP pipelining code to randomize the number of requests in a
+pipeline, as well as their order.
+     </para>
+    </listitem>
+
+<!-- XXX: Several more patches need documentation -->
 
    </orderedlist>
   </sect2>
