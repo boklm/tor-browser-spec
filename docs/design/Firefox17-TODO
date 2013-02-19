@@ -14,9 +14,11 @@
       explicitly mention it in the Adversary Goals section for completeness.
   - Misc implementation
     - document the environment variables and settings used to provide a non-grey "New Identity" button.
-    - Link to prefs.js
+    - Link to prefs.js and describe omni.ja and extension-overrides hacks
     - Mockup privacy UI
-  - Identifier Linkability 
+  - Identifier Linkability
+    - Image cache jail
+    - DOM storage jail
     - 3.5.8 is not clear that what we're trying to limit is non-click
       driven/non-interactive linkability rather than linkability in all cases.
       Other sections may have this problem, too.
@@ -30,16 +32,32 @@
       implement and I think it's not really possible to remove linkability for user
       clicks in general.
   - Fingerprinting
+    - @font-face exemption and preference
+    - Canvas prompt
+    - Click-to-play WebGL
     - describe our resolution defenses
     - Explain why panopticlick is weirdsauce
     - provide an entropy count estimate for fingerprinting defenses
     - We should perhaps be more vocal about the fingerprinting issues with
       some or all of  http://www.w3.org/TR/navigation-timing/. I think I agree.
+    - We report our useragent as 17.0
   - Deprecation List/Future Philosophy:
     - Linkability Transparency from
       https://trac.torproject.org/projects/tor/ticket/5273#comment:12
     - Referer Header
     - Window.name
+
+- Misc changes:
+  - Addons
+    - PDF.js inclusion
+  - Torbutton does not update
+  - Torbutton Security Settings
+  - Update notification/version checking
+  - Socks ports
+  + Plugin handling
+    + All-but-flash patch
+    + Plugin manager manipulation
+    + We use Firefox's click-to-play
 
 - List links to design violations/enhancements:
   - https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability
