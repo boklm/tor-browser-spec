@@ -591,8 +591,8 @@ with cookies as well.
      <para>
 
 These types of attacks are attempts at subverting our <link
-linkend="identifier-linkability">Cross-Origin Identifier Unlinkability</ulink> and <link
-linkend="new-identity">Long-Term Unlikability</ulink> design requirements.
+linkend="identifier-linkability">Cross-Origin Identifier Unlinkability</link> and <link
+linkend="new-identity">Long-Term Unlikability</link> design requirements.
 
      </para>
      </listitem>
@@ -605,8 +605,8 @@ of the browser. This information can be used to reduce anonymity set, or even
 uniquely fingerprint individual users. Attacks of this nature are typically
 aimed at tracking users across sites without their consent, in an attempt to
 subvert our <link linkend="fingerprinting-linkability">Cross-Origin
-Fingerprinting Unlinkability</ulink> and <link
-linkend="new-identity">Long-Term Unlikability</ulink> design requirements.
+Fingerprinting Unlinkability</link> and <link
+linkend="new-identity">Long-Term Unlikability</link> design requirements.
 
 </para>
 
@@ -1509,8 +1509,11 @@ Currently we simply disable WebGL.
   <sect2 id="new-identity">
    <title>Long-Term Unlinkability via "New Identity" button</title>
    <para>
+
 In order to avoid long-term linkability, we provide a "New Identity" context
-menu option in Torbutton.
+menu option in Torbutton. This context menu option is active if Torbutton can
+read the environment variables $TOR_CONTROL_PASSWD and $TOR_CONTROL_PORT.
+
    </para>
 
    <sect3>
@@ -1525,25 +1528,42 @@ All linkable identifiers and browser state MUST be cleared by this feature.
    <sect3>
     <title>Implementation Status:</title>
     <blockquote>
+     <para>
 
-First, Torbutton disables all open tabs and windows by tagging them and
-blocking them via the nsIContentPolicy, and then closes each tab and
-window. The extra step for blocking tabs is done as a precaution to ensure
-that any asynchronous Javascript is in fact properly disabled. After closing
-all of the windows, we then clear the following state: OCSP (by toggling
-security.OCSP.enabled), cache, site-specific zoom and content preferences,
-Cookies, DOM storage, safe browsing key, the Google wifi geolocation token (if
-exists), HTTP auth, SSL Session IDs, HSTS state, close all remaining HTTP
-keep-alive connections, and clear the last opened URL field (via the pref
-general.open_location.last_url).  After clearing the browser state, we then
-send the NEWNYM signal to the Tor control port to cause a new circuit to be
-created.
+First, Torbutton disables Javascript in all open tabs and windows by using
+both the <ulink
+url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDocShell#Attributes">browser.docShell.allowJavascript<ulink>
+attribute as well as <ulink
+url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDOMWindowUtils#suppressEventHandling%28%29">nsIDOMWindowUtil.suppressEventHandling()</ulink>.
+We then stop all page activity for each tab using <ulink
+url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebNavigation#stop%28%29">browser.webNavigation.stop(nsIWebNavigation.STOP_ALL)</ulink>.
+We then clear the site-specific Zoom by temporarily disabling the preference
+<command>browser.zoom.siteSpecific</command>, and clear the GeoIP wiki token
+URL and the last opened URL prefs (if they exist). Each tab is then closed.
 
+     </para>
+     <para>
+
+After closing all tabs, we then clear the following state: searchbox and
+findbox text, HTTP auth, SSL state, OCSP state, site-specific content
+preferences (including HSTS state), content and image cache, Cookies, DOM storage, safe browsing key, the
+Google wifi geolocation token (if exists). 
+
+     </para>
+     <para>
+
+After the state is cleared, we then close all remaining HTTP keep-alive
+connections and then send the NEWNYM signal to the Tor control port to cause a
+new circuit to be created.
+     </para>
+     <para>
+Finally, a fresh browser window is opened, and the current browser window is
+closed.
+     </para>
     </blockquote>
     <blockquote>
-Additionally, the user is allowed to "protect" cookies of their choosing from
-deletion during New Identity by using the Torbutton Cookie Protections UI to
-protect the cookies they would like to keep across New Identity invocations.
+If the user chose to "protect" cookie by using the Torbutton Cookie
+Protections UI, those cookies are not cleared as part of the above.
     </blockquote>
    </sect3>
   </sect2>
