@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>Dec 30 2012</pubdate>
+   <pubdate>Feb 19 2013</pubdate>
  </articleinfo>
 
 <!--
@@ -64,7 +64,7 @@ through the <ulink
 url="https://gitweb.torproject.org/torbutton.git/tree/master">Torbutton
 extension</ulink>, though we are in the process of moving this
 functionality into direct Firefox patches. We also <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/prefs.js">change
+url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/pound_tor.js">change
 a number of Firefox preferences</ulink> from their defaults.
 
    </para>
@@ -74,7 +74,12 @@ To help protect against potential Tor Exit Node eavesdroppers, we include
 <ulink url="https://www.eff.org/https-everywhere">HTTPS-Everywhere</ulink>. To
 provide users with optional defense-in-depth against Javascript and other
 potential exploit vectors, we also include <ulink
-url="http://noscript.net/">NoScript</ulink>
+url="http://noscript.net/">NoScript</ulink>. To protect against
+PDF-based Tor proxy bypass and to improve usability, we include the <ulink
+url="https://addons.mozilla.org/en-us/firefox/addon/pdfjs/">PDF.JS</ulink>
+extension. We also modify <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/extension-overrides.js">several
+extension preferences</ulink> from their defaults.
 
    </para>
   </sect2>
@@ -233,7 +238,8 @@ interaction or approval. This requirement specifically applies to linkability
 from stored browser identifiers, authentication tokens, and shared state. The
 requirement does not apply to linkable information the user manually submits
 to sites, or due to information submitted during manual link traversal. This
-functionality SHOULD NOT interfere with federated login in a substantial way.
+functionality SHOULD NOT interfere with interactive, click-driven federated
+login in a substantial way.
 
   </para>
  </listitem>
@@ -327,12 +333,12 @@ to reduce linkability.
       <para>
 
 <ulink url="https://trac.torproject.org/projects/tor/ticket/3100">Another
-failure of Torbutton</ulink> was (and still is) the options panel. Each option
+failure of Torbutton</ulink> was the options panel. Each option
 that detectably alters browser behavior can be used as a fingerprinting tool.
 Similarly, all extensions <ulink
 url="http://blog.chromium.org/2010/06/extensions-in-incognito.html">SHOULD be
 disabled in the mode</ulink> except as an opt-in basis. We SHOULD NOT load
-system-wide addons or plugins.
+system-wide and/or Operating System provided addons or plugins.
 
      </para>
      <para>
@@ -347,14 +353,14 @@ goes for exemptions to third party cookie policy, geo-location, and any other
 privacy permissions.
      </para>
      <para>
-If the user has indicated they do not care about local history storage, these
-permissions can be written to disk. Otherwise, they should remain memory-only. 
+If the user has indicated they wish to record local history storage, these
+permissions can be written to disk. Otherwise, they MUST remain memory-only. 
      </para>
      </listitem>
      <listitem><command>No filters</command>
       <para>
 
-Filter-based addons such as <ulink
+Site-specific or filter-based addons such as <ulink
 url="https://addons.mozilla.org/en-US/firefox/addon/adblock-plus/">AdBlock
 Plus</ulink>, <ulink url="http://requestpolicy.com/">Request Policy</ulink>,
 <ulink url="http://www.ghostery.com/about">Ghostery</ulink>, <ulink
@@ -362,21 +368,23 @@ url="http://priv3.icsi.berkeley.edu/">Priv3</ulink>, and <ulink
 url="http://sharemenot.cs.washington.edu/">Sharemenot</ulink> are to be
 avoided. We believe that these addons do not add any real privacy to a proper
 <link linkend="Implementation">implementation</link> of the above <link
-linkend="privacy">privacy requirements</link>, as all third parties are
-prevented from tracking users between sites by the implementation.
+linkend="privacy">privacy requirements</link>, and that development efforts
+should be focused on general solutions that prevent tracking by all
+third parties, rather than a list of specific URLs or hosts.
+     </para>
+     <para>
 Filter-based addons can also introduce strange breakage and cause usability
 nightmares, and will also fail to do their job if an adversary simply
 registers a new domain or creates a new url path. Worse still, the unique
 filter sets that each user creates or installs will provide a wealth of
 fingerprinting targets.
-
       </para>
       <para>
 
 As a general matter, we are also generally opposed to shipping an always-on Ad
 blocker with Tor Browser. We feel that this would damage our credibility in
 terms of demonstrating that we are providing privacy through a sound design
-alone, as well as damage the acceptance of Tor users by sites who support
+alone, as well as damage the acceptance of Tor users by sites that support
 themselves through advertising revenue.
 
       </para>
@@ -391,6 +399,17 @@ We believe that if we do not stay current with the support of new web
 technologies, we cannot hope to substantially influence or be involved in
 their proper deployment or privacy realization. However, we will likely disable
 high-risk features pending analysis, audit, and mitigation.
+      </para>
+     </listitem>
+     <listitem><command>Long Term Goal: Linkability Transparency</command>
+      <para>
+<!-- XXX: Link to Deprecation List once it exists -->
+Our long term goal is to reduce all linkability to mechanisms that are
+detectable by experts, so they can alert the general public about places
+where it occurs. To this end, we maintain a Deprecation List of archaic
+web technologies that are currently (ab)used to facilitate federated login
+and other legitimate click-driven cross-domain activity but that can
+be replaced with more privacy friendly, auditable alternatives.
       </para>
      </listitem>
    </orderedlist>
