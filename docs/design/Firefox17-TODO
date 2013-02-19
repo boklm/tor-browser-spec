@@ -1,20 +1,24 @@
-- Cleanups
++ Cleanups
   + We specify browser.cache.memory.enable under disk avoidance. That's
     wrong. We don't even set it at all. Torbutton relic?
   + Disk leak documentation
-  - Firefox 17 will mess up all patch links
+  + Firefox 17 will mess up all patch links
  
 - Heavy Writing by section
   + Intro:
     + We target Firefox ESR
-  - Adversary Goals
-    - Describe how each adversary attack violates design goals
-    - "Correlate activity across multiple site visits" as one of the adversary
+    + Component description
+  + Deprecation List/Future Philosophy:
+    + Linkability Transparency from
+      https://trac.torproject.org/projects/tor/ticket/5273#comment:12
+  + Adversary Goals
+    + Describe how each adversary attack violates design goals
+    + "Correlate activity across multiple site visits" as one of the adversary
       goals. This is the primary goal of the ad networks, though. We need to
       explicitly mention it in the Adversary Goals section for completeness.
   - Misc implementation
+    + Link to prefs.js and describe omni.ja and extension-overrides hacks
     - document the environment variables and settings used to provide a non-grey "New Identity" button.
-    - Link to prefs.js and describe omni.ja and extension-overrides hacks
     - Mockup privacy UI
   - Identifier Linkability
     - Image cache jail
@@ -41,32 +45,30 @@
     - We should perhaps be more vocal about the fingerprinting issues with
       some or all of  http://www.w3.org/TR/navigation-timing/. I think I agree.
     - We report our useragent as 17.0
-  - Deprecation List/Future Philosophy:
-    - Linkability Transparency from
-      https://trac.torproject.org/projects/tor/ticket/5273#comment:12
-    - Referer Header
-    - Window.name
+  - Testing
+    - Sync with QA pages
+    - Many are out of date
+    - http://www.stayinvisible.com/
+    - Evercookie test page, and perhaps also
+      http://jeremiahgrossman.blogspot.de/2007/04/tracking-users-without-cookies.html
 
 - Misc changes:
+  + Plugin handling
+    + All-but-flash patch
+    + Plugin manager manipulation
+    + We use Firefox's click-to-play
   - Addons
     - PDF.js inclusion
   - Torbutton does not update
   - Torbutton Security Settings
   - Update notification/version checking
   - Socks ports
-  + Plugin handling
-    + All-but-flash patch
-    + Plugin manager manipulation
-    + We use Firefox's click-to-play
+  - Create a deprecation list and link to it:
+    - Referer Header
+    - Window.name
 
 - List links to design violations/enhancements:
   - https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability
   - https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting
 
-- Tests
-  - Sync with QA pages
-  - Many are out of date
-  - http://www.stayinvisible.com/
-  - Evercookie test page, and perhaps also
-    http://jeremiahgrossman.blogspot.de/2007/04/tracking-users-without-cookies.html
 
