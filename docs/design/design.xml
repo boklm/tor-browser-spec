@@ -970,22 +970,19 @@ context-menu option to drill down into specific types of state or permissions.
 An example of this simplification can be seen in Figure 1.
 
    </para>
-   <!-- XXX-pde: "Wtf are those protect buttons??" -->
    <figure><title>Improving the Privacy UI</title>
     <mediaobject>
       <imageobject>
-       <imagedata align="center" fileref="CookieManagers.png"/>
+       <imagedata align="center" fileref="NewCookieManager.png"/>
       </imageobject>
     </mediaobject>
     <caption> <para/>
 
-On the left is the standard Firefox cookie manager. On the right is a mock-up
-of how isolating identifiers to the URL bar origin might simplify the privacy
-UI for all data - not just cookies. Both windows represent the set of
-Cookies accumulated after visiting just five sites, but the window on the
-right has the option of also representing history, DOM Storage, HTTP Auth,
-search form history, login values, and so on within a context menu for each
-site.
+This UI is a mock-up of how isolating identifiers to the URL bar origin might
+simplify the privacy UI for all data - not just cookies. Once browser
+identifiers and site permissions operate on a url bar basis, the same privacy
+window can represent browsing history, DOM Storage, HTTP Auth, search form
+history, login values, and so on within a context menu for each site.
 
 </caption>
    </figure>
@@ -1532,7 +1529,7 @@ All linkable identifiers and browser state MUST be cleared by this feature.
 
 First, Torbutton disables Javascript in all open tabs and windows by using
 both the <ulink
-url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDocShell#Attributes">browser.docShell.allowJavascript<ulink>
+url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDocShell#Attributes">browser.docShell.allowJavascript</ulink>
 attribute as well as <ulink
 url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDOMWindowUtils#suppressEventHandling%28%29">nsIDOMWindowUtil.suppressEventHandling()</ulink>.
 We then stop all page activity for each tab using <ulink
