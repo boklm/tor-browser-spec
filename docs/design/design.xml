@@ -478,14 +478,25 @@ location of a particular dissident or whistleblower.
 
      </para>
      </listitem>
-     <listitem><command>Miscellaneous anonymity set reduction</command>
+     <listitem><command>Correlate activity across multiple sites</command>
      <para>
 
-Anonymity set reduction is also useful in attempting to zero in on a
-particular individual. If the dissident or whistleblower is using a rare build
-of Firefox for an obscure operating system, this can be very useful
-information for tracking them down, or at least <link
-linkend="fingerprinting">tracking their activities</link>.
+The primary goal of the advertising networks is to know that the user who
+visited siteX.com is the same user that visited siteY.com to serve them
+targeted ads. The advertising networks become our adversary insofar as they
+attempt to perform this correlation without the user's explicit consent.
+
+     </para>
+     </listitem>
+     <listitem><command>Fingerprinting/anonymity set reduction</command>
+     <para>
+
+Fingerprinting (more generally: "anonymity set reduction") is used to attempt
+to zero in on a particular individual without the use of tracking identifiers.
+If the dissident or whistleblower is using a rare build of Firefox for an
+obscure operating system, this can be very useful information for tracking
+them down, or at least <link linkend="fingerprinting">tracking their
+activities</link>.
 
      </para>
      </listitem>
@@ -577,6 +588,13 @@ sidejacking</ulink>. In addition, the ad networks of course perform tracking
 with cookies as well.
 
      </para>
+     <para>
+
+These types of attacks are attempts at subverting our <link
+linkend="identifier-linkability">Cross-Origin Identifier Unlinkability</ulink> and <link
+linkend="new-identity">Long-Term Unlikability</ulink> design requirements.
+
+     </para>
      </listitem>
      <listitem id="fingerprinting"><command>Fingerprint users based on browser
 attributes</command>
@@ -584,7 +602,17 @@ attributes</command>
 
 There is an absurd amount of information available to websites via attributes
 of the browser. This information can be used to reduce anonymity set, or even
-uniquely fingerprint individual users. Fingerprinting is an intimidating
+uniquely fingerprint individual users. Attacks of this nature are typically
+aimed at tracking users across sites without their consent, in an attempt to
+subvert our <link linkend="fingerprinting-linkability">Cross-Origin
+Fingerprinting Unlinkability</ulink> and <link
+linkend="new-identity">Long-Term Unlikability</ulink> design requirements.
+
+</para>
+
+<para>
+
+Fingerprinting is an intimidating
 problem to attempt to tackle, especially without a metric to determine or at
 least intuitively understand and estimate which features will most contribute
 to linkability between visits.
@@ -594,10 +622,12 @@ to linkability between visits.
 <para>
 
 The <ulink url="https://panopticlick.eff.org/about.php">Panopticlick study
-done</ulink> by the EFF uses the actual entropy - the number of identifying
-bits of information encoded in browser properties - as this metric. Their
-<ulink url="https://wiki.mozilla.org/Fingerprinting#Data">result data</ulink>
-is definitely useful, and the metric is probably the appropriate one for
+done</ulink> by the EFF uses the <ulink
+url="https://en.wikipedia.org/wiki/Entropy_%28information_theory%29">Shannon
+entropy</ulink> - the number of identifying bits of information encoded in
+browser properties - as this metric. Their <ulink
+url="https://wiki.mozilla.org/Fingerprinting#Data">result data</ulink> is
+definitely useful, and the metric is probably the appropriate one for
 determining how identifying a particular browser property is. However, some
 quirks of their study means that they do not extract as much information as
 they could from display information: they only use desktop resolution and do
@@ -687,10 +717,11 @@ Last, but definitely not least, the adversary can exploit either general
 browser vulnerabilities, plugin vulnerabilities, or OS vulnerabilities to
 install malware and surveillance software. An adversary with physical access
 can perform similar actions. Regrettably, this last attack capability is
-outside of our ability to defend against, but it is worth mentioning for
-completeness. <ulink url="http://tails.boum.org/contribute/design/">The Tails
-system</ulink> however can provide some limited defenses against this
-adversary.
+outside of the browser's ability to defend against, but it is worth mentioning
+for completeness. In fact, <ulink
+url="http://tails.boum.org/contribute/design/">The Tails system</ulink> can
+provide some defense against this adversary, and it does include the Tor
+Browser.
 
      </para>
      </listitem>
