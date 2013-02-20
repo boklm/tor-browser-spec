@@ -760,21 +760,45 @@ Proxy obedience is assured through the following:
 <orderedlist> 
  <listitem>Firefox Proxy settings
  <para>
-  The Torbutton xpi sets the Firefox proxy settings to use Tor directly as a
+Our <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/pound_tor.js">Firefox
+preferences file</ulink> sets the Firefox proxy settings to use Tor directly as a
 SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
-<command>network.proxy.socks_version</command>, and
-<command>network.proxy.socks_port</command>.
+<command>network.proxy.socks_version</command>,
+<command>network.proxy.socks_port</command>, and
+<command>network.dns.disablePrefetch</command>.
  </para>
  <para>
 
-We have verified that these settings properly proxy HTTPS, OCSP, HTTP, FTP,
-gopher (now defunct), DNS, SafeBrowsing Queries, all javascript activity,
-including HTML5 audio and video objects, addon updates, wifi geolocation
-queries, searchbox queries, XPCOM addon HTTPS/HTTP activity, and live bookmark
-updates. We have also verified that IPv6 connections are not attempted,
-through the proxy or otherwise (Tor does not yet support IPv6). We have also
-verified that external protocol helpers, such as smb urls and other custom
-protocol handers are all blocked.
+We also patch Firefox in order to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0016-Prevent-WebSocket-DNS-leak.patch">prevent
+a DNS leak due to a WebSocket rate-limiting check</ulink>. As stated in the
+patch, we believe the direct DNS resolution performed by this check is in
+violation of the W3C standard, but <ulink
+url="https://bugzilla.mozilla.org/show_bug.cgi?id=751465">this DNS proxy leak
+remains present in stock Firefox releases</ulink>.
+
+ </para>
+ <para>
+
+During the transition to Firefox 17-ESR, a code audit was undertaken to verify
+that there were no system calls or XPCOM activity in the source tree that did
+not use the browser proxy settings. The only violation we found was that
+WebRTC was capable of creating UDP sockets and was compiled in by default. We
+subsequently disabled it using the Firefox build option
+<command>--disable-webrtc</command>.
+
+ </para>
+ <para>
+
+We have verified that these settings and patches properly proxy HTTPS, OCSP,
+HTTP, FTP, gopher (now defunct), DNS, SafeBrowsing Queries, all javascript
+activity, including HTML5 audio and video objects, addon updates, wifi
+geolocation queries, searchbox queries, XPCOM addon HTTPS/HTTP activity,
+WebSockets, and live bookmark updates. We have also verified that IPv6
+connections are not attempted, through the proxy or otherwise (Tor does not
+yet support IPv6). We have also verified that external protocol helpers, such
+as smb urls and other custom protocol handers are all blocked.
 
  </para>
  <para>
