@@ -1689,11 +1689,15 @@ audio and video objects.
   <sect2 id="firefox-patches">
    <title>Description of Firefox Patches</title>
    <para>
+
 The set of patches we have against Firefox can be found in the <ulink
 url="https://gitweb.torproject.org/torbrowser.git/tree/maint-2.4:/src/current-patches/firefox">current-patches directory of the torbrowser git repository</ulink>. They are:
+
    </para>
    <orderedlist>
-    <listitem>Block Components.interfaces
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0001-Block-Components.interfaces-from-content.patch">Block
+Components.interfaces</ulink>
      <para>
 
 In order to reduce fingerprinting, we block access to this interface from
@@ -1702,7 +1706,9 @@ platform, OS, and Firebox version, but not much else.
 
      </para>
     </listitem>
-    <listitem>Make Permissions Manager memory only
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0002-Make-Permissions-Manager-memory-only.patch">Make
+Permissions Manager memory only</ulink>
      <para>
 
 This patch exposes a pref 'permissions.memory_only' that properly isolates the
@@ -1716,7 +1722,9 @@ does not need to be set in prefs.js, and can be handled by Torbutton.
 
      </para>
     </listitem>
-    <listitem>Make Intermediate Cert Store memory-only
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0003-Make-Intermediate-Cert-Store-memory-only.patch">Make
+Intermediate Cert Store memory-only</ulink>
      <para>
 
 The intermediate certificate store records the intermediate SSL certificates
@@ -1735,7 +1743,9 @@ allow this.
 
      </para>
     </listitem>
-    <listitem>Add a string-based cacheKey property for domain isolation
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0004-Add-a-string-based-cacheKey.patch">Add
+a string-based cacheKey property for domain isolation</ulink>
      <para>
 
 To <ulink
@@ -1748,7 +1758,9 @@ FQDN as input to this field.
 
      </para>
     </listitem>
-    <listitem>Block all plugins except flash
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0005-Block-all-plugins-except-flash.patch">Block
+all plugins except flash</ulink>
      <para>
 We cannot use the <ulink
 url="http://www.oxymoronical.com/experiments/xpcomref/applications/Firefox/3.5/components/@mozilla.org/extensions/blocklist%3B1">
@@ -1759,14 +1771,16 @@ URLs, magical toolbars that phone home or "help" the user, skype buttons that
 ruin our day, and censorship filters). Hence we rolled our own.
      </para>
     </listitem>
-    <listitem>Make content-prefs service memory only
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">Make content-prefs service memory only</ulink>
      <para>
 This patch prevents random URLs from being inserted into content-prefs.sqllite in
 the profile directory as content prefs change (includes site-zoom and perhaps
 other site prefs?).
      </para>
     </listitem>
-    <listitem>Make Tor Browser exit when not launched from Vidalia
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0007-Make-Tor-Browser-exit-when-not-launched-from-Vidalia.patch">Make Tor Browser exit when not launched from Vidalia</ulink>
      <para>
 
 It turns out that on Windows 7 and later systems, the Taskbar attempts to
@@ -1779,7 +1793,8 @@ Browser to immediately exit in this case.
 
      </para>
     </listitem>
-    <listitem>Disable SSL Session ID tracking
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0008-Disable-SSL-Session-ID-tracking.patch">Disable SSL Session ID tracking</ulink>
      <para>
 
 This patch is a simple 1-line hack to prevent SSL connections from caching
@@ -1789,7 +1804,8 @@ defaults.
 
      </para>
     </listitem>
-    <listitem>Provide an observer event to close persistent connections
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0009-Provide-an-observer-event-to-close-persistent-connec.patch">Provide an observer event to close persistent connections</ulink>
      <para>
 
 This patch creates an observer event in the HTTP connection manager to close
@@ -1798,7 +1814,8 @@ by the <link linkend="new-identity">New Identity</link> button.
 
      </para>
     </listitem>
-    <listitem>Limit Device and System Specific Media Queries
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">Limit Device and System Specific Media Queries</ulink>
      <para>
 
 <ulink url="https://developer.mozilla.org/en-US/docs/CSS/Media_queries">CSS
@@ -1808,7 +1825,8 @@ resolution was equal to the content window resolution.
 
      </para>
     </listitem>
-    <listitem>Limit the number of fonts per document
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0011-Limit-the-number-of-fonts-per-document.patch">Limit the number of fonts per document</ulink>
      <para>
 
 Font availability can be <ulink url="http://flippingtypical.com/">queried by
@@ -1820,14 +1838,16 @@ appear in the same font-family rule.
 
      </para>
     </listitem>
-    <listitem>Rebrand Firefox to Tor Browser
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0012-Rebrand-Firefox-to-TorBrowser.patch">Rebrand Firefox to Tor Browser</ulink>
      <para>
 
 This patch updates our branding in compliance with Mozilla's trademark policy.
 
      </para>
     </listitem>
-    <listitem>Make Download Manager Memory Only
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0013-Make-Download-manager-memory-only.patch">Make Download Manager Memory Only</ulink>
      <para>
 
 This patch prevents disk leaks from the download manager. The original
@@ -1836,7 +1856,8 @@ you disable download history from your Firefox preferences.
 
      </para>
     </listitem>
-    <listitem>Add DDG and StartPage to Omnibox
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0014-Add-DDG-and-StartPage-to-Omnibox.patch">Add DDG and StartPage to Omnibox</ulink>
      <para>
 
 This patch adds DuckDuckGo and StartPage to the Search Box, and sets our
@@ -1845,7 +1866,8 @@ Captchas and complete 403 bans from Google.
 
      </para>
     </listitem>
-    <listitem>Make nsICacheService.EvictEntires() Synchronous
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0015-Make-nsICacheService.EvictEntries-synchronous.patch">Make nsICacheService.EvictEntires() Synchronous</ulink>
      <para>
 
 This patch eliminates a race condition with "New Identity". Without it,
@@ -1854,7 +1876,8 @@ on some platforms.
 
      </para>
     </listitem>
-    <listitem>Prevent WebSockets DNS Leak
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0016-Prevent-WebSocket-DNS-leak.patch">Prevent WebSockets DNS Leak</ulink>
      <para>
 
 This patch prevents a DNS leak when using WebSockets. It also prevents other
@@ -1862,7 +1885,8 @@ similar types of DNS leaks.
 
      </para>
     </listitem>
-   <listitem>Randomize HTTP pipeline order and depth
+   <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0017-Randomize-HTTP-request-order-and-pipeline-depth.patch">Randomize HTTP pipeline order and depth</ulink>
      <para>
 As an 
 <ulink
@@ -1872,7 +1896,8 @@ HTTP pipelining code to randomize the number of requests in a
 pipeline, as well as their order.
      </para>
     </listitem>
-    <listitem>Adapt Steve Michaud's Mac crashfix patch
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0018-Adapt-Steven-Michaud-s-Mac-crashfix-patch.patch">Adapt Steve Michaud's Mac crashfix patch</ulink>
      <para>
 
 This patch allows us to block Drag and Drop without causing crashes on Mac OS.
@@ -1882,7 +1907,8 @@ using your browser's proxy settings, of course).
 
      </para>
     </listitem>
-    <listitem>Add mozIThirdPartyUtil.getFirstPartyURI() API
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0019-Add-mozIThirdPartyUtil.getFirstPartyURI-API.patch">Add mozIThirdPartyUtil.getFirstPartyURI() API</ulink>
      <para>
 
 This patch provides an API that allows us to more easily isolate identifiers
@@ -1890,7 +1916,8 @@ to the URL bar domain.
 
      </para>
     </listitem>
-    <listitem>Add canvas image extraction prompt
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0020-Add-canvas-image-extraction-prompt.patch">Add canvas image extraction prompt</ulink>
      <para>
 
 This patch prompts the user before returning canvas image data. Canvas image
@@ -1900,7 +1927,8 @@ system fonts, and supporting library versions.
 
      </para>
     </listitem>
-    <listitem>Return client window coordinates for mouse events
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0021-Return-client-window-coordinates-for-mouse-event-scr.patch">Return client window coordinates for mouse events</ulink>
      <para>
 
 This patch causes mouse events to return coordinates relative to the content
@@ -1908,7 +1936,8 @@ window instead of the desktop.
 
      </para>
     </listitem>
-    <listitem>Do not expose physical screen info to window.screen
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0022-Do-not-expose-physical-screen-info.-via-window-and-w.patch">Do not expose physical screen info to window.screen</ulink>
      <para>
 
 This patch causes window.screen to return the display resolution size of the
@@ -1916,7 +1945,8 @@ content window instead of the desktop resolution size.
 
      </para>
     </listitem>
-    <listitem>Do not expose system colors to CSS or canvas
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0023-Do-not-expose-system-colors-to-CSS-or-canvas.patch">Do not expose system colors to CSS or canvas</ulink>
      <para>
 
 This patch prevents CSS and Javascript from discovering your desktop color
@@ -1924,7 +1954,8 @@ scheme and/or theme.
 
      </para>
     </listitem>
-    <listitem>Isolate the Image Cache per url bar domain
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0024-Isolate-the-Image-Cache-per-url-bar-domain.patch">Isolate the Image Cache per url bar domain</ulink>
      <para>
 
 This patch prevents cached images from being used to store third party tracking
@@ -1932,7 +1963,8 @@ identifiers.
 
      </para>
     </listitem>
-    <listitem>nsIHTTPChannel.redirectTo() API
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0025-nsIHTTPChannel.redirectTo-API.patch">nsIHTTPChannel.redirectTo() API</ulink>
      <para>
 
 This patch provides HTTPS-Everywhere with an API to perform redirections more
@@ -1940,7 +1972,8 @@ securely and without addon conflicts.
 
      </para>
     </listitem>
-    <listitem>Isolate DOM Storage to first party URI
+    <listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0026-Isolate-DOM-storage-to-first-party-URI.patch">Isolate DOM Storage to first party URI</ulink>
      <para>
 
 This patch prevents DOM Storage from being used to store third party tracking
@@ -2260,16 +2293,16 @@ javascript into the chrome (and thus gain complete control of the browser).
 <para>
 
 In a few cases, entrenched (mis)use of certain browser features has caused us
-to choose a less extreme implementation of linkability protections than we
+to choose a less thorough implementation of linkability protections than we
 would have liked. This section serves to enumerate those instances and
 describe alternative standardards that have been proposed.
 
 </para>
 <para>
 
-The primary goal of this section is to help describe a web where websites can
-be easily audited for good privacy practices. Right now, there are too many
-ways where XXX..
+The primary goal of this section is to provide guidance towards altering web
+standards such that websites can be easily audited for good privacy practices.
+Right now, there are too many ways where XXX..
 
 </para>
 
@@ -2278,9 +2311,11 @@ ways where XXX..
  <orderedlist>
   <listitem>The Referer Header
   <para>
+
 We believe the Referer header should be either eliminated or made explicit. If
 a site wishes to transmit its URL to third parties or during link-click, it
-should specify this as a property of its HTML. The 
+should specify this as a property of its HTML. 
+
   </para>
   </listitem>
   <listitem>window.name
