@@ -1473,10 +1473,11 @@ desktop resolution.
 We have implemented the above strategy using a window observer to <ulink
 url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l2004">resize
 new windows based on desktop resolution</ulink>. Additionally, we patch
-Firefox to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">use
-the client content window size</ulink> for window.screen and all desktop size
-related media queries, and similarly <ulink
+Firefox to use the client content window size <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0022-Do-not-expose-physical-screen-info.-via-window-and-w.patch">for
+window.screen</ulink> and <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">for
+CSS Media Queries</ulink>. Similarly, we <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0021-Return-client-window-coordinates-for-mouse-event-scr.patch">patch
 DOM events to return content window relative points</ulink>. We also patch
 Firefox to <ulink
@@ -1800,42 +1801,64 @@ by the <link linkend="new-identity">New Identity</link> button.
     <listitem>Limit Device and System Specific Media Queries
      <para>
 
+<ulink url="https://developer.mozilla.org/en-US/docs/CSS/Media_queries">CSS
+Media Queries</ulink> have a fingerprinting capability approaching that of
+Javascript. This patch causes such Media Queries to evaluate as if the device
+resolution was equal to the content window resolution.
 
      </para>
     </listitem>
     <listitem>Limit the number of fonts per document
      <para>
 
+Font availability can be <ulink url="http://flippingtypical.com/">queried by
+CSS and Javascript</ulink> and is a fingerprinting vector. This patch limits
+the number of times CSS and Javascript can cause font-family rules to
+evaluate. Remote @font-face fonts are exempt from the limits imposed by this
+patch, and remote fonts are given priority over local fonts whenever both
+appear in the same font-family rule.
 
      </para>
     </listitem>
     <listitem>Rebrand Firefox to Tor Browser
      <para>
 
+This patch updates our branding in compliance with Mozilla's trademark policy.
 
      </para>
     </listitem>
     <listitem>Make Download Manager Memory Only
      <para>
 
+This patch prevents disk leaks from the download manager. The original
+behavior is to write the download history to disk and then delete it, even if
+you disable download history from your Firefox preferences.
 
      </para>
     </listitem>
     <listitem>Add DDG and StartPage to Omnibox
      <para>
 
+This patch adds DuckDuckGo and StartPage to the Search Box, and sets our
+default search engine to StartPage. We deployed this patch due to excessive
+Captchas and complete 403 bans from Google.
 
      </para>
     </listitem>
     <listitem>Make nsICacheService.EvictEntires() Synchronous
      <para>
 
+This patch eliminates a race condition with "New Identity". Without it,
+cache-based Evercookies survive for up to a minute after clearing the cache
+on some platforms.
 
      </para>
     </listitem>
     <listitem>Prevent WebSockets DNS Leak
      <para>
 
+This patch prevents a DNS leak when using WebSockets. It also prevents other
+similar types of DNS leaks.
 
      </para>
     </listitem>
@@ -1852,59 +1875,79 @@ pipeline, as well as their order.
     <listitem>Adapt Steve Michaud's Mac crashfix patch
      <para>
 
+This patch allows us to block Drag and Drop without causing crashes on Mac OS.
+We need to block Drag and Drop because Mac OS and Ubuntu both immediately load
+any URLs they find in your drag buffer before you even drop them (without
+using your browser's proxy settings, of course).
 
      </para>
     </listitem>
     <listitem>Add mozIThirdPartyUtil.getFirstPartyURI() API
      <para>
 
+This patch provides an API that allows us to more easily isolate identifiers
+to the URL bar domain.
 
      </para>
     </listitem>
     <listitem>Add canvas image extraction prompt
      <para>
 
+This patch prompts the user before returning canvas image data. Canvas image
+data can be used to create an extremely stable, high-entropy fingerprint based
+on the unique rendering behavior of video cards, OpenGL behavior,
+system fonts, and supporting library versions.
 
      </para>
     </listitem>
     <listitem>Return client window coordinates for mouse events
      <para>
 
+This patch causes mouse events to return coordinates relative to the content
+window instead of the desktop.
 
      </para>
     </listitem>
-    <listitem>Do not expose physical screen info viw window and CSS
+    <listitem>Do not expose physical screen info to window.screen
      <para>
 
+This patch causes window.screen to return the display resolution size of the
+content window instead of the desktop resolution size.
 
      </para>
     </listitem>
     <listitem>Do not expose system colors to CSS or canvas
      <para>
 
+This patch prevents CSS and Javascript from discovering your desktop color
+scheme and/or theme.
 
      </para>
     </listitem>
     <listitem>Isolate the Image Cache per url bar domain
      <para>
 
+This patch prevents cached images from being used to store third party tracking
+identifiers.
 
      </para>
     </listitem>
     <listitem>nsIHTTPChannel.redirectTo() API
      <para>
 
+This patch provides HTTPS-Everywhere with an API to perform redirections more
+securely and without addon conflicts.
 
      </para>
     </listitem>
     <listitem>Isolate DOM Storage to first party URI
      <para>
 
+This patch prevents DOM Storage from being used to store third party tracking
+identifiers.
 
      </para>
     </listitem>
-
-<!-- XXX: Several more patches need documentation -->
 
    </orderedlist>
   </sect2>
