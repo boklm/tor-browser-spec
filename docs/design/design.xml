@@ -37,8 +37,8 @@
 
 This document describes the <link linkend="adversary">adversary model</link>,
 <link linkend="DesignRequirements">design requirements</link>,
-<link linkend="Implementation">implementation</link>, <link
-linkend="Packaging">packaging</link> and <link linkend="Testing">testing
+<link linkend="Implementation">implementation</link>, <!-- <link
+linkend="Packaging">packaging</link> --> and <link linkend="Testing">testing
 procedures</link> of the Tor Browser. <!-- XXX: It is
 current as of Tor Browser 2.3.35-1 and Torbutton 1.4.5. -->
 
