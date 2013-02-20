@@ -1274,6 +1274,10 @@ functionality.
      </para>
     </listitem>
    </orderedlist>
+   <para>
+For more details on identifier linkability bugs and enhancements, see the <ulink
+url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability&amp;status=!closed">tbb-linkability tag in our bugtracker</ulink>
+  </para>
   </sect2>
   <sect2 id="fingerprinting-linkability">
    <title>Cross-Origin Fingerprinting Unlinkability</title>
@@ -1604,6 +1608,10 @@ We have no implementation as of yet.
     </listitem>
    </orderedlist>
    </sect3>
+   <para>
+For more details on identifier linkability bugs and enhancements, see the <ulink
+url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting&amp;status=!closed">tbb-fingerprinting tag in our bugtracker</ulink>
+  </para>
   </sect2>
   <sect2 id="new-identity">
    <title>Long-Term Unlinkability via "New Identity" button</title>
