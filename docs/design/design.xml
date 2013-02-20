@@ -876,50 +876,22 @@ Flash cookies from leaking from a pre-existing Flash directory.
    <sect3>
     <title>Design Goal:</title>
     <blockquote>
-Tor Browser MUST (at user option) prevent all disk records of browser activity.
+
+The User Agent MUST (at user option) prevent all disk records of browser activity.
 The user should be able to optionally enable URL history and other history
-features if they so desire. Once we <ulink
-url="https://trac.torproject.org/projects/tor/ticket/3100">simplify the
-preferences interface</ulink>, we will likely just enable Private Browsing
-mode by default to handle this goal.
+features if they so desire. 
+
     </blockquote>
    </sect3>
    <sect3>
     <title>Implementation Status:</title>
     <blockquote>
-For now, Tor Browser blocks write access to the disk through Torbutton
-using several Firefox preferences. 
 
-<!-- XXX: http auth on disk??? -->
-<!-- XXX: can general.open_location.last_url hit disk??? -->
-
-The set of prefs is:
-<command>dom.storage.enabled</command>,
-<command>network.http.use-cache</command>,
-<command>browser.cache.disk.enable</command>,
-<command>browser.cache.disk.capacity</command>,
-<command>browser.cache.offline.enable</command>,
-<command>general.open_location.last_url</command>,
-<command>places.history.enabled</command>,
-<command>browser.formfill.enable</command>,
-<command>signon.rememberSignons</command>,
-<command>browser.download.manager.retention</command>,
-<command>dom.indexedDB.enabled</command>,
-and <command>network.cookie.lifetimePolicy</command>.
-    </blockquote>
-   </sect3>
-    <para>
-
-Torbutton also <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/components/tbSessionStore.js">contains
-code</ulink> to prevent the Firefox session store from writing to disk.
-
-    </para>
-    <para>
-In addition, three Firefox patches are needed to prevent disk writes, even if
+We achieve this goal through several mechanisms. First, we set the Firefox
+Private Browsing preference
+<command>browser.privatebrowsing.autostart</command>. In addition, four Firefox patches are needed to prevent disk writes, even if
 Private Browsing Mode is enabled. We need to
 
-<!-- XXX: Firefox 17 will mess up all these patch links -->
 <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0002-Make-Permissions-Manager-memory-only.patch">prevent
 the permissions manager from recording HTTPS STS state</ulink>,
@@ -933,16 +905,40 @@ download history from being recorded</ulink>, and
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">prevent
 the content preferences service from recording site zoom</ulink>.
 
-<!-- XXX: DOM Storage patch, too. -->
-
 For more details on these patches, <link linkend="firefox-patches">see the
 Firefox Patches section</link>.
 
-   </para>
-   <para>
+    </blockquote>
+    <blockquote>
+
+As an additional defense-in-depth measure, we set the following preferences:
+<command></command>,
+<command>browser.cache.disk.enable</command>,
+<command>browser.cache.offline.enable</command>,
+<command>dom.indexedDB.enabled</command>,
+<command>network.cookie.lifetimePolicy</command>,
+<command>signon.rememberSignons</command>,
+<command>browser.formfill.enable</command>,
+<command>browser.download.manager.retention</command>,
+<command>browser.sessionstore.privacy_level</command>,
+and <command>network.cookie.lifetimePolicy</command>. Many of these
+preferences are likely redundant with
+<command>browser.privatebrowsing.autostart</command>, but we have not done the
+auditing work to ensure that yet.
+
+    </blockquote>
+    <blockquote>
+
+Torbutton also <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/components/tbSessionStore.js">contains
+code</ulink> to prevent the Firefox session store from writing to disk.
+    </blockquote>
+    <blockquote>
+
 For more details on disk leak bugs and enhancements, see the <ulink
 url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-disk-leak&amp;status=!closed">tbb-disk-leak tag in our bugtracker</ulink>
-   </para>
+    </blockquote>
+   </sect3>
   </sect2>
   <sect2 id="app-data-isolation">
    <title>Application Data Isolation</title>
@@ -954,9 +950,15 @@ safely remove the bundle without leaving other traces of Tor usage on their
 computer.
 
    </para>
-   <para>FIXME: sjmurdoch, Erinn: explain what magic we do to satisfy this,
-and/or what additional work or auditing needs to be done.
+   <para>
+
+To ensure TBB directory isolation, we set
+<command>browser.download.useDownloadDir</command>,
+<command>browser.shell.checkDefaultBrowser</command>, and
+<command>browser.download.manager.addToRecentDocs</command>. We also set the
+$HOME environment variable to be the TBB extraction directory.
    </para>
+
   </sect2>
 <!-- FIXME: Write me... 
   <sect2 id="update-safety">
