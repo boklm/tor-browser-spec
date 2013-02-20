@@ -16,36 +16,37 @@
     + "Correlate activity across multiple site visits" as one of the adversary
       goals. This is the primary goal of the ad networks, though. We need to
       explicitly mention it in the Adversary Goals section for completeness.
-  - Misc implementation
+  + Misc implementation
     + Link to prefs.js and describe omni.ja and extension-overrides hacks
-    - document the environment variables and settings used to provide a non-grey "New Identity" button.
-    - Mockup privacy UI
-  - Identifier Linkability
-    - Image cache jail
-    - DOM storage jail
-    - 3.5.8 is not clear that what we're trying to limit is non-click
+    + document the environment variables and settings used to provide a non-grey "New Identity" button.
+    + Mockup privacy UI
+  + Identifier Linkability
+    + Image cache jail
+    + DOM storage jail
+    + 3.5.8 is not clear that what we're trying to limit is non-click
       driven/non-interactive linkability rather than linkability in all cases.
       Other sections may have this problem, too.
-      - This is a subtlety that arises from both the impossibility of satisfying
+      + This is a subtlety that arises from both the impossibility of satisfying
         unlinkability due to covert channels in GET/POST, as well as the desire
         to avoid breaking thinks like consensual federated login.
-    - He reminded me about documenting disabling IndexedDB, but that is just one
-      of the many prefs.js changes we need to document.
-    - We should only preserve window.name if the url bar domain remains the
-      same. I could be convinced of this, but it's going to be trickier to
-      implement and I think it's not really possible to remove linkability for user
-      clicks in general.
   - Fingerprinting
-    - @font-face exemption and preference
-    - Canvas prompt
-    - Click-to-play WebGL
-    - describe our resolution defenses
-    - Explain why panopticlick is weirdsauce
-    - provide an entropy count estimate for fingerprinting defenses
-    - We should perhaps be more vocal about the fingerprinting issues with
+    + @font-face exemption and preference
+    + Canvas prompt
+    + describe our resolution defenses
+    + Limit CSS media queries
+    + System colors + fonts
+    + Explain why panopticlick is weirdsauce
+    + We report our useragent as 17.0
+    + Click-to-play WebGL
+    + We should perhaps be more vocal about the fingerprinting issues with
       some or all of  http://www.w3.org/TR/navigation-timing/. I think I agree.
-    - We report our useragent as 17.0
+    - provide an entropy count estimate for fingerprinting defenses
+  + Disk avoidance
+    + Private browsing + pref changes
+    + He reminded me about documenting disabling IndexedDB, but that is just one
+      of the many prefs.js changes we need to document.
   - Testing
+    - Explain why panopticlick is weirdsauce
     - Sync with QA pages
     - Many are out of date
     - http://www.stayinvisible.com/
@@ -57,18 +58,25 @@
     + All-but-flash patch
     + Plugin manager manipulation
     + We use Firefox's click-to-play
-  - Addons
-    - PDF.js inclusion
-  - Torbutton does not update
-  - Torbutton Security Settings
-  - Update notification/version checking
-  - Socks ports
+  + Addons
+    + PDF.js inclusion
+  + List links to design violations/enhancements:
+    + https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability
+    + https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting
+  - Update notification/version checking?
   - Create a deprecation list and link to it:
     - Referer Header
     - Window.name
+      - We should only preserve window.name if the url bar domain remains the
+        same. I could be convinced of this, but it's going to be trickier to
+        implement and I think it's not really possible to remove linkability for user
+        clicks in general.
+  - Torbutton Security Settings
 
-- List links to design violations/enhancements:
-  - https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability
-  - https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting
+- Packaging
+  - Pref changes
+  - Socks ports
+  - Torbutton does not update
+
 
 
