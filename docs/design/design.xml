@@ -1470,16 +1470,18 @@ desktop resolution.
      </para>
      <para><command>Implementation Status:</command>
 
-We have implemented the above strategy for Javascript using Torbutton's <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">JavaScript
-hooks</ulink> as well as a window observer to <ulink
+We have implemented the above strategy using a window observer to <ulink
 url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l2004">resize
-new windows based on desktop resolution</ulink>. Additionally, we <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">patch
-Firefox</ulink> to cause CSS Media Queries to use the client content window size
-for all desktop size related media queries. We also <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0023-Do-not-expose-system-colors-to-CSS-or-canvas.patch">patch Firefox to report a
-fixed set of system colors to content window CSS</ulink>.
+new windows based on desktop resolution</ulink>. Additionally, we patch
+Firefox to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">use
+the client content window size</ulink> for window.screen and all desktop size
+related media queries, and similarly <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0021-Return-client-window-coordinates-for-mouse-event-scr.patch">patch
+DOM events to return content window relative points</ulink>. We also patch
+Firefox to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0023-Do-not-expose-system-colors-to-CSS-or-canvas.patch">report
+a fixed set of system colors to content window CSS</ulink>.
 
      </para>
      <para>
@@ -1690,15 +1692,12 @@ The set of patches we have against Firefox can be found in the <ulink
 url="https://gitweb.torproject.org/torbrowser.git/tree/maint-2.4:/src/current-patches/firefox">current-patches directory of the torbrowser git repository</ulink>. They are:
    </para>
    <orderedlist>
-    <listitem>Block Components.interfaces and Components.lookupMethod
+    <listitem>Block Components.interfaces
      <para>
 
-In order to reduce fingerprinting, we block access to these two interfaces
-from content script. Components.lookupMethod can undo our <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">Javascript
-hooks</ulink>,
-and Components.interfaces can be used for fingerprinting the platform, OS, and
-Firebox version, but not much else.
+In order to reduce fingerprinting, we block access to this interface from
+content script. Components.interfaces can be used for fingerprinting the
+platform, OS, and Firebox version, but not much else.
 
      </para>
     </listitem>
@@ -1798,7 +1797,49 @@ by the <link linkend="new-identity">New Identity</link> button.
 
      </para>
     </listitem>
-    <listitem>Randomize HTTP pipeline order and depth
+    <listitem>Limit Device and System Specific Media Queries
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Limit the number of fonts per document
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Rebrand Firefox to Tor Browser
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Make Download Manager Memory Only
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Add DDG and StartPage to Omnibox
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Make nsICacheService.EvictEntires() Synchronous
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Prevent WebSockets DNS Leak
+     <para>
+
+
+     </para>
+    </listitem>
+   <listitem>Randomize HTTP pipeline order and depth
      <para>
 As an 
 <ulink
@@ -1806,6 +1847,60 @@ url="https://blog.torproject.org/blog/experimental-defense-website-traffic-finge
 defense against Website Traffic Fingerprinting</ulink>, we patch the standard
 HTTP pipelining code to randomize the number of requests in a
 pipeline, as well as their order.
+     </para>
+    </listitem>
+    <listitem>Adapt Steve Michaud's Mac crashfix patch
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Add mozIThirdPartyUtil.getFirstPartyURI() API
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Add canvas image extraction prompt
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Return client window coordinates for mouse events
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Do not expose physical screen info viw window and CSS
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Do not expose system colors to CSS or canvas
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Isolate the Image Cache per url bar domain
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>nsIHTTPChannel.redirectTo() API
+     <para>
+
+
+     </para>
+    </listitem>
+    <listitem>Isolate DOM Storage to first party URI
+     <para>
+
+
      </para>
     </listitem>
 
