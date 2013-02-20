@@ -40,7 +40,7 @@ This document describes the <link linkend="adversary">adversary model</link>,
 <link linkend="Implementation">implementation</link>, <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
 procedures</link> of the Tor Browser. <!-- XXX: It is
-current as of Tor Browser 2.2.35-1 and Torbutton 1.4.5. -->
+current as of Tor Browser 2.3.35-1 and Torbutton 1.4.5. -->
 
   </para>
   <para>
@@ -1054,6 +1054,14 @@ have an additional "domain=string" property prepended, which will list the
 FQDN that was used to source the third party element.
 
      </para>
+     <para>
+
+Additionally, because the image cache is a separate entity from the content
+cache, we had to patch Firefox to also <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0024-Isolate-the-Image-Cache-per-url-bar-domain.patch">isolate
+this cache per url bar domain</ulink>.
+
+     </para>
     </listitem>
     <listitem>HTTP Auth
      <para>
@@ -1067,16 +1075,13 @@ linkability between domains</ulink>.
      </para>
     </listitem>
     <listitem>DOM Storage
-     <para><command>Design Goal:</command>
+     <para>
 
 DOM storage for third party domains MUST be isolated to the url bar origin,
-to prevent linkability between sites.
-
-     </para>
-     <para><command>Implementation Status:</command>
-
-Because it is isolated to third party domain as opposed to top level url bar
-origin, we entirely disable DOM storage as a stopgap to ensure unlinkability.
+to prevent linkability between sites. This functionality is provided through a
+<ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0026-Isolate-DOM-storage-to-first-party-URI.patch">patch
+to Firefox</ulink>.
 
      </para>
      </listitem>
@@ -1099,7 +1104,7 @@ file on Windows, so Flash remains difficult to enable.
 
      </para>
     </listitem>
-    <listitem>SSL+TLS session resumption and HTTP Keep-Alive
+    <listitem>SSL+TLS session resumption, HTTP Keep-Alive and SPDY
      <para><command>Design Goal:</command>
 
 TLS session resumption tickets and SSL Session IDs MUST be limited to the url
@@ -1129,6 +1134,11 @@ merely reduce the HTTP Keep-Alive timeout to 20 seconds (which is measured
 from the last packet read on the connection) using the Firefox preference
 <command>network.http.keep-alive.timeout</command>.
 
+     </para>
+     <para>
+However, because SPDY can store identifiers and has extremely long keepalive
+duration, it is disabled through the Firefox preference
+<command>network.http.spdy.enabled</command>.
      </para>
     </listitem>
     <listitem>Automated cross-origin redirects MUST NOT store identifiers
@@ -1171,11 +1181,12 @@ storage</ulink>.
      </para>
      <para>
 
-In order to eliminate linkability but still allow for sites that utilize this
-property to function, we reset the window.name property of tabs in Torbutton every
-time we encounter a blank referer. This behavior allows window.name to persist
-for the duration of a link-driven navigation session, but as soon as the user
-enters a new URL or navigates between https/http schemes, the property is cleared.
+In order to eliminate non-consensual linkability but still allow for sites
+that utilize this property to function, we reset the window.name property of
+tabs in Torbutton every time we encounter a blank referer. This behavior
+allows window.name to persist for the duration of a click-driven navigation
+session, but as soon as the user enters a new URL or navigates between
+https/http schemes, the property is cleared.
 
      </para>
     </listitem>
@@ -1246,32 +1257,41 @@ In order to properly address the fingerprinting adversary on a technical
 level, we need a metric to measure linkability of the various browser
 properties beyond any stored origin-related state. <ulink
 url="https://panopticlick.eff.org/about.php">The Panopticlick Project</ulink>
-by the EFF provides us with exactly this metric. The researchers conducted a
-survey of volunteers who were asked to visit an experiment page that harvested
-many of the above components. They then computed the Shannon Entropy of the
-resulting distribution of each of several key attributes to determine how many
-bits of identifying information each attribute provided.
+by the EFF provides us with a prototype of such a metric. The researchers
+conducted a survey of volunteers who were asked to visit an experiment page
+that harvested many of the above components. They then computed the Shannon
+Entropy of the resulting distribution of each of several key attributes to
+determine how many bits of identifying information each attribute provided.
 
    </para>
    <para>
 
-The study is not exhaustive, though. In particular, the test does not take in
-all aspects of resolution information. It did not calculate the size of
-widgets, window decoration, or toolbar size, which we believe may add high
-amounts of entropy. It also did not measure clock offset and other time-based
-fingerprints. Furthermore, as new browser features are added, this experiment
-should be repeated to include them.
-
-   </para>
-   <para>
-
-On the other hand, to avoid an infinite sinkhole, we reduce the efforts for
-fingerprinting resistance by only concerning ourselves with reducing the
+Many browser features have been added since the EFF first ran their experiment
+and collected their data. To avoid an infinite sinkhole, we reduce the efforts
+for fingerprinting resistance by only concerning ourselves with reducing the
 fingerprintable differences <emphasis>among</emphasis> Tor Browser users. We
-do not believe it is productive to concern ourselves with cross-browser
-fingerprinting issues, at least not at this stage.
+do not believe it is possible to solve cross-browser fingerprinting issues.
 
    </para>
+   <para>
+
+Unfortunately, the unsolvable nature of the cross-browser fingerprinting
+problem means that the Panopticlick test website itself is not useful for
+evaluating the actual effectiveness of our defenses, or the fingerprinting
+defenses of any other web browser. Because the Panopticlick dataset is based
+on browser data spanning a number of widely deployed browsers over a number of
+years, any fingerprinting defenses attempted by browsers today are very likely
+to cause Panopticlick to report an <emphasis>increase</emphasis> in
+fingerprintability and entropy, because those defenses will stand out in sharp
+contrast to historical data. We have been <ulink
+url="https://trac.torproject.org/projects/tor/ticket/6119">working to convince
+the EFF</ulink> that it is worthwhile to release the source code to
+Panopticlick to allow us to run our own version for this reason.
+
+   </para>
+  <sect3 id="fingerprinting-defenses">
+   <title>Fingerprinting defenses in the Tor Browser</title>
+
    <orderedlist>
     <listitem>Plugins
      <para>
@@ -1286,19 +1306,75 @@ All plugins that have not been specifically audited or sandboxed MUST be
 disabled. To reduce linkability potential, even sandboxed plugins should not
 be allowed to load objects until the user has clicked through a click-to-play
 barrier.  Additionally, version information should be reduced or obfuscated
-until the plugin object is loaded.
+until the plugin object is loaded. For flash, we wish to <ulink
+url="https://trac.torproject.org/projects/tor/ticket/3974">provide a
+settings.sol file</ulink> to disable Flash cookies, and to restrict P2P
+features that are likely to bypass proxy settings.
 
      </para>
      <para><command>Implementation Status:</command>
 
 Currently, we entirely disable all plugins in Tor Browser. However, as a
-compromise due to the popularity of Flash, we intend to <ulink
-url="https://trac.torproject.org/projects/tor/ticket/3974">work
-towards</ulink> a
-click-to-play barrier using NoScript that is available only after the user has
-specifically enabled plugins. Flash will be the only plugin available, and we
-will ship a settings.sol file to disable Flash cookies, and to restrict P2P
-features that likely bypass proxy settings.
+compromise due to the popularity of Flash, we allow users to re-enable Flash,
+and flash objects are blocked behind a click-to-play barrier that is available
+only after the user has specifically enabled plugins. Flash is the only plugin
+available, the rest are <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0005-Block-all-plugins-except-flash.patch">entirely
+blocked from loading by a Firefox patch</ulink>. We also set the Firefox
+preference <command>plugin.expose_full_path</command> to false, to avoid
+leaking plugin installation information.
+
+     </para>
+    </listitem>
+    <listitem>HTML5 Canvas Image Extraction
+     <para>
+
+The <ulink url="https://developer.mozilla.org/en-US/docs/HTML/Canvas">HTML5
+Canvas</ulink> is a feature that has been added to major browsers after the
+EFF developed their Panopticlick study. After plugins and plugin-provided
+information, we believe that the HTML5 Canvas is the single largest
+fingerprinting threat browsers face today. <ulink
+url="http://www.w2spconf.com/2012/papers/w2sp12-final4.pdf">Initial
+studies</ulink> show that the Canvas can provide an easy-access fingerprinting
+target: The adversary simply renders WebGL, font, and named color data to a
+Canvas element, extracts the image buffer, and computes a hash of that image
+data. Subtle differences in the video card, font packs, and even the font
+library versions allow the adversary to produce a stable, simple, easy to use,
+high-entropy fingerprint of a computer. In fact, the hash of the rendered
+image can be used almost identically to a tracking cookie by the web server.
+
+     </para>
+     <para>
+
+To reduce the threat from this vector, we have patched Firefox to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0020-Add-canvas-image-extraction-prompt.patch">prompt
+before returning valid image data</ulink> to the Canvas APIs. If the user
+hasn't previously allowed the site in the URL bar to access Canvas image data,
+pure white image data is returned to the Javascript APIs.
+
+     </para>
+    </listitem>
+    <listitem>WebGL
+     <para>
+
+WebGL is fingerprintable both through information that is exposed about the
+underlying driver and optimizations, as well as through performance
+fingerprinting.
+
+     </para>
+     <para>
+
+Because of the large amount of potential fingerprinting vectors and the <ulink
+url="http://www.contextis.com/resources/blog/webgl/">previously unexposed
+vulnerability surface</ulink>, we deploy a similar strategy against WebGL as
+for plugins. First, WebGL Canvases have click-to-play placeholders (provided
+by NoScript), and do not run until authorized by the user. Second, we
+obfuscate driver information by setting the Firefox preferences
+<command>webgl.disable-extensions</command> and
+<command>webgl.min_capability_mode</command>, which reduce the information
+provided by the following WebGL API calls: <command>getParameter()</command>,
+<command>getSupportedExtensions()</command>, and
+<command>getExtension()</command>.
 
      </para>
     </listitem>
@@ -1330,15 +1406,66 @@ language issues of supporting a global font set.
 
 We disable plugins, which prevents font enumeration. Additionally, we limit
 both the number of font queries from CSS, as well as the total number of 
-fonts that can be used in a document by patching Firefox. We create two prefs,
+fonts that can be used in a document <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0011-Limit-the-number-of-fonts-per-document.patch">with
+a Firefox patch</ulink>. We create two prefs,
 <command>browser.display.max_font_attempts</command> and
 <command>browser.display.max_font_count</command> for this purpose. Once these
 limits are reached, the browser behaves as if
 <command>browser.display.use_document_fonts</command> was reached. We are
-still working to determine optimal values for these prefs. <!-- XXX: Link
-patch and document pref values. -->
+still working to determine optimal values for these prefs.
 
      </para>
+     <para>
+
+To improve rendering, we exempt remote @font-face fonts from these counts, and
+if a font-family CSS rule lists a remote font (in any order), we use that font
+instead of any of the named local fonts.
+
+     </para>
+    </listitem>
+    <listitem>Desktop resolution, CSS Media Queries, and System Colors
+     <para>
+
+Both CSS and Javascript have a lot of irrelevant information about the screen
+resolution, usable desktop size, OS widget size, toolbar size, title bar size,
+system theme colors, and other desktop features that are not at all relevant
+to rendering and serve only to provide information for fingerprinting.
+
+     </para>
+     <para><command>Design Goal:</command>
+
+Our design goal here is to reduce the resolution information down to the bare
+minimum required for properly rendering inside a content window. We intend to 
+report all rendering information correctly with respect to the size and
+properties of the content window, but report an effective size of 0 for all
+border material, and also report that the desktop is only as big as the
+inner content window. Additionally, new browser windows are sized such that 
+their content windows are one of ~5 fixed sizes based on the user's
+desktop resolution.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+We have implemented the above strategy for Javascript using Torbutton's <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">JavaScript
+hooks</ulink> as well as a window observer to <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l2004">resize
+new windows based on desktop resolution</ulink>. Additionally, we <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">patch
+Firefox</ulink> to cause CSS Media Queries to use the client content window size
+for all desktop size related media queries. We also <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0023-Do-not-expose-system-colors-to-CSS-or-canvas.patch">patch Firefox to report a
+fixed set of system colors to content window CSS</ulink>.
+
+     </para>
+     <para>
+
+As far as we know, this fully satisfies our design goals for desktop
+resolution information.
+
+     </para>
+
     </listitem>
     <listitem>User Agent and HTTP Headers
      <para><command>Design Goal:</command>
@@ -1359,46 +1486,6 @@ url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-pa
 content script access</ulink> to Components.interfaces, which <ulink
 url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
-
-    </listitem>
-    <listitem>Desktop resolution and CSS Media Queries
-     <para>
-
-Both CSS and Javascript have a lot of irrelevant information about the screen
-resolution, usable desktop size, OS widget size, toolbar size, title bar size, and
-other desktop features that are not at all relevant to rendering and serve
-only to provide information for fingerprinting.
-
-     </para>
-     <para><command>Design Goal:</command>
-
-Our design goal here is to reduce the resolution information down to the bare
-minimum required for properly rendering inside a content window. We intend to 
-report all rendering information correctly with respect to the size and
-properties of the content window, but report an effective size of 0 for all
-border material, and also report that the desktop is only as big as the
-inner content window. Additionally, new browser windows are sized such that 
-their content windows are one of ~5 fixed sizes based on the user's
-desktop resolution.
-
-     </para>
-     <para><command>Implementation Status:</command>
-
-We have implemented the above strategy for Javascript using Torbutton's <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/jshooks4.js">JavaScript
-hooks</ulink> as well as a window observer to <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l4002">resize
-new windows based on desktop resolution</ulink>. Additionally, we patch
-Firefox to cause CSS Media Queries to use the client content window size
-for all desktop size related media queries. <!-- XXX: link patch --> 
-
-     </para>
-     <para>
-
-As far as we know, this fully satisfies our design goals for desktop
-resolution information.
-
-     </para>
 
     </listitem>
     <listitem>Timezone and clock offset
@@ -1451,7 +1538,24 @@ optimum trade-off between quantization+jitter and amortization time.
      </para>
      <para><command>Implementation Status:</command>
 
-We have no implementation as of yet.
+Currently, the only mitigation against performance fingerprinting is to
+disable <ulink url="http://www.w3.org/TR/navigation-timing/">Navigation
+Timing</ulink> through the Firefox preference
+<command>dom.enable_performance</command>.
+
+     </para>
+    </listitem>
+    <listitem>Non-Uniform HTML5 API Implementations
+     <para>
+
+At least two HTML5 features have differnt implementation status across the
+major OS vendors: the <ulink
+url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.battery">Battery
+API</ulink> and the <ulink
+url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.connection">Network
+Connection API</ulink>. We disable these APIs
+through the Firefox preferences <command>dom.battery.enabled</command> and
+<command>dom.network.enabled</command>. 
 
      </para>
     </listitem>
@@ -1472,36 +1576,8 @@ fingerprinting: timestamp quantization and jitter.
 We have no implementation as of yet.
      </para>
     </listitem>
-    <listitem>WebGL
-     <para>
-
-WebGL is fingerprintable both through information that is exposed about the
-underlying driver and optimizations, as well as through performance
-fingerprinting.
-
-     </para>
-     <para><command>Design Goal:</command>
-
-Because of the large amount of potential fingerprinting vectors, we intend to
-deploy a similar strategy against WebGL as for plugins. First, WebGL canvases
-will have click-to-play placeholders, and will not run until authorized by the
-user. Second, we intend to <ulink
-url="https://trac.torproject.org/projects/tor/ticket/3323">obfuscate driver
-information</ulink> by hooking
-<command>getParameter()</command>,
-<command>getSupportedExtensions()</command>,
-<command>getExtension()</command>, and
-<command>getContextAttributes()</command> to provide standard minimal,
-driver-neutral information.
-
-     </para>
-     <para><command>Implementation Status:</command>
-
-Currently we simply disable WebGL. 
-
-     </para>
-    </listitem>
    </orderedlist>
+   </sect3>
   </sect2>
   <sect2 id="new-identity">
    <title>Long-Term Unlinkability via "New Identity" button</title>
