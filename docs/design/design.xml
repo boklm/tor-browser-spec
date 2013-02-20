@@ -440,7 +440,7 @@ be replaced with more privacy friendly, auditable alternatives.
    <para>
 
 A Tor web browser adversary has a number of goals, capabilities, and attack
-types that can be used to guide us towards a set of requirements for the
+types that can be used to illustrate the design requirements for the
 Tor Browser. Let's start with the goals.
 
    </para>
@@ -758,7 +758,7 @@ are typically linked for these cases.
 Proxy obedience is assured through the following:
    </para>
 <orderedlist> 
- <listitem>Firefox Proxy settings
+ <listitem>Firefox proxy settings, patches, and build flags
  <para>
 Our <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/pound_tor.js">Firefox
@@ -837,13 +837,6 @@ url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-pa
 for Flash and Gnash</ulink>.
 
  </para>
- <para>
-
-Finally, even if the user alters their browser settings to re-enable the Flash
-plugin, we have configured NoScript to provide click-to-play placeholders, so
-that only desired objects will be loaded, and only after user confirmation.
-
- </para>
  </listitem>
  <listitem>External App Blocking
   <para>
@@ -855,10 +848,10 @@ url="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components
 provide the user with a popup</ulink> whenever the browser attempts to
 launch a helper app. 
 <!-- FIXME: We should file a bug with Ubuntu about this and link to it -->
-Additionally, due primarily to an issue with Ubuntu Unity, url-based drag and drop is
+Additionally, due to an issue with Ubuntu Unity, url-based drag and drop is
 filtered by this component. Unity was pre-fetching URLs without using the
 browser's proxy settings during a drag action, even if the drop was ultimately
-canceled by the user.
+canceled by the user. A similar issue was discovered on Mac OS.
   </para>
  </listitem>
  </orderedlist>
@@ -1368,8 +1361,8 @@ url="http://www.w2spconf.com/2012/papers/w2sp12-final4.pdf">Initial
 studies</ulink> show that the Canvas can provide an easy-access fingerprinting
 target: The adversary simply renders WebGL, font, and named color data to a
 Canvas element, extracts the image buffer, and computes a hash of that image
-data. Subtle differences in the video card, font packs, and even the font
-library versions allow the adversary to produce a stable, simple, easy to use,
+data. Subtle differences in the video card, font packs, and even font and
+graphics library versions allow the adversary to produce a stable, simple,
 high-entropy fingerprint of a computer. In fact, the hash of the rendered
 image can be used almost identically to a tracking cookie by the web server.
 
@@ -1653,8 +1646,9 @@ URL and the last opened URL prefs (if they exist). Each tab is then closed.
 
 After closing all tabs, we then clear the following state: searchbox and
 findbox text, HTTP auth, SSL state, OCSP state, site-specific content
-preferences (including HSTS state), content and image cache, Cookies, DOM storage, safe browsing key, the
-Google wifi geolocation token (if exists). 
+preferences (including HSTS state), content and image cache, Cookies, DOM
+storage, safe browsing key, and the Google wifi geolocation token (if it
+exists). 
 
      </para>
      <para>
@@ -1669,7 +1663,7 @@ closed.
      </para>
     </blockquote>
     <blockquote>
-If the user chose to "protect" cookie by using the Torbutton Cookie
+If the user chose to "protect" any cookies by using the Torbutton Cookie
 Protections UI, those cookies are not cleared as part of the above.
     </blockquote>
    </sect3>
@@ -1839,7 +1833,6 @@ pipeline, as well as their order.
     - Set manually in profile
   - Update security
     - Thandy
--->
 
 <sect1 id="Packaging">
   <title>Packaging</title>
@@ -1856,7 +1849,6 @@ pipeline, as well as their order.
    </sect3>
    <sect3>
     <title>Excluded Addons</title>
-    <!-- FIXME: Adblock, RequestPolicy, ShareMeNot, priv3 -->
    </sect3>
    <sect3>
     <title>Dangerous Addons</title>
@@ -1871,6 +1863,7 @@ pipeline, as well as their order.
    <para> </para>
   </sect2>
 </sect1>
+-->
 
 <sect1 id="Testing">
   <title>Testing</title>
