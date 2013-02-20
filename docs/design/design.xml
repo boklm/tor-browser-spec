@@ -401,7 +401,7 @@ their proper deployment or privacy realization. However, we will likely disable
 high-risk features pending analysis, audit, and mitigation.
       </para>
      </listitem>
-     <listitem><command>Long Term Goal: Linkability Transparency</command>
+     <listitem><command>Strive for Linkability Transparency</command>
       <para>
 <!-- XXX: Link to Deprecation List once it exists -->
 Our long term goal is to reduce all linkability to mechanisms that are
@@ -2255,4 +2255,46 @@ javascript into the chrome (and thus gain complete control of the browser).
   </sect2>
 -->
 </sect1>
+<appendix id="Transparency">
+<title>Towards Linkability Transparency</title>
+<para>
+
+In a few cases, entrenched (mis)use of certain browser features has caused us
+to choose a less extreme implementation of linkability protections than we
+would have liked. This section serves to enumerate those instances and
+describe alternative standardards that have been proposed.
+
+</para>
+<para>
+
+The primary goal of this section is to help describe a web where websites can
+be easily audited for good privacy practices. Right now, there are too many
+ways where XXX..
+
+</para>
+
+<sect1>
+ <title>Deprecation List</title>
+ <orderedlist>
+  <listitem>The Referer Header
+  <para>
+We believe the Referer header should be either eliminated or made explicit. If
+a site wishes to transmit its URL to third parties or during link-click, it
+should specify this as a property of its HTML. The 
+  </para>
+  </listitem>
+  <listitem>window.name
+  </listitem>
+ </orderedlist>
+</sect1>
+<sect1>
+ <title>Promising Standards</title>
+ <orderedlist>
+  <listitem>Web-Send Introducers
+  </listitem>
+  <listitem>Mozilla Persona
+  </listitem>
+ </orderedlist>
+</sect1>
+</appendix>
 </article>
