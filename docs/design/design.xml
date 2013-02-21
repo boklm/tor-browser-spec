@@ -403,13 +403,15 @@ high-risk features pending analysis, audit, and mitigation.
      </listitem>
      <listitem><command>Strive for Linkability Transparency</command>
       <para>
-<!-- XXX: Link to Deprecation List once it exists -->
+
 Our long term goal is to reduce all linkability to mechanisms that are
-detectable by experts, so they can alert the general public about places
-where it occurs. To this end, we maintain a Deprecation List of archaic
-web technologies that are currently (ab)used to facilitate federated login
-and other legitimate click-driven cross-domain activity but that can
-be replaced with more privacy friendly, auditable alternatives.
+detectable by experts and attentive users, so they can alert the general
+public about places where it occurs. To this end, we maintain a <link
+linkend="deprecate">Deprecation Wishlist</link> of archaic web technologies
+that are currently (ab)used to facilitate federated login and other legitimate
+click-driven cross-domain activity but that can be replaced with more privacy
+friendly, auditable alternatives.
+
       </para>
      </listitem>
    </orderedlist>
@@ -2292,42 +2294,135 @@ javascript into the chrome (and thus gain complete control of the browser).
 <title>Towards Linkability Transparency</title>
 <para>
 
-In a few cases, entrenched (mis)use of certain browser features has caused us
-to choose a less thorough implementation of linkability protections than we
-would have liked. This section serves to enumerate those instances and
-describe alternative standardards that have been proposed.
+The <link linkend="privacy">privacy properties</link> in Tor Browser are
+designed around a model that assumes that link click navigation indicates user
+consent for tracking between the linking site and the destination site. This
+definition of consent is primarily pragmatic: It is simply not possible to
+entirely prevent the ability of a destination site to collaberate with a source
+site during link-click nagivation (due to GET parameters, POST parameters, and
+several other vectors, both explicit and implicit).
 
 </para>
 <para>
 
-The primary goal of this section is to provide guidance towards altering web
-standards such that websites can be easily audited for good privacy practices.
-Right now, there are too many ways where XXX..
+However, with a few changes to web standards, it is at least possible to make
+it evident to experts and attentive users when such collaboration is occurring
+before they actually click on a link. In an ideal world, if a user clicks on a
+link that leads to another url bar origin, the vector of tracking possible
+during that link click would be limited to the contents of the URL parameters
+itself. This section serves to enumerate web technologies that create other
+link-click side channels that hinder user awareness of link-click tracking.
 
 </para>
 
-<sect1>
- <title>Deprecation List</title>
+<para>
+
+Because the total elimination of side channels during cross-origin navigation
+will undoubtably break federated login, we also list promising web draft
+standards that would restore this functionality while still preserving
+unlinkability. 
+
+</para>
+
+<sect1 id="deprecate">
+ <title>Deprecation Wishlist</title>
  <orderedlist>
   <listitem>The Referer Header
   <para>
 
+We haven't disabled or restricted the referer ourselves because of the
+non-trivial number of sites that rely on the referer header to "authenticate"
+image requests and deep-link navigation on their sites. Furthermore, there
+seems to be no real privacy benefit to taking this action in a vaccuum,
+because many sites have begun encoding referer URL information into GET
+parameters when they need it to cross http to https scheme transitions.
+Google+'s +1 buttons are the best example of this activity.
+
+  </para>
+  <para>
+
+Because of the availability of other explicit vectors, the main risk of the
+referer header is through inadvertant and/or covert data leakage. In fact,
+<ulink url="http://www2.research.att.com/~bala/papers/wosn09.pdf">a great deal
+of personal data</ulink> is inadvertantly leaked to third parties through the
+source URL parameters. 
+
+  </para>
+  <para>
+
 We believe the Referer header should be either eliminated or made explicit. If
 a site wishes to transmit its URL to third parties or during link-click, it
-should specify this as a property of its HTML. 
+should specify this as a property of its HTML. With an explicit property, it
+would be possible for the user agent to inform the user if they are about to
+click on a link that will either transmit referer information or specified a
+<ulink
+url="https://developer.mozilla.org/en-US/docs/HTML/Element/a#Attributes">"ping"</ulink>
+attribute.
 
   </para>
   </listitem>
   <listitem>window.name
+   <para>
+<ulink
+url="https://developer.mozilla.org/En/DOM/Window.name">window.name</ulink> is
+a DOM property that for some reason is allowed to retain a persistent value
+for the lifespan of a browser tab. It is possible to utilize this property for
+<ulink url="http://www.thomasfrank.se/sessionvars.html">identifier
+storage</ulink> during click navigation. It is sometimes used for additional
+XSRF protection and federated login.
+   </para>
+   <para>
+
+It's our opinion that the contents of window.name should not be preserved for
+cross-origin navigation, but doing so may break federated login.
+
+   </para>
+  </listitem>
+  <listitem>Javascript link rewriting
+   <para>
+
+In general, it should not be possible for onclick handlers to alter the
+navigation destination of 'a' tags, transform them into POST requests, or
+otherwise create situations where a user believes they are clicking on a link
+leading to one URL and end up on another. This functionality is deceptive and
+is frequently a vector for malware.
+
+   </para>
+   <para>
+
+Automated cross-origin redirects are one form of behavior that it is possible
+for us to address ourselves. We are still working on finding the best way to handle 
+<ulink url="https://trac.torproject.org/projects/tor/ticket/3600">that
+issue</ulink>.
+
+   </para>
   </listitem>
  </orderedlist>
 </sect1>
 <sect1>
  <title>Promising Standards</title>
  <orderedlist>
-  <listitem>Web-Send Introducers
+  <listitem><ulink url="http://web-send.org">Web-Send Introducer</ulink>
+   <para>
+
+Web-Send is a browser-based link sharing (aka Like button) and federated login
+widget that is designed to operate without relying on third-party linkability
+or abusing other cross-origin link-click side channels. It has a compelling
+list of <ulink url="http://web-send.org/features.html">privacy and security
+features</ulink>, as well.
+
+   </para>
   </listitem>
-  <listitem>Mozilla Persona
+  <listitem><ulink url="https://developer.mozilla.org/en-US/docs/Persona">Mozilla Persona</ulink> (formerly BrowserID)
+   <para>
+
+Mozilla's Persona is designed to provide decentralized, cryptographically
+authenticated federated login in a way that does not expose the user to third
+party linkability or require browser redirects or side channels. While it does
+not directly provide the link sharing capabilities that Web-Send does, it is a
+better solution to the federated login problem.
+
+   </para>
   </listitem>
  </orderedlist>
 </sect1>
