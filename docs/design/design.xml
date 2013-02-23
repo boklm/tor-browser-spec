@@ -401,6 +401,7 @@ their proper deployment or privacy realization. However, we will likely disable
 high-risk features pending analysis, audit, and mitigation.
       </para>
      </listitem>
+<!--
      <listitem><command>Transparency in Navigation Tracking</command>
       <para>
 
@@ -423,6 +424,7 @@ auditable alternatives.
 
       </para>
      </listitem>
+-->
    </orderedlist>
   </sect2>
 </sect1>
@@ -2297,25 +2299,30 @@ javascript into the chrome (and thus gain complete control of the browser).
 <title>Towards Transparency in Navigation Tracking</title>
 <para>
 
-The <link linkend="privacy">privacy properties</link> of Tor Browser are
-based upon the assumption that link-click navigation indicates user
-consent to tracking between the linking site and the destination site. This
-definition of consent is primarily pragmatic: It is simply not possible to
-entirely prevent the ability of a destination site to collaberate with a source
-site during link-click nagivation (due to GET parameters, POST parameters, and
-several other vectors, both explicit and implicit).
+The <link linkend="privacy">privacy properties</link> of Tor Browser are based
+upon the assumption that link-click navigation indicates user consent to
+tracking between the linking site and the destination site.  While this
+definition is sufficient to allow us to eliminate cross-site third party
+tracking with only minimal site breakage, it is our long-term goal to further
+reduce cross-origin click navigation tracking to mechanisms that are
+detectable by attentive users, so they can alert the general public if
+cross-origin click navigation tracking is happening where it should not be.
 
 </para>
 <para>
 
-However, in an ideal world, the mechanisms of tracking that can be employed by
-a link would be limited to the contents of URL parameters and other properties
-that are fully visible to the user before they click. This section serves to
-enumerate web technologies that create other link-click side channels that
-serve to hinder user awareness of such navigation tracking.
+In an ideal world, the mechanisms of tracking that can be employed during a
+link click would be limited to the contents of URL parameters and other
+properties that are fully visible to the user before they click. However, the
+entrenched nature of certain archaic web features make it impossible for us to
+achieve this transparency goal by ourselves without substantial site breakage.
+So, instead we maintain a <link linkend="deprecate">Deprecation
+Wishlist</link> of archaic web technologies that are currently being (ab)used
+to facilitate federated login and other legitimate click-driven cross-domain
+activity but that can one day be replaced with more privacy friendly,
+auditable alternatives.
 
 </para>
-
 <para>
 
 Because the total elimination of side channels during cross-origin navigation
