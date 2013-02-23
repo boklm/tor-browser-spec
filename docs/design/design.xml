@@ -811,7 +811,7 @@ geolocation queries, searchbox queries, XPCOM addon HTTPS/HTTP activity,
 WebSockets, and live bookmark updates. We have also verified that IPv6
 connections are not attempted, through the proxy or otherwise (Tor does not
 yet support IPv6). We have also verified that external protocol helpers, such
-as smb urls and other custom protocol handers are all blocked.
+as smb urls and other custom protocol handlers are all blocked.
 
  </para>
  <para>
@@ -1158,7 +1158,7 @@ False Start</ulink> via the Firefox Pref
     </para>
     <para>
 
-Becuase of the extreme performance benefits of HTTP Keep-Alive for interactive
+Because of the extreme performance benefits of HTTP Keep-Alive for interactive
 web apps, and because of the difficulties of conveying urlbar origin
 information down into the Firefox HTTP layer, as a compromise we currently
 merely reduce the HTTP Keep-Alive timeout to 20 seconds (which is measured
@@ -1579,7 +1579,7 @@ Timing</ulink> through the Firefox preference
     <listitem>Non-Uniform HTML5 API Implementations
      <para>
 
-At least two HTML5 features have differnt implementation status across the
+At least two HTML5 features have different implementation status across the
 major OS vendors: the <ulink
 url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.battery">Battery
 API</ulink> and the <ulink
@@ -1772,14 +1772,14 @@ url="http://www.oxymoronical.com/experiments/xpcomref/applications/Firefox/3.5/c
 @mozilla.org/extensions/blocklist;1</ulink> service, because we
 actually want to stop plugins from ever entering the browser's process space
 and/or executing code (for example, AV plugins that collect statistics/analyze
-URLs, magical toolbars that phone home or "help" the user, skype buttons that
+URLs, magical toolbars that phone home or "help" the user, Skype buttons that
 ruin our day, and censorship filters). Hence we rolled our own.
      </para>
     </listitem>
     <listitem><ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">Make content-prefs service memory only</ulink>
      <para>
-This patch prevents random URLs from being inserted into content-prefs.sqllite in
+This patch prevents random URLs from being inserted into content-prefs.sqlite in
 the profile directory as content prefs change (includes site-zoom and perhaps
 other site prefs?).
      </para>
@@ -1790,8 +1790,8 @@ url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-pa
 
 It turns out that on Windows 7 and later systems, the Taskbar attempts to
 automatically learn the most frequent apps used by the user, and it recognizes
-Tor Browser as a seperate app from Vidalia. This can cause users to try to
-launch Tor Brower without Vidalia or a Tor instance running. Worse, the Tor
+Tor Browser as a separate app from Vidalia. This can cause users to try to
+launch Tor Browser without Vidalia or a Tor instance running. Worse, the Tor
 Browser will automatically find their default Firefox profile, and properly
 connect directly without using Tor. This patch is a simple hack to cause Tor
 Browser to immediately exit in this case.
@@ -1872,7 +1872,7 @@ Captchas and complete 403 bans from Google.
      </para>
     </listitem>
     <listitem><ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0015-Make-nsICacheService.EvictEntries-synchronous.patch">Make nsICacheService.EvictEntires() Synchronous</ulink>
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0015-Make-nsICacheService.EvictEntries-synchronous.patch">Make nsICacheService.EvictEntries() Synchronous</ulink>
      <para>
 
 This patch eliminates a race condition with "New Identity". Without it,
@@ -2326,7 +2326,7 @@ auditable alternatives.
 <para>
 
 Because the total elimination of side channels during cross-origin navigation
-will undoubtably break federated login as well as destroy ad revenue, we
+will undoubtedly break federated login as well as destroy ad revenue, we
 also describe auditable alternatives and promising web draft standards that would
 preserve this functionality while still providing transparency when tracking is
 occurring. 
@@ -2343,7 +2343,7 @@ We haven't disabled or restricted the referer ourselves because of the
 non-trivial number of sites that rely on the referer header to "authenticate"
 image requests and deep-link navigation on their sites. Furthermore, there
 seems to be no real privacy benefit to taking this action by itself in a
-vaccuum, because many sites have begun encoding referer URL information into
+vacuum, because many sites have begun encoding referer URL information into
 GET parameters when they need it to cross http to https scheme transitions.
 Google's +1 buttons are the best example of this activity.
 
@@ -2351,10 +2351,10 @@ Google's +1 buttons are the best example of this activity.
   <para>
 
 Because of the availability of these other explicit vectors, we believe the
-main risk of the referer header is through inadvertant and/or covert data
+main risk of the referer header is through inadvertent and/or covert data
 leakage.  In fact, <ulink
 url="http://www2.research.att.com/~bala/papers/wosn09.pdf">a great deal of
-personal data</ulink> is inadvertantly leaked to third parties through the
+personal data</ulink> is inadvertently leaked to third parties through the
 source URL parameters. 
 
   </para>
