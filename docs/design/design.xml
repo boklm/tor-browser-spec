@@ -36,10 +36,10 @@
   <para>
 
 This document describes the <link linkend="adversary">adversary model</link>,
-<link linkend="DesignRequirements">design requirements</link>, <link
-linkend="Implementation">implementation</link>, <!-- <link
-linkend="Packaging">packaging</link> --> and <link linkend="Testing">testing
-procedures</link> of the Tor Browser. It is current as of Tor Browser 2.3.25-4
+<link linkend="DesignRequirements">design requirements</link>, and <link
+linkend="Implementation">implementation</link> <!-- <link
+linkend="Packaging">packaging</link> and <link linkend="Testing">testing
+procedures</link> --> of the Tor Browser. It is current as of Tor Browser 2.3.25-4
 and Torbutton 1.5.0.
 
   </para>
@@ -814,8 +814,7 @@ as smb urls and other custom protocol handers are all blocked.
  </para>
  <para>
 
-Numerous other third parties have also reviewed and <link
-linkend="SingleStateTesting">tested</link> the proxy settings
+Numerous other third parties have also reviewed and tested the proxy settings
 and have provided test cases based on their work. See in particular <ulink
 url="http://decloak.net/">decloak.net</ulink>. 
 
@@ -2040,6 +2039,7 @@ identifiers.
 </sect1>
 -->
 
+<!-- 
 <sect1 id="Testing">
   <title>Testing</title>
   <para>
@@ -2160,6 +2160,7 @@ with a bit of work.
      </orderedlist>
     </para>
   </sect2>
+-->
 <!--
   <sect2>
    <title>Multi-state testing</title>
@@ -2290,8 +2291,8 @@ javascript into the chrome (and thus gain complete control of the browser).
     </para>
    </sect3>
   </sect2>
--->
 </sect1>
+-->
 <appendix id="Transparency">
 <title>Towards Transparency in Navigation Tracking</title>
 <para>
