@@ -1453,9 +1453,10 @@ still working to determine optimal values for these prefs.
      </para>
      <para>
 
-To improve rendering, we exempt remote @font-face fonts from these counts, and
-if a font-family CSS rule lists a remote font (in any order), we use that font
-instead of any of the named local fonts.
+To improve rendering, we exempt remote <ulink
+url="https://developer.mozilla.org/en-US/docs/CSS/@font-face">@font-face
+fonts</ulink> from these counts, and if a font-family CSS rule lists a remote
+font (in any order), we use that font instead of any of the named local fonts.
 
      </para>
     </listitem>
@@ -1676,6 +1677,7 @@ Protections UI, those cookies are not cleared as part of the above.
     </blockquote>
    </sect3>
   </sect2>
+<!--
   <sect2 id="click-to-play">
    <title>Click-to-play for plugins and invasive content</title>
    <para>
@@ -1691,6 +1693,7 @@ Currently, the content types isolated in this way include Flash, WebGL, and
 audio and video objects.
    </para>
   </sect2>
+-->
   <sect2 id="firefox-patches">
    <title>Description of Firefox Patches</title>
    <para>
