@@ -2336,7 +2336,7 @@ occurring.
 
 </para>
 
-<sect2 id="deprecate">
+<sect1 id="deprecate">
  <title>Deprecation Wishlist</title>
  <orderedlist>
   <listitem>The Referer Header
@@ -2417,8 +2417,8 @@ permissions.
    </para>
   </listitem>
  </orderedlist>
-</sect2>
-<sect2>
+</sect1>
+<sect1>
  <title>Promising Standards</title>
  <orderedlist>
   <listitem><ulink url="http://web-send.org">Web-Send Introducer</ulink>
@@ -2445,6 +2445,6 @@ Web-Send is.
    </para>
   </listitem>
  </orderedlist>
-</sect2>
+</sect1>
 </appendix>
 </article>
