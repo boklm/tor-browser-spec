@@ -1447,7 +1447,7 @@ a Firefox patch</ulink>. We create two prefs,
 <command>browser.display.max_font_attempts</command> and
 <command>browser.display.max_font_count</command> for this purpose. Once these
 limits are reached, the browser behaves as if
-<command>browser.display.use_document_fonts</command> was reached. We are
+<command>browser.display.use_document_fonts</command> was set. We are
 still working to determine optimal values for these prefs.
 
      </para>
@@ -1478,7 +1478,7 @@ properties of the content window, but report an effective size of 0 for all
 border material, and also report that the desktop is only as big as the
 inner content window. Additionally, new browser windows are sized such that 
 their content windows are one of a few fixed sizes based on the user's
-desktop resolution.
+desktop resolution. 
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1496,6 +1496,16 @@ DOM events to return content window relative points</ulink>. We also patch
 Firefox to <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0023-Do-not-expose-system-colors-to-CSS-or-canvas.patch">report
 a fixed set of system colors to content window CSS</ulink>.
+
+     </para>
+     <para>
+
+To further reduce resolution-based fingerprinting, we are <ulink
+url="https://trac.torproject.org/projects/tor/ticket/7256">investigating
+zoom/viewport-based mechanisms</ulink> that might allow us to always report
+the same desktop resolution regardless of the actual size of the content
+window, and simply scale to make up the difference. However, the complexity
+and rendering impact of such a change is not yet known.
 
      </para>
     </listitem>
