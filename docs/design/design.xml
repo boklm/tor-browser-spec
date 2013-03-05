@@ -850,20 +850,29 @@ for Flash and Gnash</ulink>.
 
  </para>
  </listitem>
- <listitem>External App Blocking
+ <listitem>External App Blocking and Drag Event Filtering
   <para>
-External apps, if launched automatically, can be induced to load files that
-perform network activity. In order to prevent this, Torbutton installs a
-component to 
-<ulink
+
+External apps can be induced to load files that perform network activity.
+Unfortunately, there are cases where such apps can be launched automatically
+with little to no user input. In order to prevent this, Torbutton installs a
+component to <ulink
 url="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components/external-app-blocker.js">
-provide the user with a popup</ulink> whenever the browser attempts to
-launch a helper app. 
-<!-- FIXME: We should file a bug with Ubuntu about this and link to it -->
-Additionally, due to an issue with Ubuntu Unity, url-based drag and drop is
-filtered by this component. Unity was pre-fetching URLs without using the
-browser's proxy settings during a drag action, even if the drop was ultimately
-canceled by the user. A similar issue was discovered on Mac OS.
+provide the user with a popup</ulink> whenever the browser attempts to launch
+a helper app.
+
+  </para>
+  <para>
+
+Additionally, modern desktops now pre-emptively fetch any URLs in Drag and
+Drop events as soon as the drag is initiated. This download happens
+independent of the browser's Tor settings, and can be triggered by something
+as simple as holding the mouse button down for slightly too long while
+clicking on an image link. We had to patch Firefox to <ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0018-Emit-observer-event-to-filter-the-Drag-Drop-url-list.patch">emit
+an observer event during dragging</ulink> to allow us to filter the drag
+events from Torbutton before the OS downloads the URLs the events contained.
+
   </para>
  </listitem>
  </orderedlist>
@@ -1915,13 +1924,16 @@ pipeline, as well as their order.
      </para>
     </listitem>
     <listitem><ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0018-Adapt-Steven-Michaud-s-Mac-crashfix-patch.patch">Adapt Steve Michaud's Mac crashfix patch</ulink>
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0018-Emit-observer-event-to-filter-the-Drag-Drop-url-list.patch">Emit
+an observer event to filter the Drag and Drop URL list</ulink>
      <para>
 
-This patch allows us to block Drag and Drop without causing crashes on Mac OS.
+This patch allows us to block external Drag and Drop events from Torbutton.
 We need to block Drag and Drop because Mac OS and Ubuntu both immediately load
 any URLs they find in your drag buffer before you even drop them (without
-using your browser's proxy settings, of course).
+using your browser's proxy settings, of course). This can lead to proxy bypass
+during user activity that is as basic as holding down the mouse button for
+slightly too long while clicking on an image link.
 
      </para>
     </listitem>
@@ -1996,6 +2008,20 @@ url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-pa
 
 This patch prevents DOM Storage from being used to store third party tracking
 identifiers.
+
+     </para>
+    </listitem>
+
+	<listitem><ulink
+url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0027-Remove-This-plugin-is-disabled-barrier.patch">Remove
+"This plugin is disabled" barrier</ulink>
+
+     <para>
+
+This patch removes a barrier that was informing users that plugins were
+disabled and providing them with a link to enable them. We felt this was poor
+user experience, especially since the barrier was displayed even for sites
+with dual Flash+HTML5 video players, such as YouTube.
 
      </para>
     </listitem>
