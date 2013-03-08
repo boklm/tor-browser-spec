@@ -462,7 +462,7 @@ types that can be used to illustrate the design requirements for the
 Tor Browser. Let's start with the goals.
 
    </para>
-   <sect2 id="adversarygoals">
+   <sect2 id="adversary-goals">
     <title>Adversary Goals</title>
     <orderedlist>
 <!-- These aren't really commands.. But it's the closest I could find in an
@@ -530,7 +530,7 @@ data are the primary goals here.
     </orderedlist>
    </sect2>
 
-   <sect2 id="adversarypositioning">
+   <sect2 id="adversary-positioning">
     <title>Adversary Capabilities - Positioning</title>
     <para>
 The adversary can position themselves at a number of different locations in
@@ -1795,7 +1795,7 @@ audio and video objects.
    </para>
   </sect2>
 -->
-  <sect2 id="OtherSecurity">
+  <sect2 id="other-security">
    <title>Other Security Measures</title>
    <para>
 
