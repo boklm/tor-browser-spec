@@ -738,41 +738,56 @@ was formerly available only to Javascript.
      <para>
 
 Website traffic fingerprinting is an attempt by the adversary to recognize the
-encrypted traffic patterns of specific websites. The most comprehensive study
-of the statistical properties of this attack against Tor was done by <ulink
+encrypted traffic patterns of specific websites. The most comprehensive
+study of the statistical properties of this attack against Tor was done by
+<ulink
 url="http://lorre.uni.lu/~andriy/papers/acmccs-wpes11-fingerprinting.pdf">Panchenko
 et al</ulink>. Unfortunately, the publication bias in academia has encouraged
 the production of a number of follow-on attack papers claiming "improved"
-success rates using this attack in recognizing only very small numbers of
-websites. Despite these subsequent results, we are skeptical of the efficacy
-of this attack in a real world scenario, especially in the face of any defenses.
+success rates, which are enabled primarily by taking a number of shortcuts
+(such as classifying only very small numbers of websites, neglecting to
+publish ROC curves or at least false positive rates, and/or omitting the
+effects of dataset size on their results). Despite these subsequent
+"improvements" (which in some cases amusingly claim to completely invalidate
+any attempt at defense), we are skeptical of the efficacy of this attack in a
+real world scenario, <emphasis>especially</emphasis> in the face of any
+defenses.
 
      </para>
      <para>
 
-In general, with machine learning, as you increase the number of
-categories to classify with few reliable features to extract, either true
-positive accuracy goes down or the false positive rate goes up.
+In general, with machine learning, as you increase the <ulink
+url="https://en.wikipedia.org/wiki/VC_dimension">number and/or complexity of
+categories to classify</ulink> while maintaining a limit on reliable feature
+information you can extract, you eventually run out of descriptive feature
+information, and either true positive accuracy goes down or the false positive
+rate goes up. This error is called the <ulink
+url="http://www.cs.washington.edu/education/courses/csep573/98sp/lectures/lecture8/sld050.htm">bias
+in your hypothesis space</ulink>. In fact, even for unbiased hypothesis
+spaces, the number of training examples required to achieve a reasonable error
+bound is <ulink
+url="https://en.wikipedia.org/wiki/Probably_approximately_correct_learning#Equivalence">a
+function of the number of categories</ulink> you need to classify.
 
      </para>
       <para>
 
 
 In the case of this attack, the key factors that increase the classification
-requirements (and thus hinder a real world adversary who attempts this attack)
+complexity (and thus hinder a real world adversary who attempts this attack)
 are large numbers of dynamically generated pages, partially cached content,
 and non-web activity in the "Open World" scenario of the entire Tor network.
-This large set of classification categories is further confounded by a poor
-and often noisy available featureset, which is also realtively easy for the
-defender to manipulate.
+This large level of classification complexity is further confounded by a noisy
+and low resolution featureset, one which is also realtively easy for the
+defender to manipulate at low cost.
 
      </para>
      <para>
 
-In fact, the ocean of possible Tor Internet activity makes it a certainty that
-an adversary attempting to classify a large number of sites with poor feature
-resolution will ultimately be overwhelmed by false positives. This problem is
-known in the IDS literature as the <ulink
+In fact, the ocean of Tor Internet activity (at least, when compared to a lab
+setting) makes it a certainty that an adversary attempting to classify a large
+number of sites with poor feature resolution will ultimately be overwhelmed by
+false positives. This problem is known in the IDS literature as the <ulink
 url="http://www.raid-symposium.org/raid99/PAPERS/Axelsson.pdf">Base Rate
 Fallacy</ulink>, and it is the primary reason that anomaly and activity
 classification-based IDS and antivirus systems have failed to materialize in
@@ -1780,7 +1795,7 @@ audio and video objects.
    </para>
   </sect2>
 -->
-  <sect2 id="other">
+  <sect2 id="OtherSecurity">
    <title>Other Security Measures</title>
    <para>
 
@@ -1847,14 +1862,19 @@ developed SPDY as opposed simply extending HTTP to improve pipelining.
      </para>
      <para>
 
-Knowing this, we created the defense as an <ulink
+Knowing this, we created this defense as an <ulink
 url="https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting">experimental
 research prototype</ulink> to help evaluate what could be done in the best
-case with full server support (ie with SPDY).  Unfortunately, the bias in
-favor of compelling attack papers has caused academia to thus far ignore our
-requests, instead publishing only cursory (yet "devastating") evaluations that
-fail to provide even simple statistics such as the rates of actual pipeline
-utilization during their evaluations.
+case with full server support. Unfortunately, the bias in favor of compelling
+attack papers has caused academia to ignore this request thus far, instead
+publishing only cursory (yet "devastating") evaluations that fail to provide
+even simple statistics such as the rates of actual pipeline utilization during
+their evaluations, in addition to the other shortcomings and shortcuts <link
+linkend="website-traffic-fingerprinting">mentioned earlier</link>. We can
+accept that our defense might fail to work as well as others (in fact we
+expect it), but unfortunately the very same shortcuts that provide excellent
+attack results also allow the conclusion that all defenses are broken forever.
+So sadly, we are still left in the dark on this point.
 
      </para>
       </blockquote>
@@ -1864,7 +1884,7 @@ utilization during their evaluations.
      <para>
 
 In order to inform the user when their Tor Browser is out of date, we perform a
-privacy-preserving update check in the asynchronously in the background. The
+privacy-preserving update check asynchronously in the background. The
 check uses Tor to download the file <ulink
 url="https://check.torproject.org/RecommendedTBBVersions">https://check.torproject.org/RecommendedTBBVersions</ulink>
 and searches that version list for the current value for the local preference
