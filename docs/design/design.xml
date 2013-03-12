@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>March 8 2013</pubdate>
+   <pubdate>March 11, 2013</pubdate>
  </articleinfo>
 
 <!--
@@ -783,11 +783,12 @@ to manipulate at low cost.
      </para>
      <para>
 
-In fact, the ocean of Tor Internet activity (at least, when compared to a lab
-setting) makes it a certainty that an adversary attempting examine large
-amounts of Tor traffic will ultimately be overwhelmed by false positives (even
-after making heavy tradeoffs on the ROC curve to minimize false positives to
-below 0.01%). This problem is known in the IDS literature as the <ulink
+To make matters worse for a real-world adversary, the ocean of Tor Internet
+activity (at least, when compared to a lab setting) makes it a certainty that
+an adversary attempting examine large amounts of Tor traffic will ultimately
+be overwhelmed by false positives (even after making heavy tradeoffs on the
+ROC curve to minimize false positives to below 0.01%). This problem is known
+in the IDS literature as the <ulink
 url="http://www.raid-symposium.org/raid99/PAPERS/Axelsson.pdf">Base Rate
 Fallacy</ulink>, and it is the primary reason that anomaly and activity
 classification-based IDS and antivirus systems have failed to materialize in
@@ -1841,7 +1842,8 @@ network overhead. In the no-overhead category, we have <ulink
 url="http://freehaven.net/anonbib/cache/LZCLCP_NDSS11.pdf">HTTPOS</ulink> and
 <ulink
 url="https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting">better
-use of HTTP pipelining and/or SPDY</ulink>. In the tunable/low-overhead
+use of HTTP pipelining and/or SPDY</ulink>. 
+In the tunable/low-overhead
 category, we have <ulink
 url="http://freehaven.net/anonbib/cache/ShWa-Timing06.pdf">Adaptive
 Padding</ulink> and <ulink url="http://www.cs.sunysb.edu/~xcai/fp.pdf">
@@ -1865,7 +1867,12 @@ pipelining may simply return error codes for successive requests, effectively
 forcing the browser into non-pipelined behavior. Firefox also has code to back
 off and reduce or eliminate the pipeline if this happens. These
 shortcomings and fallback behaviors are the primary reason that Google
-developed SPDY as opposed simply extending HTTP to improve pipelining.
+developed SPDY as opposed simply extending HTTP to improve pipelining. It
+turns out that we could actually deploy exit-side proxies that allow us to
+<ulink
+url="https://gitweb.torproject.org/torspec.git/blob/HEAD:/proposals/ideas/xxx-using-spdy.txt">use
+SPDY from the client to the exit node</ulink>. This would make our defense not
+only free, but one that actually <emphasis>improves</emphasis> performance.
 
      </para>
      <para>
