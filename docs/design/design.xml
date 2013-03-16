@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>March 11, 2013</pubdate>
+   <pubdate>March 15, 2013</pubdate>
  </articleinfo>
 
 <!--
@@ -777,7 +777,7 @@ url="http://lorre.uni.lu/~andriy/papers/acmccs-wpes11-fingerprinting.pdf">Panche
 "Open World" scenario</ulink>, which suffered continous near-constant decline
 in the true positive rate as the "Open World" size grew (see figure 4). This
 large level of classification complexity is further confounded by a noisy and
-low resolution featureset - one which is also realtively easy for the defender
+low resolution featureset - one which is also relatively easy for the defender
 to manipulate at low cost.
 
      </para>
@@ -812,14 +812,26 @@ OS</command>
 Last, but definitely not least, the adversary can exploit either general
 browser vulnerabilities, plugin vulnerabilities, or OS vulnerabilities to
 install malware and surveillance software. An adversary with physical access
-can perform similar actions. Regrettably, this last attack capability is
-outside of the browser's ability to defend against, but it is worth mentioning
-for completeness. In fact, <ulink
-url="http://tails.boum.org/contribute/design/">The Tails system</ulink> can
-provide some defense against this adversary, and it does include the Tor
-Browser. We do however aim to defend against an adersary that has passive
-forensic access the disk after browsing activity takes place, as part of our
+can perform similar actions.
+
+    </para>
+    <para>
+
+For the purposes of the browser itself, we limit the scope of this adversary
+to one that has passive forensic access to the disk after browsing activity
+has taken place. This adversary motivates our 
 <link linkend="disk-avoidance">Disk Avoidance</link> defenses.
+
+    </para>
+    <para>
+
+An adversary with arbitrary code execution typically has more power, though.
+It can be quite hard to really significantly limit the capabilities of such an
+adversary. <ulink
+url="http://tails.boum.org/contribute/design/">The Tails system</ulink> can
+provide some defense against this adversary through the use of readonly media
+and frequent reboots, but even this can be circumvented on machines without
+Secure Boot through the use of BIOS rootkits.
 
      </para>
      </listitem>
@@ -960,14 +972,34 @@ events from Torbutton before the OS downloads the URLs the events contained.
 
   </para>
  </listitem>
+ <listitem>Disabling system extensions and clearing the addon whitelist
+  <para>
+
+Firefox addons can perform arbitrary activity on your computer, including
+bypassing Tor. It is for this reason we disable the addon whitelist
+(<command>xpinstall.whitelist.add</command>), so that users are prompted
+before installing addons regardless of the source. We also exclude
+system-level addons from the browser through the use of
+<command>extensions.enabledScopes</command> and
+<command>extensions.autoDisableScopes</command>.
+
+  </para>
+ </listitem>
  </orderedlist>
   </sect2>
   <sect2 id="state-separation">
    <title>State Separation</title>
    <para>
+
 Tor Browser State is separated from existing browser state through use of a
-custom Firefox profile. Furthermore, plugins are disabled, which prevents
-Flash cookies from leaking from a pre-existing Flash directory.
+custom Firefox profile, and by setting the $HOME environment variable to the
+root of the bundle's directory.  The browser also does not load any
+system-wide extensions (through the use of
+<command>extensions.enabledScopes</command> and
+<command>extensions.autoDisableScopes</command>. Furthermore, plugins are
+disabled, which prevents Flash cookies from leaking from a pre-existing Flash
+directory.
+
    </para>
   </sect2>
   <sect2 id="disk-avoidance">
