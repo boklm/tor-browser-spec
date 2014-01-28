@@ -11,7 +11,8 @@
    vim Bundle-Data/Docs/ChangeLog.txt
    cd gitian
    vim versions*
-   git commmit .
+   git commmit ..
+   git diff --color HEAD^1
    cd ../..
 
 #. Tag a build tag in tor-browser-bundle.git
@@ -37,7 +38,7 @@
    cd torbrowser
    git checkout maint-2.4
    vim ./build-scripts/recommended-versions
-   git commit .
+   git commit build-scripts/recommended-versions
    git checkout master
    git merge maint-2.4
    torsocks git push origin maint-2.4:maint-2.4
@@ -52,7 +53,8 @@
 
 #. Update website's torbrowser versions file
    cd website
+   torsocks svn up .
    vim ./include/versions.wmi
-   torsocks svn commit . -m "Bump TBB version"
+   torsocks svn commit include/versions.wml -m "Bump TBB version"
    ./publish
    cd ..
