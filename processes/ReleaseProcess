@@ -28,6 +28,9 @@
    make sign
    make match
 
+#. Distribute build to tor-qa@lists.torproject.org
+   #XXX: Currently manual
+
 #. Transfer builds to vescum
    torsocks rsync -aP $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
 
