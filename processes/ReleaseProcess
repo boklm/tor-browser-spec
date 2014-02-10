@@ -29,17 +29,27 @@
    make match
 
 #. Transfer builds to vescum
-   torsocks scp -r $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
+   torsocks rsync -aP $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
 
 #. Sign individual bundle files
 #  XXX: This blocks on Erinn currently. We use her key for file sigs
 
+#. Update website's torbrowser versions file
+   cd website
+   torsocks svn up .
+   vim ./include/versions.wmi
+   torsocks svn commit include/versions.wmi -m "Bump TBB version"
+   ./publish
+   cd ..
+
 #. Update recommended-versions file in torbrowser.git
    cd torbrowser
    git checkout maint-2.4
+   torsocks git pull origin
    vim ./build-scripts/recommended-versions
    git commit build-scripts/recommended-versions
    git checkout master
+   torsocks git pull origin
    git merge maint-2.4
    torsocks git push origin maint-2.4:maint-2.4
    torsocks git push origin master:master
@@ -47,14 +57,6 @@
 
 #. Create blog post from changelog
 #  XXX: Template?
-#  See https://blog.torproject.org/blog/tor-browser-351-released for now
+#  See https://blog.torproject.org/blog/tor-browser-352-released for now
 #  Don't forget to link to Mozilla's security advisories if this is a security
 #  update, or Nadim will yell at you.
-
-#. Update website's torbrowser versions file
-   cd website
-   torsocks svn up .
-   vim ./include/versions.wmi
-   torsocks svn commit include/versions.wml -m "Bump TBB version"
-   ./publish
-   cd ..
