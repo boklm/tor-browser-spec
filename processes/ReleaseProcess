@@ -31,8 +31,11 @@
 #. Distribute build to tor-qa@lists.torproject.org
    #XXX: Currently manual
 
-#. Transfer builds to vescum
+#. Clear out old builds, transfer builds to vescum
+   torsocks ssh www-master.torproject.org "rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.5*"
    torsocks rsync -aP $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
+   torsocks ssh www-master.torproject.org "chmod g+w,o+r -R /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.5*"
+   torsocks ssh www-master.torproject.org "/home/mirroradm/bin/trigger-mirrors"
 
 #. Sign individual bundle files
 #  XXX: This blocks on Erinn currently. We use her key for file sigs
