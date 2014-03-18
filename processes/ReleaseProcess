@@ -28,17 +28,41 @@
    make sign
    make match
 
+#. Place all build signatures in the correct location and fix permissions
+   source versions
+   for i in gk linus erinn mikeperry dcf
+   do
+     if [ -d ${TORBROWSER_VERSION}/$i ]; then
+       if [ -f ${TORBROWSER_VERSION}/${i}/sha256sums.txt.asc ]; then
+         cp ${TORBROWSER_VERSION}/$i/sha256sums.txt.asc ${TORBROWSER_VERSION]/sha256sums.txt-${i}.asc
+       fi
+       rm -rf ${TORBROWSER_VERSION/$i
+     fi
+   done
+   chmod 755 $TORBROWSER_VERSION
+   chmod 644 $TORBROWSER_VERSION/*
+
 #. Distribute build to tor-qa@lists.torproject.org
    #XXX: Currently manual
 
-#. Clear out old builds, transfer builds to vescum
-   torsocks ssh www-master.torproject.org "rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.5*"
-   torsocks rsync -aP $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
-   torsocks ssh www-master.torproject.org "chmod g+w,o+r -R /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.5*"
-   torsocks ssh www-master.torproject.org "/home/mirroradm/bin/trigger-mirrors"
-
 #. Sign individual bundle files
 #  XXX: This blocks on Erinn currently. We use her key for file sigs
+
+#. Clear out old builds, transfer builds to vescum
+#. Remote:
+   torsocks ssh www-master.torproject.org "rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.*"
+   torsocks rsync -avP $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
+   torsocks ssh www-master.torproject.org "chmod g+w,o+r -R /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.5*"
+   torsocks ssh www-master.torproject.org "/home/mirroradm/bin/trigger-mirrors"
+#. Local to vescum:
+   cd tmp
+   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION
+   chmod 755 $TORBROWSER_VERSION
+   chmod 644 $TORBROWSER_VERSION/*
+   rm $TORBROWSER_VERSION/index.html*
+   rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.*
+   cp -a $TORBROWSER_VERSION /srv/www-master.torproject.org/htdocs/dist/torbrowser/
+   /home/mirroradm/bin/trigger-mirrors
 
 #. Update website's torbrowser versions file
    cd website
