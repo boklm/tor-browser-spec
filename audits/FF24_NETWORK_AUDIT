@@ -1,0 +1,65 @@
+Lowest level resolver calls:
+ - PR_GetHostByName
+   - ./security/nss/lib/certhigh/ocsp.c
+   - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+   - ./security/nss/cmd/libpkix/pkix_pl/module/test_socket.c
+   - ./security/nss/cmd/vfyserv/vfyserv.c
+   - ./profile/dirserviceprovider/src/nsProfileLock.cpp
+   - ./nsprpub/pr/src/misc/prnetdb.c
+   - ./nsprpub/pr/src/cplus/rcnetdb.cpp
+ + PR_GetIPNodeByName
+   + Used by tests only
+ + PR_GetAddrInfoByName
+   + ./security/nss/cmd/ usage (NSS cli commands only)
+   + ./netwerk/dns/nsHostResolver.cpp
+     + nsHostResolver::ResolveHost() is entrypoint
+       -> nsHostResolver::ThreadFunc() will resolve without SOCKS
+       + Unused except by nsDNSService
+
+Direct paths to DNS resolution:
+ + nsDNSService::Resolve
+ + nsDNSService::AsyncResolve
+ + nsHostResolver::ResolveHost
+
+Misc UDP (SOCK_DGRAM, PR_DESC_SOCKET_UDP):
+ + ./media/webrtc/*
+   + Disabled
+ - ./media/mtransport/third_party/nICEr/
+   - XXX
+ - ./ipc/chromium/src/third_party/libevent/evutil.c
+ - ./other-licenses/android/*
+   - Disabled
+ + ./nsprpub/pr/src/io/prsocket.c
+   + PR_NewUDPSocket
+   + PR_OpenUDPSocket
+   + PR_Socket
+ + ./nsprpub/pr/src/pthreads/ptio.c
+ + ./netwerk/socket/nsUDPSocketProvider.cpp
+ 
+
+Misc TCP (SOCK_STREAM, PR_DESC_SOCKET_TCP):
+ + ./nsprpub/pr/src/pthreads/ptio.c
+ - ./nsprpub/pr/src/io/prsocket.c
+   - PR_NewTCPSocket
+   - PR_Socket
+   - PR_OpenTCPSocket
+ + ./nsprpub/pr/src/misc/prnetdb.c
+
+Misc PR_Socket:
+ + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + RCNetStreamIO::RCNetStreamIO
+
+Misc XPCOM:
+ - *SocketProvider
+   + newSocket
+     + ./netwerk/base/src/nsSocketTransport2.cpp:
+   + addToSocket
+ + @mozilla.org/network/socket:
+   + createTransport()
+     + ./netwerk/protocol/http/nsHttpConnectionMgr.cpp
+     + ./netwerk/protocol/ftp/nsFtpConnectionThread.cpp:
+     + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp:
+   + ./dom/network/src/TCPSocket.js
+     + open()
+
+

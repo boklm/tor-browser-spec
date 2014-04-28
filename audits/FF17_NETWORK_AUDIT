@@ -1,0 +1,84 @@
+
+Lowest level resolver calls:
+ - PR_GetHostByName
+   + ./profile/dirserviceprovider/src/nsProfileLock.cpp
+     + nsProfileLock::LockWithSymlink
+   + ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     - pkix_pl_Socket_CreateByHostAndPort()
+     - pkix_pl_Socket_CreateByName()
+   - ./security/nss/lib/certhigh/ocsp.c
+     - ocsp_ConnectToHost()
+   + ./security/nss/cmd/libpkix/pkix_pl/module/test_socket.c
+   + ./security/nss/cmd/vfyserv/vfyserv.c
+   - ./media/webrtc/trunk/src/modules/udp_transport/source/udp_transport_impl.cc (!!!)
+     --disable-webrtc!!!
+ + PR_GetAddrInfoByName
+   + ./security/nss/cmd/ssltap/ssltap.c
+   + ./security/nss/cmd/tstclnt/tstclnt.c
+   + ./security/nss/cmd/strsclnt/strsclnt.c
+
+Direct paths to DNS resolution:
+ + nsDNSService::Resolve
+ + nsDNSService::AsyncResolve
+ + nsHostResolver::ResolveHost
+
+Misc UDP (SOCK_DGRAM, PR_DESC_SOCKET_UDP):
+ + ./nsprpub/pr/src/io/prsocket.c
+   + PR_NewUDPSocket
+   + PR_OpenUDPSocket
+   + PR_Socket
+ + ./nsprpub/pr/src/pthreads/ptio.c
+ + ./netwerk/socket/nsUDPSocketProvider.cpp
+
+Misc TCP (SOCK_STREAM, PR_DESC_SOCKET_TCP):
+ + ./nsprpub/pr/src/pthreads/ptio.c
+ - ./nsprpub/pr/src/io/prsocket.c
+   - PR_NewTCPSocket
+   - PR_Socket
+   - PR_OpenTCPSocket
+ + ./nsprpub/pr/src/misc/prnetdb.c
+ + TCPSocket:
+   + ./security/manager/ssl/src/nsNSSIOLayer.cpp
+     + nsSSLIOLayerNewSocket()
+   + ./security/nss/lib/certhigh/ocsp.c
+     + ocsp_SendEncodedRequest
+   + ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     + pkix_pl_Socket_CreateClient
+     + pkix_pl_Socket_CreateServer
+
+Misc PR_Socket:
+ + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + RCNetStreamIO::RCNetStreamIO
+
+Misc XPCOM:
+ - *SocketProvider
+   + newSocket
+     + ./netwerk/base/src/nsSocketTransport2.cpp:
+   + addToSocket
+ + @mozilla.org/network/socket:
+   + createTransport()
+     + ./netwerk/protocol/http/nsHttpConnectionMgr.cpp
+     + ./netwerk/protocol/ftp/nsFtpConnectionThread.cpp:
+     + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp:
+   + ./dom/network/src/TCPSocket.js
+     + open()
+
+Android may have DNS leaks..
+ - ./mobile/android/base/httpclientandroidlib/impl/conn/DefaultClientConnectionOperator.java 
+
+nsDNSService/nsPIDNSService/nsIDNSService
+ + calls nsHostResolver::ResolveHost
+ + used by:
+   + DNS prefetch (disabled)
+   + ./netwerk/base/src/nsIOService.cpp (offline mode only)
+   + ./netwerk/build/nsNetModule.cpp
+   + ./netwerk/protocol/websocket/WebSocketChannel.cpp
+   + ./netwerk/build/nsNetCID.h 
+   + ./netwerk/socket/nsSOCKSIOLayer.cpp (proxy lookup only)
+
+netwerk/base/src/nsSocketTransport2.cpp
+ + nsSocketTransport::ResolveHost() has proper remote dns checks
+   + Resolution is done by using hostname as sockaddr
+ + PROXY_RESOLVES_HOST
+
+

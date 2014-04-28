@@ -1,0 +1,128 @@
+Reviewing just the developer docs (not counting undocumented bugs), here's
+stuff that needs a closer look for each FF version.
+
+FF24: 
+  - Seems fine.
+FF23:
+  - Mixed content blocking will need to be fixed or disabled.
+FF22:
+  - WebRTC is on by default
+  - Clipboard data:
+    https://developer.mozilla.org/en-US/docs/Web/API/ClipboardEvent.clipboardData
+  - Web Notifications may cause proxy issues if they contain embedded
+    URLs/content?
+    https://developer.mozilla.org/en-US/docs/WebAPI/Using_Web_Notifications
+  - Blob uris/objects may require caching isolation equivalent to data uris
+    https://developer.mozilla.org/en-US/docs/Web/API/Blob
+  - Is the new third party cookie blocker better or worse?
+    https://blog.mozilla.org/privacy/2013/02/25/firefox-getting-smarter-about-third-party-cookies/
+    http://webpolicy.org/2013/02/22/the-new-firefox-cookie-policy/
+FF21:
+  - No major issues
+FF20:
+  - Probably fine:
+    https://developer.mozilla.org/en-US/docs/Web/API/Navigator.getUserMedia
+FF19:
+  - New canvas methods toBlob(), isPointInStroke():
+    https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
+    https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
+  - File can return "current" date when time is unknown (verify no timezone
+    leaks, etc)
+    https://developer.mozilla.org/en-US/docs/Web/API/File
+  - https://developer.mozilla.org/en-US/docs/Web/API/CSSPageRule
+FF18:
+  - https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe#attr-allowfullscreen
+  - https://bugzilla.mozilla.org/show_bug.cgi?id=767818 (navigator.mozPay??)
+  - https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Proxy
+  - https://developer.mozilla.org/en-US/docs/Web/Guide/User_experience/Using_the_Page_Visibility_API
+  - https://hacks.mozilla.org/2012/10/aurora-18-hidpi-touch-events/
+
+
+And here's the list of undocumented bugs that need a closer look:
+
+FF24:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=855741
+ https://bugzilla.mozilla.org/show_bug.cgi?id=549861
+ https://bugzilla.mozilla.org/show_bug.cgi?id=858234
+FF23:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=525444
+ https://bugzilla.mozilla.org/show_bug.cgi?id=769871
+ https://bugzilla.mozilla.org/show_bug.cgi?id=811403
+ https://bugzilla.mozilla.org/show_bug.cgi?id=818675
+ https://bugzilla.mozilla.org/show_bug.cgi?id=834835
+FF22:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=845010
+ https://bugzilla.mozilla.org/show_bug.cgi?id=783129
+FF21:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=834595
+ https://bugzilla.mozilla.org/show_bug.cgi?id=823175
+FF20:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=776443
+ https://bugzilla.mozilla.org/show_bug.cgi?id=815743
+ https://bugzilla.mozilla.org/show_bug.cgi?id=818800
+ https://bugzilla.mozilla.org/show_bug.cgi?id=770844
+ https://bugzilla.mozilla.org/show_bug.cgi?id=764240
+ https://bugzilla.mozilla.org/show_bug.cgi?id=617532
+ https://bugzilla.mozilla.org/show_bug.cgi?id=789932
+FF19:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=801576
+ https://bugzilla.mozilla.org/show_bug.cgi?id=804944
+ https://bugzilla.mozilla.org/show_bug.cgi?id=722979
+ https://bugzilla.mozilla.org/show_bug.cgi?id=723002
+ https://bugzilla.mozilla.org/show_bug.cgi?id=723005
+ https://bugzilla.mozilla.org/show_bug.cgi?id=648610
+ https://bugzilla.mozilla.org/show_bug.cgi?id=801402
+FF18:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=745025
+ https://bugzilla.mozilla.org/show_bug.cgi?id=750862
+ https://bugzilla.mozilla.org/show_bug.cgi?id=790946
+ https://bugzilla.mozilla.org/show_bug.cgi?id=782453
+ https://bugzilla.mozilla.org/show_bug.cgi?id=774963
+ https://bugzilla.mozilla.org/show_bug.cgi?id=737003
+ https://bugzilla.mozilla.org/show_bug.cgi?id=726615
+ https://bugzilla.mozilla.org/show_bug.cgi?id=783531
+ https://bugzilla.mozilla.org/show_bug.cgi?id=722861
+ https://bugzilla.mozilla.org/show_bug.cgi?id=796523
+ https://bugzilla.mozilla.org/show_bug.cgi?id=564815
+ https://bugzilla.mozilla.org/show_bug.cgi?id=769764
+ https://bugzilla.mozilla.org/show_bug.cgi?id=769569
+ https://bugzilla.mozilla.org/show_bug.cgi?id=787931
+ https://bugzilla.mozilla.org/show_bug.cgi?id=695399
+ https://bugzilla.mozilla.org/show_bug.cgi?id=791019
+
+-------------------------------------------------------------------
+
+Canvas patch review:
+ https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
+  + toDataURL (patched to return white)
+  + toBlob (patched to return white)
+  + toDataURLHD (unimplementd)
+  + toBlobHD (unimplemented)
+  + mozGetAsFile (patched to return white)
+  + mozFetchAsStream (chromeonly)
+ https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
+  + getImageData (patched to return white)
+
+
+Test cases needed for proxy bypass and info leak to/from OS:
+ https://developer.mozilla.org/en-US/docs/Web/API/ClipboardEvent.clipboardData
+ https://developer.mozilla.org/en-US/docs/WebAPI/Using_Web_Notifications
+ https://bugzilla.mozilla.org/show_bug.cgi?id=767818 (navigator.mozPay)
+
+
+Bugs that need deep review:
+ https://bugzilla.mozilla.org/show_bug.cgi?id=549861 (font-variant probing)
+  - Should we limit this?
+  - http://dev.w3.org/csswg/css-fonts/#font-rend-props
+ https://bugzilla.mozilla.org/show_bug.cgi?id=858234 (execute after DL)
+ https://bugzilla.mozilla.org/show_bug.cgi?id=789932 (move extenal app launcher to alt thread)
+  - Does the external-app-blocker still prompt?
+
+
+Bugs filed:
+ - Fingerprinting:
+   https://trac.torproject.org/projects/tor/ticket/10284
+   https://trac.torproject.org/projects/tor/ticket/10283
+   https://trac.torproject.org/projects/tor/ticket/10286
+   https://trac.torproject.org/projects/tor/ticket/10285
+
