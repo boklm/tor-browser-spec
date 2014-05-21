@@ -37,10 +37,10 @@
 
 This document describes the <link linkend="adversary">adversary model</link>,
 <link linkend="DesignRequirements">design requirements</link>, and <link
-linkend="Implementation">implementation</link> <!-- <link
+linkend="Implementation">implementation</link> <!-- and <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
 procedures</link> --> of the Tor Browser. It is current as of Tor Browser
-2.3.25-5 and Torbutton 1.5.1.
+3.6.2.
 
   </para>
   <para>
@@ -2296,24 +2296,253 @@ with dual Flash+HTML5 video players, such as YouTube.
   - Update security
     - Thandy
 
-<sect1 id="Packaging">
-  <title>Packaging</title>
-  <para> </para>
-  <sect2 id="build-security">
-   <title>Build Process Security</title>
-   <para> </para>
+-->
+
+<sect1 id="BuildSecurity">
+  <title>Build Security and Package Integrity</title>
+  <para>
+
+In the age of state-sponsored malware, <ulink
+url="https://blog.torproject.org/blog/deterministic-builds-part-one-cyberwar-and-global-compromise">we
+believe</ulink> it is impossible to expect to keep a single build machine or
+software signing key secure, given the class of adversaries that Tor has to
+contend with. For this reason, we have deployed a build system
+that allows anyone to use our source code to reproduce byte-for-byte identical
+binary packages to the ones that we distribute.
+
+  </para>
+
+  <sect2>
+   <title>Achieving Binary Reproducibility</title>
+   <para>
+
+The GNU toolchain has been working on providing reproducible builds for some
+time, however a large software project such as Firefox typically ends up
+embedding a large number of details about the machine it was built on, both
+intentionally and inadvertently. Additionally, manual changes to the build
+machine configuration can accumulate over time and are difficult for others to
+replicate externally, which leads to difficulties with binary reproducibility. 
+
+   </para>
+
+   <para>
+For this reason, we decided to leverage the work done by the <ulink
+url="http://gitian.org/">Gitian Project</ulink> from the Bitcoin community.
+Gitian is a wrapper around Ubuntu's virtualization tools that allows you to
+specify an Ubuntu version, architecture, a set of additional packages, a set
+of input files, and a bash build scriptlet in an YAML document called a
+"Gitian Descriptor". This document is used to install a qemu-kvm image, and
+execute your build scriptlet inside it.
+   </para>
+
+   <para>
+
+We have created a <ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/tree/refs/heads/master">set
+of wrapper scripts</ulink> around Gitian to automate dependency download and
+authentication, as well as transfer intermediate build outputs between the
+stages of the build process. Because Gitian creates an Ubuntu build
+environment, we must use cross-compilation to create packages for Windows and
+Mac OS. For Windows, we use mingw-w64 as our cross compiler. For Mac OS, we
+use toolchain4 in combination with a binary redistribution of the Mac OS 10.6
+SDK.
+
+   </para>
+
+   <para>
+
+The use of the Gitian system eliminates build non-determinism by normalizing
+the build environment's hostname, username, build path, uname output,
+toolchain versions, and time. On top of what Gitian provides, we also had to
+address the following additional sources of non-determinism:
+
+   </para>
+
+   <orderedlist>
+   <listitem>Filesystem and archive reordering
+    <para>
+
+The most prevalent source of non-determinism in the components of Tor Browser
+by far was various ways that archives (such as zip, tar, jar/ja, DMG, and
+Firefox manifest lists) could be reordered. Many file archivers walk the
+filesystem in inode structure order by default, which will result in ordering
+differences between two different archive invocations, especially on machines
+of different disk and hardware configurations.
+
+    </para>
+    <para>
+
+The fix for this is to perform an additional sorting step on the input list
+for archives, but care must be taken to instruct libc and other sorting routines
+to use a fixed locale to determine lexicographic ordering, or machines with
+different locale settings will produce different sort results. We chose the
+'C' locale for this purpose. We created wrapper scripts for <ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/blob/HEAD:/gitian/build-helpers/dtar.sh">tar</ulink>,
+<ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/blob/HEAD:/gitian/build-helpers/dzip.sh">zip</ulink>,
+and <ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/blob/HEAD:/gitian/build-helpers/ddmg.sh">DMG</ulink>
+to aid in reproducible archive creation.
+
+    </para>
+   </listitem>
+
+   <listitem>Uninitialized memory in toolchain/archivers
+    <para>
+
+We ran into difficulties with both binutils and the DMG archive script using
+uninitialized memory in certain data structures that ended up written to disk.
+Our binutils fixes were merged upstream, but the DMG archive fix remains an
+<ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/blob/HEAD:/gitian/patches/libdmg.patch">independent
+patch</ulink>.
+
+    </para>
+   </listitem>
+   <listitem>Fine-grained timestamps and timezone leaks
+    <para>
+
+The standard way of controlling timestamps in Gitian is to use libfaketime,
+which hooks time-related library calls to provide a fixed timestamp. However,
+libfaketime does not spoof the millisecond and microsecond components of
+timestamps, which found their way into pyc files and also in explicit Firefox
+build process timestamp embedding.
+    </para>
+    <para>
+
+We addressed the Firefox issues with direct patches to their build process,
+which have since been merged. However, pyc timestamps had to be address with 
+an additional <ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/blob/HEAD:/gitian/build-helpers/pyc-timestamp.sh">helper
+script</ulink>.
+    </para>
+    <para>
+
+The timezone leaks were addressed by setting the <command>TZ</command>
+environment variable to UTC in our descriptors.
+
+    </para>
+   </listitem>
+   <listitem>Deliberately generated entropy
+    <para>
+
+In two circumstances, deliberately generated entropy was introduced in various
+components of the build process. First, the BuildID Debuginfo identifier
+(which associates detached debug files with their corresponding stripped
+executables) was introducing entropy from some unknown source. We removed this
+header using objcopy invocations in our build scriptlets, and opted to use GNU
+DebugLink instead of BuildID for this association.
+
+    </para>
+    <para>
+
+Second, on Linux, Firefox builds detached signatures of its cryptographic
+libraries using a temporary key for FIPS-140 certification. A rather insane
+subsection of the FIPS-140 certification standard requires that you distribute
+signatures for all of your cryptographic libraries. The Firefox build process
+meets this requirement by generating a temporary key, using it to sign the
+libraries, and discarding the private portion of that key. Because there are
+many other ways to intercept the crypto outside of modifying the actual DLL
+images, we opted to simply remove these signature files from distribution.
+There simply is no way to verify code integrity on a running system without
+both OS and coprocessor assistance. Download package signatures make sense of
+course, but we handle those another way (as mentioned above).
+
+
+    </para>
+  </listitem>
+  <listitem>LXC-specific leaks
+   <para>
+
+Gitian provides an option to use LXC containers instead of full qemu-kvm
+virtualization. Unfortunately, these containers can allow additional details
+about the host OS to leak. In particular, umask settings as well as the
+hostname and Linux kernel version can leak from the host OS into the LXC
+container. We addressed umask by setting it explicitly in our Gitian
+descriptor scriptlet, and addressed the hostname and kernel version leaks by
+directly patching the aspects of the Firefox build process that included this
+information into the build.
+   </para>
+  </listitem>
+  </orderedlist>   
   </sect2>
-  <sect2 id="addons">
-   <title>External Addons</title>
+
+  <sect2>
+    <title>Package Signatures and Verification</title>
+    <para>
+
+The build process produces a single sha256sums.txt file that contains a sorted
+list the SHA-256 hashes of every package produced for that build version. Each
+official builder uploads this file and a GPG signature of it to a directory
+on a Tor Project's web server. The build scripts have an optional matching
+step that downloads these signatures, verifies them, and ensures that the
+local builds match this file.
+
+    </para>
+    <para>
+
+When builds are published officially, the single sha256sums.txt file is
+accompanied by a detached GPG signature from each official builder that
+produced a matching build. The packages are additionally signed with detached
+GPG signatures from an official signing key.
+
+    </para>
+     <para>
+
+The fact that the entire set of packages for a given version can be
+authenticated by a single hash of the sha256sums.txt file will also allow us
+to create a number of auxiliary authentication mechanisms for our packages,
+beyond just trusting a single offline build machine and a single cryptographic
+key's integrity. Interesting examples include providing multiple independent
+cryptographic signatures for packages, listing the package hashes in the Tor
+consensus, and encoding the package hashes in the Bitcoin blockchain.
+
+     </para>
+    <para>
+
+At the time of this writing, we do not yet support native code signing for Mac
+OS or Windows. Because these signatures are embedded in the actual packages,
+and by their nature are based on non-public key material, providing native
+code-signed packages while still preserving ease of reproducibility
+verification has not yet been achieved.
+
+    </para>
+  </sect2>
+
+  <sect2>
+    <title>Anonymous Verification</title>
+    <para>
+
+Due to the fact that bit-identical packages can be produced by anyone, the
+security of this build system extends beyond the security of the official
+build machines. In fact, it is still possible for build integrity to be
+achieved even if all official build machines are compromised. 
+
+    </para>
+    <para>
+
+By default, all tor-specific dependencies and inputs to the build process are
+downloaded over Tor, which allows build verifiers to remain anonymous and
+hidden. Because of this, any individual can use our anonymity network to
+privately download our source code, verify it against public signed, audited,
+and mirrored git repositories, and reproduce our builds exactly, without being
+subject to targeted attacks. If they notice any differences, they can alert
+the public builders/signers, hopefully using a pseudonym or our anonymous
+bugtracker account, to avoid revealing the fact that they are a build
+verifier.
+
+   </para>
+  </sect2>
+</sect1>
+<!--
+  <sect2 id="components">
+   <title>Components</title>
    <para> </para>
    <sect3>
     <title>Included Addons</title>
    </sect3>
    <sect3>
-    <title>Excluded Addons</title>
-   </sect3>
-   <sect3>
-    <title>Dangerous Addons</title>
+    <title>Pluggable Transports</title>
    </sect3>
   </sect2>
   <sect2 id="prefs">
@@ -2325,9 +2554,8 @@ with dual Flash+HTML5 video players, such as YouTube.
    <para> </para>
   </sect2>
 </sect1>
--->
 
-<!-- 
+ 
 <sect1 id="Testing">
   <title>Testing</title>
   <para>
