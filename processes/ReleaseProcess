@@ -57,11 +57,11 @@
 #. Local to vescum:
    cd tmp
    wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION
-   chmod 755 $TORBROWSER_VERSION
-   chmod 644 $TORBROWSER_VERSION/*
+   chmod 775 $TORBROWSER_VERSION
+   chmod 664 $TORBROWSER_VERSION/*
    rm $TORBROWSER_VERSION/index.html*
    rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.*
-   cp -a $TORBROWSER_VERSION /srv/www-master.torproject.org/htdocs/dist/torbrowser/
+   cp -r $TORBROWSER_VERSION /srv/www-master.torproject.org/htdocs/dist/torbrowser/
    /home/mirroradm/bin/trigger-mirrors
 
 #. Add $TORBROWSER_VERSION to recommended-versions file in torbrowser.git
@@ -77,8 +77,8 @@
 #. Update website's torbrowser versions file
    cd website
    torsocks svn up .
-   vim ./include/versions.wmi
-   torsocks svn commit include/versions.wmi -m "Bump TBB version"
+   vim ./include/versions.wmi ./projects/torbrowser/RecommendedTBBVersions
+   torsocks svn commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Bump TBB version"
    ./publish
    cd ..
 
@@ -87,14 +87,3 @@
 #  See https://blog.torproject.org/blog/tor-browser-352-released for now
 #  Don't forget to link to Mozilla's security advisories if this is a security
 #  update, or Nadim will yell at you.
-
-#. Remove old version from recommended-versions file in torbrowser.git
-   cd torbrowser
-   git checkout master
-   torsocks git pull origin
-   vim ./build-scripts/recommended-versions
-   git commit build-scripts/recommended-versions
-   torsocks git push origin master:master
-   cd ..
-
-
