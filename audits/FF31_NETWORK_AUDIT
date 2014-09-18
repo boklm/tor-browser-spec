@@ -1,0 +1,285 @@
+Lowest level resolver calls:
+ - PR_GetHostByName
+   + ./profile/dirserviceprovider/src/nsProfileLock.cpp
+     + nsProfileLock::LockWithSymlink() looks up 127.0.0.1..
+       + XXX: Should we remove this? It seems kind of silly.
+   + ./nsprpub/pr/src/cplus/rcnetdb.cpp
+     + RCHostLookup::ByName()
+       + Not used
+   - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     - XXX: pkix_pl_Socket_CreateByName and pkix_pl_Socket_CreateByHostAndPort
+       - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_ldapdefaultclient.c
+         - PKIX_PL_LdapDefaultClient_CreateByName
+           - pkix_pl_AiaMgr_FindLDAPClient
+       - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpcertstore.c
+         - pkix_HttpCertStore_FindSocketConnection
+           - pkix_pl_HttpDefaultClient_RequestCreate
+             - pkix_pl_HttpDefaultClient_RequestCreateFcn
+               - SEC_HttpClientFcnV1 vtable.createFcn and 
+                 + ./security/manager/ssl/src/nsNSSCallbacks.cpp
+                   + Uses nsHTTPHttpInterface::createFcn()
+                 + ./security/manager/ssl/src/nsNSSCallbacks.h
+                 + ./security/certverifier/OCSPRequestor.cpp
+                 - ./security/nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c
+                   - pkix_pl_OcspResponse_Create uses the whatever is in its arg
+                 - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_aiamgr.c
+                   - pkix_pl_AIAMgr_GetHTTPCerts uses SEC_GetRegisteredHttpClient()
+                     - which uses SEC_RegisterDefaultHttpClient()
+                       - This is safe for nsNSSCallbacks.c
+                       - Not safe for
+                         ./security/nss/lib/libpkix/pkix_pl_nss/system/pkix_pl_lifecycle.c
+                         - PKIX_PL_Initialize
+                           - PKIX_Initialize
+                             - nss_init
+                               - NSS_Init*
+                               - NSS_NoDB_Init
+                     - PKIX_PL_AIAMgr_GetAIACerts
+                       - pkix_BuildForwardDepthFirstSearch
+                         - pkix_Build_ResumeBuildChain and pkix_Build_InitiateBuildChain
+                           - PKIX_BuildChain
+                 - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_pk11certstore.c
+                   - PKIX_PL_Pk11CertStore_Create controls which http client
+                     is used
+                 - ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_httpcertstore.c
+                 - ./security/nss/lib/certhigh/ocsp.c
+   - ./security/nss/lib/certhigh/ocsp.c
+     - XXX: ocsp_ConnectToHost
+       - ocsp_SendEncodedRequest
+         - cert_FetchOCSPResponse (exported)
+           - CERT_PostOCSPRequest (exported)
+           - cert_GetOCSPResponse (static)
+             - ocsp_GetEncodedOCSPResponseFromRequest (static)
+               - ocsp_GetEncodedOCSPResponseForSingleCert (static)
+                 - ocsp_GetOCSPStatusFromNetwork (static)
+                   - CERT_CheckOCSPStatus (exported)
+                     - statusConfig->statusChecker
+                       - CERT_VerifyCertificate
+                         - CERT_VerifyCertificateNow
+                       - cert_VerifyCertWithFlags
+                         - CERT_VerifyCert
+                           - CERT_VerifyCertNow
+ + PR_GetIPNodeByName
+   + Used by tests only
+ + PR_GetAddrInfoByName
+   + ./security/nss/cmd/ usage (NSS cli commands only)
+   + ./netwerk/dns/nsHostResolver.cpp
+     + nsHostResolver::ResolveHost() is entrypoint
+       + nsHostResolver::ThreadFunc() will resolve without SOCKS
+         + Unused except by nsDNSService, which we block.
+ + PR_StringToNetAddr
+   + Passes AI_NUMERICHOST to getaddrinfo. No resolution.
+
+Direct paths to DNS resolution:
+ - nsDNSService::Resolve
+   - XXX: Our rebased patch has a weird chunk in the wrong place here!
+ + nsDNSService::AsyncResolve
+   + Patched for safety
+ + nsHostResolver::ResolveHost
+   + Only used by nsDNSService
+
+Misc UDP (SOCK_DGRAM, PR_DESC_SOCKET_UDP):
+ + PR_DESC_SOCKET_UDP
+   + ./nsprpub/pr/src/md/os2/os2io.c
+   + ./nsprpub/pr/src/cplus/rcio.h
+     + RCFileIO (not used)
+     + RCNetStreamIO (not used)
+   + ./nsprpub/pr/src/io/prsocket.c
+     + PR_GetUDPMethods
+   + ./nsprpub/pr/src/misc/prinit.c
+     + PR_GetInheritedFD
+   + ./nsprpub/pr/src/pthreads/ptio.c
+ + SOCK_DGRAM
+   + Android junk (not relevant):
+     + ./other-licenses/android/res_send.c
+     + ./other-licenses/android/res_init.c
+     + ./other-licenses/android/getaddrinfo.c
+   + ./hal/gonk/UeventPoller.cpp
+     + netlink stuff
+   + ./nsprpub/pr/src/io/prsocket.c
+     + PR_NewUDPSocket
+     + PR_OpenUDPSocket
+     + PR_Socket
+   + ./nsprpub/pr/src/pthreads/ptio.c
+   + ./media/webrtc/*
+     + Disabled
+   + ./media/mtransport/third_party/nICEr/src/stun/addrs.c
+     + boils down to NrIceCtx::StartGathering
+       + Used only for PeerConnection, which we disable
+   + ./ipc/chromium/src/third_party/libevent/evdns.c
+     + evdns is unused
+   + ./ipc/chromium/src/third_party/libevent/evutil.c
+     + interface checking functions. Unused.
+   + ./netwerk/wifi/nsWifiScannerFreeBSD.cpp
+     + GeoIP stuff. Is disabled.
+   + RTSP is only on Android (media.rtsp.enabled):
+     + ./netwerk/protocol/rtsp/rtsp/ARTPSession.cpp
+     + ./netwerk/protocol/rtsp/rtsp/ARTPConnection.cpp
+     + ./netwerk/protocol/rtsp/rtsp/ARTPWriter.cpp
+     + ./netwerk/protocol/rtsp/rtsp/UDPPusher.cpp
+   + SCTP is only enabled with WEBRTC
+     + ./netwerk/sctp/src/netinet/sctputil.c
+     + ./netwerk/sctp/src/netinet/sctp_userspace.c
+     + ./netwerk/sctp/src/netinet/sctp_pcb.c
+     + ./netwerk/sctp/src/ifaddrs_android.cpp
+     + ./netwerk/sctp/src/user_recv_thread.c
+ + PR_NewUDPSocket
+   + ./media/mtransport/nr_socket_prsock.cpp
+     + Disabled with WebRTC
+ + PR_OpenUDPSocket
+   + ./netwerk/base/src/Tickler.cpp
+     + Sends UDP packets to DHCP gateway, but only on android
+   + ./netwerk/socket/nsUDPSocketProvider.cpp
+     + NewSocket(). Unused.
+   + ./netwerk/base/src/ProxyAutoConfig.cpp
+     + We don't use PAC.
+   + ./netwerk/base/src/nsUDPSocket.cpp
+     + Unused except for nsUDPSocketProvider
+ + PR_ImportUDPSocket
+   + Only called if NSPR_INHERIT_FDS in environment
+
+Misc TCP (SOCK_STREAM, PR_DESC_SOCKET_TCP):
+ + PR_DESC_SOCKET_TCP
+   + ./nsprpub/pr/src/md/os2/os2io.c
+     + OS/2 only
+   + ./nsprpub/pr/src/cplus/rcio.h
+     + RCFileIO (not used)
+     + RCNetStreamIO (not used)
+   + ./nsprpub/pr/src/io/pripv6.c
+     + Underlying wrapper for PR_Socket
+   + ./nsprpub/pr/src/io/prsocket.c
+   + ./nsprpub/pr/src/misc/prinit.c
+   + ./nsprpub/pr/src/pthreads/ptio.c
+   + ./netwerk/base/src/nsSocketTransportService2.cpp
+ + SOCK_STREAM
+   + ./nsprpub/pr/src/misc/prnetdb.c
+   + Android stuff: disabled
+     + ./other-licenses/android/res_send.c
+     + ./other-licenses/android/getaddrinfo.c
+   + ./nsprpub/pr/src/md/windows/ntio.c
+   + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + ./nsprpub/pr/src/io/prsocket.c
+   + ./nsprpub/pr/src/misc/prnetdb.c
+   + ./nsprpub/pr/src/pthreads/ptio.c
+   + ./media/webrtc/* - disabled
+   + ./toolkit/crashreporter/google-breakpad/src/client/linux/crash_generation/crash_generation_client.cc
+     + AF_UNIX socket..
+   + ./ipc/chromium/src/chrome/common/ipc_channel_posix.cc
+     + AF_UNIX/local only
+   + ./ipc/chromium/src/third_party/libevent/event.c
+   + ./ipc/chromium/src/third_party/libevent/evutil.c
+   + ./ipc/chromium/src/third_party/libevent/listener.c
+   + ./ipc/chromium/src/third_party/libevent/bufferevent_sock.c
+   + ./ipc/chromium/src/third_party/libevent/signal.c
+   + ./ipc/chromium/src/third_party/libevent/http.c
+   + ./ipc/chromium/src/third_party/libevent/event_iocp.c
+   + ./ipc/keystore/KeyStore.cpp
+     + AF_LOCAL only
+   + ./ipc/nfc/Nfc.cpp
+     + local/loopback only
+   + ./ipc/ril/Ril.cpp
+     + local/loopback only
+   + ./ipc/netd/Netd.cpp
+     + local only
+   + RTSP and SCTP are disabled if WebRTC is compiled out
+     + ./netwerk/protocol/rtsp/rtsp/ARTSPConnection.cpp
+     + ./netwerk/sctp/src/netinet/sctp_pcb.c
+     + ./netwerk/sctp/src/user_socket.c
+     + ./netwerk/sctp/datachannel/DataChannel.cpp
+   + ./dom/system/gonk/VolumeManager.cpp
+     + local only
+   + ./dom/bluetooth/bluez/BluetoothUnixSocketConnector.cpp
+     + bluetooth sockets only
+   + ./mozglue/build/Nuwa.cpp
+     + Unix sockets only
+ - PR_NewTCPSocket
+   + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + ./nsprpub/pr/src/io/prpolevt.c
+   + ./media/mtransport/nr_socket_prsock.cpp
+     + WebRTC only
+   + ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     + pkix_pl_Socket_CreateClient
+       + pkix_pl_Socket_CreateByHostAndPort and pkix_pl_Socket_CreateByName
+         and pkix_pl_Socket_Create
+         + PKIX_PL_LdapDefaultClient_Create is unused. Other two noted above.
+         - XXX: Probably best to patch pkix_pl_Socket_Create anyway.
+   + ./security/nss/lib/certhigh/ocsp.c
+     + ocsp_ConnectToHost. Noted above. Needs patching for DID.
+ + PR_OpenTCPSocket
+   + ./security/manager/ssl/src/nsNSSIOLayer.cpp
+     + nsSSLIOLayerNewSocket
+       + ./security/manager/ssl/src/nsTLSSocketProvider.cpp
+         + nsTLSSocketProvider::NewSocket
+       + ./security/manager/ssl/src/nsSSLSocketProvider.cpp
+         + nsSSLSocketProvider::NewSocket (nsISocketProvider)
+       + nsISocketProvider.newSocket
+         + used with proxy settings
+   + ./netwerk/socket/nsSOCKSIOLayer.cpp
+   + ./netwerk/socket/nsSOCKSSocketProvider.cpp
+   + ./netwerk/base/src/nsSocketTransportService2.cpp
+   + ./netwerk/base/src/nsSocketTransport2.cpp
+   + ./netwerk/base/src/nsServerSocket.cpp
+ + PR_ImportTCPSocket
+
+Misc PR_Socket:
+ + ./nsprpub/pr/src/io/prmapopt.c
+ + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + RCNetStreamIO::RCNetStreamIO
+
+Misc XPCOM:
+ + *SocketProvider
+   + newSocket
+     + ./netwerk/base/src/nsSocketTransport2.cpp:
+       + used with proxy settings
+   + addToSocket
+ + @mozilla.org/network/udp-socket
+   + ./mobile/android/modules/SimpleServiceDiscovery.jsm
+     + local SSDP on Android
+   + ./dom/push/src/PushService.jsm
+     + WTF. _listenForUDPWakeup!!!
+       + Controlled by pref services.push.udp.wakeupEnabled
+       + And also services.push.enabled
+       + Currently false
+         - XXX: Verify false on android and in the future!
+   + ./netwerk/build/nsNetCID.h
+     + NS_SOCKETTRANSPORTSERVICE_*
+       + Proxied if TCP
+       + Udp limited to mtransport and webrtc
+     + NS_UDPSOCKET_*
+ + @mozilla.org/tcp-socket-*
+   + ./layout/build/nsLayoutModule.cpp
+ + @mozilla.org/udp-socket-*
+   + ./media/mtransport/nr_socket_prsock.cpp
+     + WebRTC disables
+   + ./layout/build/nsLayoutModule.cpp
+ + @mozilla.org/network/*socket*:
+   + ./toolkit/xre/nsAppRunner.cpp
+   + Debugger stuff
+     + ./toolkit/devtools/server/main.js
+     + ./toolkit/devtools/client/connection-manager.js
+     + ./toolkit/devtools/server/main.js
+     + ./toolkit/devtools/client/dbg-client.jsm
+   + ./toolkit/modules/Sntp.jsm
+     + B2G ntp
+   + ./addon-sdk/source/lib/sdk/test/httpd.js
+   + ./addon-sdk/source/lib/sdk/io/stream.js
+   + ./netwerk/build/nsNetCID.h
+   + ./netwerk/protocol/websocket/WebSocketChannelParent.cpp
+   + ./netwerk/protocol/websocket/WebSocketChannel.cpp
+   + ./dom/ipc/preload.js
+   + ./dom/network/src/TCPServerSocket.js
+   + ./dom/network/src/UDPSocketParent.cpp
+   + ./dom/network/src/TCPSocket.js
+   + ./dom/push/src/PushService.jsm
+   + Android stuff:
+     + ./mobile/android/chrome/content/WebappRT.js
+       + Debugger?
+     + ./mobile/android/modules/RokuApp.jsm
+   + createTransport()
+     + ./netwerk/protocol/http/nsHttpConnectionMgr.cpp
+     + ./netwerk/protocol/ftp/nsFtpConnectionThread.cpp:
+     + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp:
+   + ./dom/network/src/TCPSocket.js
+
+- Gstreamer
+  - ./content/media/gstreamer/GStreamerDecoder.cpp
+  - ./content/media/DecoderTraits.cpp
