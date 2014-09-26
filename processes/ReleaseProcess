@@ -64,16 +64,6 @@
    cp -r $TORBROWSER_VERSION /srv/www-master.torproject.org/htdocs/dist/torbrowser/
    /home/mirroradm/bin/trigger-mirrors
 
-#. Add $TORBROWSER_VERSION to recommended-versions file in torbrowser.git
-#  (Don't remove old version yet)
-   cd torbrowser
-   git checkout master
-   torsocks git pull origin
-   vim ./build-scripts/recommended-versions
-   git commit build-scripts/recommended-versions
-   torsocks git push origin master:master
-   cd ..
-
 #. Update website's torbrowser versions file
    cd website
    torsocks svn up .
