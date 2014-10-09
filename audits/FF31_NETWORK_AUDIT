@@ -280,6 +280,9 @@ Misc XPCOM:
      + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp:
    + ./dom/network/src/TCPSocket.js
 
-- Gstreamer
-  - ./content/media/gstreamer/GStreamerDecoder.cpp
-  - ./content/media/DecoderTraits.cpp
++ Gstreamer
+  + ./content/media/gstreamer/GStreamerDecoder.cpp
+    + Uses ChannelMediaResource underneath, and ultimately an nsIChannel
+    - Only exception seems to be if an RtspMediaResource could be used,
+      but this appears to be FxOS-only.
+      - XXX: Note for FxOS tor support. This may be an issue.
