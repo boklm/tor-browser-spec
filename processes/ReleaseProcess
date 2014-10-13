@@ -77,3 +77,11 @@
 #  See https://blog.torproject.org/blog/tor-browser-352-released for now
 #  Don't forget to link to Mozilla's security advisories if this is a security
 #  update, or Nadim will yell at you.
+
+#. Generate and upload new update responses for the updater
+   cd tor-browser-bundle/tools/update-responses
+   vim config.yml
+   # add the new version in 'versions' and to one of the channels
+   # detailsURL can be a link to the blog post
+   ./update_responses
+   torsocks rsync -av htdocs/ www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/update_2/
