@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>March 15, 2013</pubdate>
+   <pubdate>October 20th, 2014</pubdate>
  </articleinfo>
 
 <!--
@@ -40,7 +40,7 @@ This document describes the <link linkend="adversary">adversary model</link>,
 linkend="Implementation">implementation</link> <!-- and <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
 procedures</link> --> of the Tor Browser. It is current as of Tor Browser
-3.6.2.
+4.0.
 
   </para>
   <para>
@@ -57,15 +57,23 @@ adversary currently addressed by the major browsers.
 
 The Tor Browser is based on <ulink
 url="https://www.mozilla.org/en-US/firefox/organizations/">Mozilla's Extended
-Support Release (ESR) Firefox branch</ulink>. We have a <link
-linkend="firefox-patches">series of patches</link> against this browser to
-enhance privacy and security. Browser behavior is additionally augmented
-through the <ulink
+Support Release (ESR) Firefox branch</ulink>. We have a <ulink
+url="https://gitweb.torproject.org/tor-browser.git">series of patches</ulink>
+against this browser to enhance privacy and security. Browser behavior is
+additionally augmented through the <ulink
 url="https://gitweb.torproject.org/torbutton.git/tree/master">Torbutton
-extension</ulink>, though we are in the process of moving this
-functionality into direct Firefox patches. We also <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/pound_tor.js">change
+extension</ulink>, though we are in the process of moving this functionality
+into direct Firefox patches. We also <ulink
+url="https://gitweb.torproject.org/tor-browser.git/blob/refs/heads/tor-browser-31.2.0esr-4.x-1:/browser/app/profile/000-tor-browser.js">change
 a number of Firefox preferences</ulink> from their defaults.
+
+   </para>
+   <para>
+Tor process management and configuration is accomplished through the <ulink
+url="https://gitweb.torproject.org/tor-launcher.git">Tor Launcher</ulink>
+addon, which provides the initial Tor configuration splash screen and
+bootstrap progress bar. Tor Launcher is also compatible with Thunderbird,
+InstantBird, and XULRunner.
 
    </para>
    <para>
@@ -74,14 +82,25 @@ To help protect against potential Tor Exit Node eavesdroppers, we include
 <ulink url="https://www.eff.org/https-everywhere">HTTPS-Everywhere</ulink>. To
 provide users with optional defense-in-depth against Javascript and other
 potential exploit vectors, we also include <ulink
-url="http://noscript.net/">NoScript</ulink>. To protect against
-PDF-based Tor proxy bypass and to improve usability, we include the <ulink
-url="https://addons.mozilla.org/en-us/firefox/addon/pdfjs/">PDF.JS</ulink>
-extension. We also modify <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/extension-overrides.js">several
+url="http://noscript.net/">NoScript</ulink>. We also modify <ulink
+url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/blob/refs/heads/master:/Bundle-Data/linux/Data/Browser/profile.default/preferences/extension-overrides.js">several
 extension preferences</ulink> from their defaults.
 
    </para>
+   <para>
+
+To provide censorship circumvention in areas where the public Tor network is
+blocked either by IP, or by protocol fingerprint, we include several <ulink
+url="https://trac.torproject.org/projects/tor/wiki/doc/AChildsGardenOfPluggableTransports">Pluggable
+Transports</ulink> in the distribution. As of this writing, we include <ulink
+url="https://gitweb.torproject.org/pluggable-transports/obfsproxy.git/blob/HEAD:/doc/obfs3/obfs3-protocol-spec.txt">Obfsproxy</ulink>,
+<ulink
+url="https://trac.torproject.org/projects/tor/wiki/doc/meek">meek</ulink>,
+<ulink url="https://fteproxy.org/">FTE</ulink>, and <ulink
+url="https://crypto.stanford.edu/flashproxy/">FlashProxy</ulink>.
+
+   </para>
+
   </sect2>
 </sect1>
 
@@ -101,7 +120,6 @@ extension preferences</ulink> from their defaults.
    - Philosophy
     - No filters
 -->
-
 
 <sect1 id="DesignRequirements">
   <title>Design Requirements and Philosophy</title>
@@ -870,34 +888,43 @@ Proxy obedience is assured through the following:
 <orderedlist> 
  <listitem>Firefox proxy settings, patches, and build flags
  <para>
+
 Our <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/build-scripts/config/pound_tor.js">Firefox
-preferences file</ulink> sets the Firefox proxy settings to use Tor directly as a
-SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
+url="https://gitweb.torproject.org/tor-browser.git/blob/refs/heads/tor-browser-31.2.0esr-4.x-1:/browser/app/profile/000-tor-browser.js">Firefox
+preferences file</ulink> sets the Firefox proxy settings to use Tor directly
+as a SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
 <command>network.proxy.socks_version</command>,
 <command>network.proxy.socks_port</command>, and
 <command>network.dns.disablePrefetch</command>.
- </para>
- <para>
-
-We also patch Firefox in order to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0016-Prevent-WebSocket-DNS-leak.patch">prevent
-a DNS leak due to a WebSocket rate-limiting check</ulink>. As stated in the
-patch, we believe the direct DNS resolution performed by this check is in
-violation of the W3C standard, but <ulink
-url="https://bugzilla.mozilla.org/show_bug.cgi?id=751465">this DNS proxy leak
-remains present in stock Firefox releases</ulink>.
 
  </para>
  <para>
 
-During the transition to Firefox 17-ESR, a code audit was undertaken to verify
-that there were no system calls or XPCOM activity in the source tree that did
-not use the browser proxy settings. The only violation we found was that
-WebRTC was capable of creating UDP sockets and was compiled in by default. We
-subsequently disabled it using the Firefox build option
-<command>--disable-webrtc</command>.
+To prevent proxy bypass by WebRTC calls, we disable WebRTC at compile time
+with the <command>--disable-webrtc</command> configure switch, as well
+as set the pref <command>media.peerconnection.enabled</command> to false.
 
+ </para>
+ <para>
+
+We also patch Firefox in order to provide several defense-in-depth mechanisms
+for proxy safety. Notably, we <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/8527bec0ad59fb3d885c5639735fb188eefa336f">patch
+the DNS service</ulink> to prevent any browser or addon DNS resolution, and we
+also <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/04c046e11f6622f44ca010bcb8ecf68cf470a4c0">patch
+OCSP and PKIX code</ulink> to prevent any use of the non-proxied command-line
+tool utility functions from being functional while linked in to the browser.
+In both cases, we could find no direct paths to these routines in the browser,
+but it seemed better safe than sorry.
+
+ </para>
+ <para>
+
+During every Extended Support Release transition, we perform <ulink
+url="https://gitweb.torproject.org/tor-browser-spec.git/tree/HEAD:/audits">in-depth
+code audits</ulink> to verify that there were no system calls or XPCOM
+activity in the source tree that did not use the browser proxy settings.
  </para>
  <para>
 
@@ -938,12 +965,14 @@ If the user does enable plugins in this way, plugin-handled objects are still
 restricted from automatic load through Firefox's click-to-play preference
 <command>plugins.click_to_play</command>.
  </para>
+
  <para>
+
 In addition, to reduce any unproxied activity by arbitrary plugins at load
 time, and to reduce the fingerprintability of the installed plugin list, we
 also patch the Firefox source code to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0005-Block-all-plugins-except-flash.patch">prevent the load of any plugins except
-for Flash and Gnash</ulink>.
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/2ecf6c33618ecee554155f735a3e92860f519f9c">
+prevent the load of any plugins except for Flash and Gnash</ulink>.
 
  </para>
  </listitem>
@@ -965,10 +994,9 @@ Additionally, modern desktops now pre-emptively fetch any URLs in Drag and
 Drop events as soon as the drag is initiated. This download happens
 independent of the browser's Tor settings, and can be triggered by something
 as simple as holding the mouse button down for slightly too long while
-clicking on an image link. We had to patch Firefox to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0018-Emit-observer-event-to-filter-the-Drag-Drop-url-list.patch">emit
-an observer event during dragging</ulink> to allow us to filter the drag
-events from Torbutton before the OS downloads the URLs the events contained.
+clicking on an image link. We filter drag and drop events events <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob_plain/HEAD:/src/components/external-app-blocker.js">from
+Torbutton</ulink> before the OS downloads the URLs the events contained.
 
   </para>
  </listitem>
@@ -996,7 +1024,7 @@ custom Firefox profile, and by setting the $HOME environment variable to the
 root of the bundle's directory.  The browser also does not load any
 system-wide extensions (through the use of
 <command>extensions.enabledScopes</command> and
-<command>extensions.autoDisableScopes</command>. Furthermore, plugins are
+<command>extensions.autoDisableScopes</command>). Furthermore, plugins are
 disabled, which prevents Flash cookies from leaking from a pre-existing Flash
 directory.
 
@@ -1024,20 +1052,15 @@ Private Browsing preference
 Private Browsing Mode is enabled. We need to
 
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0002-Make-Permissions-Manager-memory-only.patch">prevent
+url="https://gitweb.torproject.org/tor-browser.git/commit/4ebc3cda4b704c0149fb9e0fdcbb6e5ee3a8e75c">prevent
 the permissions manager from recording HTTPS STS state</ulink>,
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0003-Make-Intermediate-Cert-Store-memory-only.patch">prevent
+url="https://gitweb.torproject.org/tor-browser.git/commit/8904bfc10cd537bd35be5ddd23c58fdaa72baa21">prevent
 intermediate SSL certificates from being recorded</ulink>,
+and
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0013-Make-Download-manager-memory-only.patch">prevent
-download history from being recorded</ulink>, and
-<ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0006-Make-content-pref-service-memory-only-clearable.patch">prevent
+url="https://gitweb.torproject.org/tor-browser.git/commit/d5da6f8b7de089335e49e2f7dbd2b8d74e4cb613">prevent
 the content preferences service from recording site zoom</ulink>.
-
-For more details on these patches, <link linkend="firefox-patches">see the
-Firefox Patches section</link>.
 
     </blockquote>
     <blockquote>
@@ -1057,12 +1080,6 @@ preferences are likely redundant with
 <command>browser.privatebrowsing.autostart</command>, but we have not done the
 auditing work to ensure that yet.
 
-    </blockquote>
-    <blockquote>
-
-Torbutton also <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/components/tbSessionStore.js">contains
-code</ulink> to prevent the Firefox session store from writing to disk.
     </blockquote>
     <blockquote>
 
@@ -1958,6 +1975,8 @@ date.
 
    </orderedlist>
   </sect2>
+
+<!--
   <sect2 id="firefox-patches">
    <title>Description of Firefox Patches</title>
    <para>
@@ -2006,7 +2025,6 @@ the intermediate certificate store can serve as a low-resolution record of
 browsing history.
 
      </para>
-     <!-- FIXME: Should this be a <note> tag too? -->
      <para><command>Design Goal:</command>
 
 As an additional design goal, we would like to later alter this patch to allow this
@@ -2275,7 +2293,7 @@ with dual Flash+HTML5 video players, such as YouTube.
 
    </orderedlist>
   </sect2>
-
+-->
 </sect1>
 
 <!--
