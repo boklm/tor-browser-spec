@@ -1044,7 +1044,7 @@ features if they so desire.
    </sect3>
    <sect3>
     <title>Implementation Status:</title>
-    <blockquote>
+   <blockquote>
 
 We achieve this goal through several mechanisms. First, we set the Firefox
 Private Browsing preference
@@ -1052,15 +1052,18 @@ Private Browsing preference
 Private Browsing Mode is enabled. We need to
 
 <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/4ebc3cda4b704c0149fb9e0fdcbb6e5ee3a8e75c">prevent
-the permissions manager from recording HTTPS STS state</ulink>,
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/4ebc3cda4b704c0149fb9e0fdcbb6e5ee3a8e75c">prevent
+the permissions manager from recording HTTPS STS state</ulink>, <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/8904bfc10cd537bd35be5ddd23c58fdaa72baa21">prevent
+intermediate SSL certificates from being recorded</ulink>, <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/86f6bc9dc28b6f8d7eae7974c7e9b537c3a08e41">prevent
+the clipboard cache from being written to disk for large pastes</ulink>, and
 <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/8904bfc10cd537bd35be5ddd23c58fdaa72baa21">prevent
-intermediate SSL certificates from being recorded</ulink>,
-and
-<ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/d5da6f8b7de089335e49e2f7dbd2b8d74e4cb613">prevent
-the content preferences service from recording site zoom</ulink>.
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/d5da6f8b7de089335e49e2f7dbd2b8d74e4cb613">prevent
+the content preferences service from recording site zoom</ulink>. We also had
+to disable the media cache with the pref <command>media.cache_size</command>,
+to prevent HTML5 videos from being written to the OS temporary directory,
+which happened regardless of the private browsing mode setting.
 
     </blockquote>
     <blockquote>
@@ -1117,7 +1120,6 @@ $HOME environment variable to be the TBB extraction directory.
 -->
   <sect2 id="identifier-linkability">
    <title>Cross-Origin Identifier Unlinkability</title>
-   <!-- FIXME: Mention web-send?? -->
    <para>
 
 The Tor Browser MUST prevent a user's activity on one site from being linked
@@ -1445,11 +1447,14 @@ determine how many bits of identifying information each attribute provided.
    </para>
    <para>
 
-Many browser features have been added since the EFF first ran their experiment
-and collected their data. To avoid an infinite sinkhole, we reduce the efforts
-for fingerprinting resistance by only concerning ourselves with reducing the
-fingerprintable differences <emphasis>among</emphasis> Tor Browser users. We
-do not believe it is possible to solve cross-browser fingerprinting issues.
+Because fingerprinting is problem that potentially touches every aspect of the
+browser, we reduce the efforts for fingerprinting resistance by only
+concerning ourselves with reducing the fingerprintable differences
+<emphasis>among</emphasis> Tor Browser users. We do not believe it is possible
+to solve cross-browser fingerprinting issues. Similarly, we prioritize issues
+that differentiate only MacOS, Windows, and Linux lower than those that
+differentiate aspects of the hardware, third party installed software, and
+configuration differences in those operating systems.
 
    </para>
    <para>
@@ -1470,7 +1475,6 @@ Panopticlick to allow us to run our own version for this reason.
    </para>
   <sect3 id="fingerprinting-defenses">
    <title>Fingerprinting defenses in the Tor Browser</title>
-
    <orderedlist>
     <listitem>Plugins
      <para>
@@ -1488,7 +1492,9 @@ barrier.  Additionally, version information should be reduced or obfuscated
 until the plugin object is loaded. For flash, we wish to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3974">provide a
 settings.sol file</ulink> to disable Flash cookies, and to restrict P2P
-features that are likely to bypass proxy settings.
+features that are likely to bypass proxy settings. We'd also like to restrict
+access to fonts and other system information (such as IP address and MAC
+address) in such a sandbox.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1526,11 +1532,52 @@ image can be used almost identically to a tracking cookie by the web server.
      <para>
 
 To reduce the threat from this vector, we have patched Firefox to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0020-Add-canvas-image-extraction-prompt.patch">prompt
-before returning valid image data</ulink> to the Canvas APIs. If the user
-hasn't previously allowed the site in the URL bar to access Canvas image data,
-pure white image data is returned to the Javascript APIs.
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/3b53f525cfb68880e676e64f13cbc0b928ae3ecf">prompt
+before returning valid image data</ulink> to the Canvas APIs, and for <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/fb9f463fe3a69499d6896c217786bafdf0cda62f">access
+to isPointInPath and related functions</ulink>. If the user hasn't previously
+allowed the site in the URL bar to access Canvas image data, pure white image
+data is returned to the Javascript APIs.
 
+     </para>
+    </listitem>
+    <listitem>Open Local Port Fingerprinting
+     <para>
+
+In Firefox, by using either WebSockets or XHR, it is possible for remote
+content to <ulink url="http://www.andlabs.org/tools/jsrecon.html">enumerate
+the list of TCP ports open on 127.0.0.1</ulink>. In other browsers, this can
+be accomplished by DOM events on image tags. This open vs filtered vs closed
+port list can provide a very unique fingerprint of a machine.
+
+     </para>
+
+	 <para><command>Implementation Status:</command> We prevent access to
+127.0.0.1/localhost by ensuring that even these requests are still sent by
+Firefox to our SOCKS proxy (ie we set
+<command>network.proxy.no_proxies_on</command> to the empty string). The local
+Tor client then rejects them, since it is configured to proxy for internal IP
+addresses by default.
+     </para>
+
+    </listitem>
+    <listitem>USB Device ID enumeration
+     <para>
+The GamePad API <ulink
+url="https://developer.mozilla.org/en-US/docs/Web/Guide/API/Gamepad#querying">provides
+web pages with the USB device id, product id, and driver name</ulink> of all
+connected game controllers, as well as detailed information about their
+capabilities. This API should be behind a site permission in Private Browsing
+Modes. We simply disable it via the pref
+<command>dom.gamepad.enabled</command>.
+     </para>
+    </listitem>
+    <listitem>Invasive Authentication Mechanisms (NTLM and SPNEGO)
+     <para>
+Both NTLM and SPNEGO authentication mechansisms can leak the hostname, and in
+some cases the machine username. These authentication mechanisms should either
+be disabled, or placed behind a site permission before their use. We simply
+disable them.
      </para>
     </listitem>
     <listitem>WebGL
@@ -1575,24 +1622,25 @@ font for every language, typeface, and style in use in the world, and to only
 use those fonts at the exclusion of system fonts.  However, this set may be
 impractically large. It is possible that a smaller <ulink
 url="https://secure.wikimedia.org/wikipedia/en/wiki/Unicode_typeface#List_of_Unicode_fonts">common
-subset</ulink> may be found that provides total coverage. However, we believe
-that with strong url bar origin identifier isolation, a simpler approach can reduce the
-number of bits available to the adversary while avoiding the rendering and
-language issues of supporting a global font set.
+subset</ulink> may be found that provides total coverage. Right now, it
+appears that the major languages on Wikipedia can be supported for about 3MB
+of additional distribution size, using the DejaVu font set.
+
 
      </para>
      <para><command>Implementation Status:</command>
 
-We disable plugins, which prevents font enumeration. Additionally, we limit
-both the number of font queries from CSS, as well as the total number of 
-fonts that can be used in a document <ulink
+In the meantime while we investigate shipping our own fonts, we disable
+plugins, which prevents font enumeration. Additionally, we limit both the
+number of font queries from CSS, as well as the total number of fonts that can
+be used in a document <ulink
 url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0011-Limit-the-number-of-fonts-per-document.patch">with
 a Firefox patch</ulink>. We create two prefs,
 <command>browser.display.max_font_attempts</command> and
 <command>browser.display.max_font_count</command> for this purpose. Once these
 limits are reached, the browser behaves as if
-<command>browser.display.use_document_fonts</command> was set. We are
-still working to determine optimal values for these prefs.
+<command>browser.display.use_document_fonts</command> was set. We are still
+working to determine optimal values for these prefs.
 
      </para>
      <para>
@@ -1604,7 +1652,54 @@ font (in any order), we use that font instead of any of the named local fonts.
 
      </para>
     </listitem>
-    <listitem>Desktop resolution, CSS Media Queries, and System Colors
+    <listitem>Monitor and Desktop resolution
+     <para>
+
+Both CSS and Javascript have access to a lot of information about the screen
+resolution, usable desktop size, OS widget size, toolbar size, title bar size,
+screen orientation, and other desktop features that are not at all relevant
+to rendering and serve only to provide information for fingerprinting.
+
+     </para>
+     <para><command>Design Goal:</command>
+
+Our design goal here is to reduce the resolution information down to the bare
+minimum required for properly rendering inside a content window. We intend to
+report all rendering information correctly with respect to the size and
+properties of the content window, but report an effective size of 0 for all
+border material, and also report that the desktop is only as big as the inner
+content window. Additionally, new browser windows are sized such that their
+content windows are one of a few fixed sizes based on the user's desktop
+resolution. The user should also be informed that maximizing their windows can
+lead to fingerprintability under this scheme. To further reduce
+resolution-based fingerprinting, we are <ulink
+url="https://trac.torproject.org/projects/tor/ticket/7256">investigating
+zoom/viewport-based mechanisms</ulink> that might allow us to always report
+the same desktop resolution regardless of the actual size of the content
+window, and simply scale to make up the difference.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+
+We have implemented the above strategy using a window observer to <ulink
+url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l2960">resize
+new windows based on desktop resolution</ulink>. Additionally, we patch
+Firefox to use the client content window size <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/8fc2421becd0ab0cfb5ebbc19af67469552202b2">for
+window.screen</ulink>. Similarly, we <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/81e7fc3a10d27b1d8f0832faf1685899d21f6fef">patch
+DOM events to return content window relative points</ulink>. We also force
+popups to open in new tabs (via
+<command>browser.link.open_newwindow.restriction</command>), to avoid
+full-screen popups inferring information about the browser resolution. In
+addition, we prevent auto-maximizing on browser start, and are investigating a
+user-friendly way of informing users that maximized windows are deterimental
+to privacy in this mode.
+
+     </para>
+    </listitem>
+    <listitem>CSS Media Queries
      <para>
 
 Both CSS and Javascript have access to a lot of information about the screen
@@ -1614,42 +1709,24 @@ to rendering and serve only to provide information for fingerprinting.
 
      </para>
      <para><command>Design Goal:</command>
+<!-- XXX: Link to CSS spec for this stuff -->
 
-Our design goal here is to reduce the resolution information down to the bare
-minimum required for properly rendering inside a content window. We intend to 
-report all rendering information correctly with respect to the size and
-properties of the content window, but report an effective size of 0 for all
-border material, and also report that the desktop is only as big as the
-inner content window. Additionally, new browser windows are sized such that 
-their content windows are one of a few fixed sizes based on the user's
-desktop resolution. 
+In Private Browsing Mode, CSS should not be able infer anything that the user
+has configured about their computer. Additionally, it should not be able to
+infer machine-specific details such as screen orientation or type.
 
      </para>
      <para><command>Implementation Status:</command>
 
-We have implemented the above strategy using a window observer to <ulink
-url="https://gitweb.torproject.org/torbutton.git/blob/HEAD:/src/chrome/content/torbutton.js#l2004">resize
-new windows based on desktop resolution</ulink>. Additionally, we patch
-Firefox to use the client content window size <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0022-Do-not-expose-physical-screen-info.-via-window-and-w.patch">for
-window.screen</ulink> and <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0010-Limit-device-and-system-specific-CSS-Media-Queries.patch">for
-CSS Media Queries</ulink>. Similarly, we <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0021-Return-client-window-coordinates-for-mouse-event-scr.patch">patch
-DOM events to return content window relative points</ulink>. We also patch
+We patch
 Firefox to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0023-Do-not-expose-system-colors-to-CSS-or-canvas.patch">report
-a fixed set of system colors to content window CSS</ulink>.
-
-     </para>
-     <para>
-
-To further reduce resolution-based fingerprinting, we are <ulink
-url="https://trac.torproject.org/projects/tor/ticket/7256">investigating
-zoom/viewport-based mechanisms</ulink> that might allow us to always report
-the same desktop resolution regardless of the actual size of the content
-window, and simply scale to make up the difference. However, the complexity
-and rendering impact of such a change is not yet known.
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/30dc2c4290698af81ceafae9d628a34c53faabe1">report
+a fixed set of system colors to content window CSS</ulink>, and <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/8f6e979d30598569dea14ac6f4eef4e96543b3d7">prevent
+detection of font smoothing on OSX</ulink>. We also always
+<ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/09561f0e5452305b9efcb4e6169c613c8db33246">report
+landscape-primary</ulink> for the screen orientation.
 
      </para>
     </listitem>
@@ -1674,6 +1751,11 @@ url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
 
     </listitem>
+    <listitem>Locale Fingerprinting
+     <para>
+XXX: 2. bug 10703: force the default charset to avoid locale fingerprinting
+     </para>
+    </listitem>
     <listitem>Timezone and clock offset
      <para><command>Design Goal:</command>
 
@@ -1693,6 +1775,29 @@ all platforms. Additionally, we plan to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3652">obtain a clock
 offset from Tor</ulink>, but this won't be available until Tor 0.2.3.x is in
 use.
+
+     </para>
+    </listitem>
+    <listitem>Timezone and Clock skew fingerprinting
+     <para>
+
+While the latency in Tor connections varies anywhere from milliseconds to
+several seconds, it is still possible for the remote site to detect large
+differences between the user's clock and an official reference timesource. 
+     </para>
+
+     <para><command>Design Goal:</command> Ideally, the browser would be
+able to correct the source of this clock drift using an external time source,
+either through something like tlsdate, or directly through the Tor protocol.
+Additionally, the timezone should be set to UTC.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+Right now, we currently set the timezone to UTC via the
+<command>TZ</command> environment variable, and randomize the TLS Hello
+timestamp. However, we have not yet integrated tlsdate or an external
+timesource.
 
      </para>
     </listitem>
@@ -1723,6 +1828,8 @@ optimum trade-off between quantization+jitter and amortization time.
 
      </para>
      <para><command>Implementation Status:</command>
+
+<!-- XXX: Disabled network performance timers too -->
 
 Currently, the only mitigation against performance fingerprinting is to
 disable <ulink url="http://www.w3.org/TR/navigation-timing/">Navigation
@@ -1790,7 +1897,7 @@ All linkable identifiers and browser state MUST be cleared by this feature.
 
    <sect3>
     <title>Implementation Status:</title>
-    <blockquote>
+   <blockquote>
      <para>
 
 First, Torbutton disables Javascript in all open tabs and windows by using
@@ -1814,8 +1921,9 @@ url="https://developer.mozilla.org/en-US/docs/Supporting_private_browsing_mode#P
 state), and then manually clear the following state: searchbox and findbox
 text, HTTP auth, SSL state, OCSP state, site-specific content preferences
 (including HSTS state), content and image cache, offline cache, Cookies, DOM
-storage, DOM local storage, the safe browsing key, and the Google wifi geolocation
-token (if it exists). 
+storage, crypto tokens, DOM local storage, the safe browsing key, and the
+Google wifi geolocation token (if it exists). We also clear NoScript's site
+and temporary permissions.
 
      </para>
      <para>
