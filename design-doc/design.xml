@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>October 20th, 2014</pubdate>
+   <pubdate>October 30th, 2014</pubdate>
  </articleinfo>
 
 <!--
@@ -1475,6 +1475,15 @@ Panopticlick to allow us to run our own version for this reason.
    </para>
   <sect3 id="fingerprinting-defenses">
    <title>Fingerprinting defenses in the Tor Browser</title>
+   <para>
+
+The following defenses are listed roughly in order of most severe
+fingerprinting threat first, though we are desperately in need of updated
+measurements to determine this with certainty. Where our actual implementation
+differs from an ideal solution, we separately describe our <command>Design
+Goal</command> and our <command>Implementation Status</command>.
+
+   </para>
    <orderedlist>
     <listitem>Plugins
      <para>
@@ -1547,18 +1556,18 @@ data is returned to the Javascript APIs.
      <para>
      </para>
     </listitem>
-    <listitem>Open Local Port Fingerprinting
+    <listitem>Open TCP Port Fingerprinting
      <para>
 
 In Firefox, by using either WebSockets or XHR, it is possible for remote
 content to <ulink url="http://www.andlabs.org/tools/jsrecon.html">enumerate
 the list of TCP ports open on 127.0.0.1</ulink>. In other browsers, this can
-be accomplished by DOM events on image tags. This open vs filtered vs closed
-port list can provide a very unique fingerprint of a machine.
+be accomplished by DOM events on image or script tags. This open vs filtered
+vs closed port list can provide a very unique fingerprint of a machine.
 
      </para>
 
-	 <para><command>Implementation Status:</command> We prevent access to
+	 <para>In Tor Browser, we prevent access to
 127.0.0.1/localhost by ensuring that even these requests are still sent by
 Firefox to our SOCKS proxy (ie we set
 <command>network.proxy.no_proxies_on</command> to the empty string). The local
@@ -1615,8 +1624,9 @@ provided by the following WebGL API calls: <command>getParameter()</command>,
      </para>
      <para>
 
-Another alternative for WebGL might be to fall back to software rendering only
-for private motes.
+Another option for WebGL might be to use software-only rendering, using a
+library such as <ulink url="http://www.mesa3d.org/">Mesa</ulink>. The use of
+such a library would avoid hardware-specific rendering differences.
 
      </para>
     </listitem>
@@ -1796,7 +1806,14 @@ and exception handling.
     </listitem>
 
     <listitem>Timezone and clock offset
-     <para><command>Design Goal:</command>
+     <para>
+
+While the latency in Tor connections varies anywhere from milliseconds to
+several seconds, it is still possible for the remote site to detect large
+differences between the user's clock and an official reference timesource. 
+     </para>
+
+  <para><command>Design Goal:</command>
 
 All Tor Browser users MUST report the same timezone to websites. Currently, we
 choose UTC for this purpose, although an equally valid argument could be made
@@ -1804,7 +1821,9 @@ for EDT/EST due to the large English-speaking population density (coupled with
 the fact that we spoof a US English user agent).  Additionally, the Tor
 software should detect if the users clock is significantly divergent from the
 clocks of the relays that it connects to, and use this to reset the clock
-values used in Tor Browser to something reasonably accurate.
+values used in Tor Browser to something reasonably accurate. Alternatively,
+the browser can obtain this clock skew via a mechanism similar to that used in
+<ulink linkend="https://github.com/ioerror/tlsdate">tlsdate</ulink>.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1814,30 +1833,6 @@ all platforms. Additionally, we plan to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3652">obtain a clock
 offset from Tor</ulink>, but this won't be available until Tor 0.2.3.x is in
 use.
-
-     </para>
-    </listitem>
-    <listitem>Timezone and Clock skew fingerprinting
-     <para>
-
-While the latency in Tor connections varies anywhere from milliseconds to
-several seconds, it is still possible for the remote site to detect large
-differences between the user's clock and an official reference timesource. 
-     </para>
-
-	 <para><command>Design Goal:</command> Ideally, the browser would be able
-to correct the source of this clock drift using an external time source,
-either through something like <ulink
-linkend="https://github.com/ioerror/tlsdate">tlsdate</ulink>, or directly
-through the Tor protocol.  Additionally, the timezone should be set to UTC.
-
-     </para>
-     <para><command>Implementation Status:</command>
-
-Right now, we currently set the timezone to UTC via the
-<command>TZ</command> environment variable, and randomize the TLS Hello
-timestamp. However, we have not yet integrated tlsdate or an external
-timesource.
 
      </para>
     </listitem>
