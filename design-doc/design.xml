@@ -372,7 +372,7 @@ url bar origin</ulink> to eliminate the possibility of linkability
 between domains. For example, when a plugin object (or a Javascript access of
 window.plugins) is present in a page, the user should be given the choice of
 allowing that plugin object for that url bar origin only. The same
-goes for exemptions to third party cookie policy, geo-location, and any other
+goes for exemptions to third party cookie policy, geolocation, and any other
 privacy permissions.
      </para>
      <para>
@@ -494,7 +494,7 @@ choosing.</para>
      <para>If direct proxy bypass is not possible, the adversary will likely
 happily settle for the ability to correlate something a user did via Tor with
 their non-Tor activity. This can be done with cookies, cache identifiers,
-javascript events, and even CSS. Sometimes the fact that a user uses Tor may
+Javascript events, and even CSS. Sometimes the fact that a user uses Tor may
 be enough for some authorities.</para>
      </listitem>
      <listitem><command>History disclosure</command>
@@ -626,7 +626,7 @@ with cookies as well.
 
 These types of attacks are attempts at subverting our <link
 linkend="identifier-linkability">Cross-Origin Identifier Unlinkability</link> and <link
-linkend="new-identity">Long-Term Unlikability</link> design requirements.
+linkend="new-identity">Long-Term Unlinkability</link> design requirements.
 
      </para>
      </listitem>
@@ -640,7 +640,7 @@ uniquely fingerprint individual users. Attacks of this nature are typically
 aimed at tracking users across sites without their consent, in an attempt to
 subvert our <link linkend="fingerprinting-linkability">Cross-Origin
 Fingerprinting Unlinkability</link> and <link
-linkend="new-identity">Long-Term Unlikability</link> design requirements.
+linkend="new-identity">Long-Term Unlinkability</link> design requirements.
 
 </para>
 
@@ -792,7 +792,7 @@ are large numbers of dynamically generated pages, partially cached content,
 and also the non-web activity of entire Tor network. This yields an effective
 number of "web pages" many orders of magnitude larger than even <ulink
 url="http://lorre.uni.lu/~andriy/papers/acmccs-wpes11-fingerprinting.pdf">Panchenko's
-"Open World" scenario</ulink>, which suffered continous near-constant decline
+"Open World" scenario</ulink>, which suffered continuous near-constant decline
 in the true positive rate as the "Open World" size grew (see figure 4). This
 large level of classification complexity is further confounded by a noisy and
 low resolution featureset - one which is also relatively easy for the defender
@@ -929,7 +929,7 @@ activity in the source tree that did not use the browser proxy settings.
  <para>
 
 We have verified that these settings and patches properly proxy HTTPS, OCSP,
-HTTP, FTP, gopher (now defunct), DNS, SafeBrowsing Queries, all javascript
+HTTP, FTP, gopher (now defunct), DNS, SafeBrowsing Queries, all JavaScript
 activity, including HTML5 audio and video objects, addon updates, wifi
 geolocation queries, searchbox queries, XPCOM addon HTTPS/HTTP activity,
 WebSockets, and live bookmark updates. We have also verified that IPv6
@@ -1584,7 +1584,7 @@ We simply disable it via the pref <command>dom.gamepad.enabled</command>.
     </listitem>
     <listitem>Invasive Authentication Mechanisms (NTLM and SPNEGO)
      <para>
-Both NTLM and SPNEGO authentication mechansisms can leak the hostname, and in
+Both NTLM and SPNEGO authentication mechanisms can leak the hostname, and in
 some cases the machine username. These authentication mechanisms should either
 be disabled, or placed behind a site permission before their use. We simply
 disable them.
@@ -1716,7 +1716,7 @@ popups to open in new tabs (via
 <command>browser.link.open_newwindow.restriction</command>), to avoid
 full-screen popups inferring information about the browser resolution. In
 addition, we prevent auto-maximizing on browser start, and are investigating a
-user-friendly way of informing users that maximized windows are deterimental
+user-friendly way of informing users that maximized windows are detrimental
 to privacy in this mode.
 
      </para>
@@ -2609,7 +2609,7 @@ libraries, and discarding the private portion of that key. Because there are
 many other ways to intercept the crypto outside of modifying the actual DLL
 images, we opted to simply remove these signature files from distribution.
 There simply is no way to verify code integrity on a running system without
-both OS and coprocessor assistance. Download package signatures make sense of
+both OS and co-processor assistance. Download package signatures make sense of
 course, but we handle those another way (as mentioned above).
 
 
