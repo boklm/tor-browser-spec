@@ -1531,7 +1531,11 @@ image can be used almost identically to a tracking cookie by the web server.
      </para>
      <para>
 
-To reduce the threat from this vector, we have patched Firefox to <ulink
+In some sense, the canvas can be seen as the union of many other
+fingerprinting vectors. If WebGL were normalized through software rendering,
+and the browser shipped a fixed collection of fonts, it might not be necessary
+to create a canvas permission. However, until then, to reduce the threat from
+this vector, we have patched Firefox to <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commitdiff/3b53f525cfb68880e676e64f13cbc0b928ae3ecf">prompt
 before returning valid image data</ulink> to the Canvas APIs, and for <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commitdiff/fb9f463fe3a69499d6896c217786bafdf0cda62f">access
@@ -1539,6 +1543,8 @@ to isPointInPath and related functions</ulink>. If the user hasn't previously
 allowed the site in the URL bar to access Canvas image data, pure white image
 data is returned to the Javascript APIs.
 
+     </para>
+     <para>
      </para>
     </listitem>
     <listitem>Open Local Port Fingerprinting
@@ -1563,13 +1569,17 @@ addresses by default.
     </listitem>
     <listitem>USB Device ID enumeration
      <para>
-The GamePad API <ulink
-url="https://developer.mozilla.org/en-US/docs/Web/Guide/API/Gamepad#querying">provides
-web pages with the USB device id, product id, and driver name</ulink> of all
-connected game controllers, as well as detailed information about their
-capabilities. This API should be behind a site permission in Private Browsing
-Modes. We simply disable it via the pref
-<command>dom.gamepad.enabled</command>.
+
+The <ulink
+url="https://developer.mozilla.org/en-US/docs/Web/Guide/API/Gamepad">GamePad
+API</ulink> provides web pages with the <ulink
+url="https://dvcs.w3.org/hg/gamepad/raw-file/default/gamepad.html#widl-Gamepad-id">USB
+device id, product id, and driver name</ulink> of all connected game
+controllers, as well as detailed information about their capabilities. This API
+should be behind a site permission in Private Browsing Modes, or should present a generic 
+controller type (perhaps a two button controller that can be mapped to the keyboard) in all cases.
+We simply disable it via the pref <command>dom.gamepad.enabled</command>.
+
      </para>
     </listitem>
     <listitem>Invasive Authentication Mechanisms (NTLM and SPNEGO)
@@ -1603,6 +1613,12 @@ provided by the following WebGL API calls: <command>getParameter()</command>,
 <command>getExtension()</command>.
 
      </para>
+     <para>
+
+Another alternative for WebGL might be to fall back to software rendering only
+for private motes.
+
+     </para>
     </listitem>
     <listitem>Fonts
      <para>
@@ -1615,19 +1631,25 @@ pre-built list to query, a large amount of fingerprintable information may
 still be available.
 
      </para>
-     <para>
 
-The sure-fire way to address font linkability is to ship the browser with a
-font for every language, typeface, and style in use in the world, and to only
-use those fonts at the exclusion of system fonts.  However, this set may be
-impractically large. It is possible that a smaller <ulink
-url="https://secure.wikimedia.org/wikipedia/en/wiki/Unicode_typeface#List_of_Unicode_fonts">common
-subset</ulink> may be found that provides total coverage. Right now, it
-appears that the major languages on Wikipedia can be supported for about 3MB
-of additional distribution size, using the DejaVu font set.
-
-
+	 <para><command>Design Goal:</command> The sure-fire way to address font
+linkability is to ship the browser with a font for every language, typeface,
+and style, and to only use those fonts at the exclusion of system fonts. We are
+<ulink url="https://trac.torproject.org/projects/tor/ticket/13313">currently
+investigating</ulink> this approach, and our current favorite font sets for
+this purpose are the <ulink url="http://www.droidfonts.com/droidfonts/">Droid
+fonts</ulink>, the <ulink url="http://hangeul.naver.com/">Nanum fonts</ulink>,
+and <ulink url="https://fedorahosted.org/lohit/">Lohit fonts</ulink>. The Droid
+font set is fairly complete by itself, but Nanum and Lohit have smaller
+versions of many South Asian languages. When combined in a way that chooses the
+smallest font implementations for each locale, these three font sets provide
+which provide coverage for the all languages used on Wikipedia with more than
+10,000 articles, and several others as well, in approximately 3MB of compressed
+overhead. The <ulink url="https://www.google.com/get/noto/">Noto font
+set</ulink> is another font set that aims for complete coverage, but is
+considerably larger than the combination of the Droid, Nanum, and Lohit fonts.
      </para>
+
      <para><command>Implementation Status:</command>
 
 In the meantime while we investigate shipping our own fonts, we disable
@@ -1639,8 +1661,7 @@ a Firefox patch</ulink>. We create two prefs,
 <command>browser.display.max_font_attempts</command> and
 <command>browser.display.max_font_count</command> for this purpose. Once these
 limits are reached, the browser behaves as if
-<command>browser.display.use_document_fonts</command> was set. We are still
-working to determine optimal values for these prefs.
+<command>browser.display.use_document_fonts</command> was set.
 
      </para>
      <para>
@@ -1670,13 +1691,14 @@ properties of the content window, but report an effective size of 0 for all
 border material, and also report that the desktop is only as big as the inner
 content window. Additionally, new browser windows are sized such that their
 content windows are one of a few fixed sizes based on the user's desktop
-resolution. The user should also be informed that maximizing their windows can
-lead to fingerprintability under this scheme. To further reduce
-resolution-based fingerprinting, we are <ulink
+resolution. In addition, to further reduce resolution-based fingerprinting, we
+are <ulink
 url="https://trac.torproject.org/projects/tor/ticket/7256">investigating
-zoom/viewport-based mechanisms</ulink> that might allow us to always report
-the same desktop resolution regardless of the actual size of the content
-window, and simply scale to make up the difference.
+zoom/viewport-based mechanisms</ulink> that might allow us to always report the
+same desktop resolution regardless of the actual size of the content window,
+and simply scale to make up the difference.  Until then, the user should also
+be informed that maximizing their windows can lead to fingerprintability under
+this scheme. 
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1702,15 +1724,15 @@ to privacy in this mode.
     <listitem>CSS Media Queries
      <para>
 
-Both CSS and Javascript have access to a lot of information about the screen
+Even without Javascript, CSS has access to a lot of information about the screen
 resolution, usable desktop size, OS widget size, toolbar size, title bar size,
 system theme colors, and other desktop features that are not at all relevant
-to rendering and serve only to provide information for fingerprinting.
+to rendering and serve only to provide information for fingerprinting. Most of this information comes from 
+<ulink url="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Media_queries">CSS Media Queries</ulink>, but 
+Mozilla has exposed <ulink url="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value#System_Colors">several user and OS theme defined color values</ulink> to CSS as well.
 
      </para>
      <para><command>Design Goal:</command>
-<!-- XXX: Link to CSS spec for this stuff -->
-
 In Private Browsing Mode, CSS should not be able infer anything that the user
 has configured about their computer. Additionally, it should not be able to
 infer machine-specific details such as screen orientation or type.
@@ -1751,11 +1773,28 @@ url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
 
     </listitem>
+
     <listitem>Locale Fingerprinting
      <para>
-XXX: 2. bug 10703: force the default charset to avoid locale fingerprinting
+
+In Tor Browser, we provide non-English users the option of concealing their OS
+and browser locale from websites. It is debatable if this should be as high of
+a priority as information specific to the user's computer, but for
+completeness, we attempt to maintain this property.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+We set the fallback character set to set to windows-1252 for all locales, via
+<command>intl.charset.default</command>.  We also patch Firefox to allow us to
+<ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/fe42a78575df7f460fa0ac48eabb57bc8812c23e">instruct
+the JS engine</ulink> to use en-US as its internal C locale for all Date, Math,
+and exception handling.
+
      </para>
     </listitem>
+
     <listitem>Timezone and clock offset
      <para><command>Design Goal:</command>
 
@@ -1786,10 +1825,11 @@ several seconds, it is still possible for the remote site to detect large
 differences between the user's clock and an official reference timesource. 
      </para>
 
-     <para><command>Design Goal:</command> Ideally, the browser would be
-able to correct the source of this clock drift using an external time source,
-either through something like tlsdate, or directly through the Tor protocol.
-Additionally, the timezone should be set to UTC.
+	 <para><command>Design Goal:</command> Ideally, the browser would be able
+to correct the source of this clock drift using an external time source,
+either through something like <ulink
+linkend="https://github.com/ioerror/tlsdate">tlsdate</ulink>, or directly
+through the Tor protocol.  Additionally, the timezone should be set to UTC.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1828,8 +1868,6 @@ optimum trade-off between quantization+jitter and amortization time.
 
      </para>
      <para><command>Implementation Status:</command>
-
-<!-- XXX: Disabled network performance timers too -->
 
 Currently, the only mitigation against performance fingerprinting is to
 disable <ulink url="http://www.w3.org/TR/navigation-timing/">Navigation
