@@ -1902,6 +1902,40 @@ fingerprinting: timestamp quantization and jitter.
 We have no implementation as of yet.
      </para>
     </listitem>
+    <listitem>Operating System type fingerprinting
+     <para>
+
+As we mentioned in the introduction of this section, OS type fingerprinting is
+currently considered a lower priority, due simply to the numerous ways that
+characteristics of the Operating System type may leak into content, and the
+comparatively low contribution of OS to overall entropy. In particular, there
+are likely to be many ways to measure the differences in widget size,
+scrollbar size, and other rendered details on a page. Also, directly exported
+OS routines, such as the Math library, expose differences in their
+implementations due to these results.
+
+
+     </para>
+     <para><command>Design Goal:</command>
+
+We intend to reduce or eliminate OS type fingerprinting to the best extent
+possible, but recognize that the effort for reward on this item is not as high
+as other areas. The entropy on the current OS distribution is somewhere around
+2 bits, which is much lower than other vectors which can also be used to
+fingerprint configuration and user-specific information.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+We have no defenses deployed that address OS type fingerprinting, but nothing
+else. Several defenses may help also mitigate it, in addition to reducing a
+lot more entropy elsewhere. You can see the major areas of OS fingerprinting
+we're aware of using the tag <ulink
+url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting-os">tbb-fingerprinting-os
+on our bugtracker</ulink>.
+
+     </para>
+    </listitem>
    </orderedlist>
    </sect3>
    <para>
