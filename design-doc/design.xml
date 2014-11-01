@@ -1927,12 +1927,12 @@ fingerprint configuration and user-specific information.
      </para>
      <para><command>Implementation Status:</command>
 
-We have no defenses deployed that address OS type fingerprinting, but nothing
-else. Several defenses may help also mitigate it, in addition to reducing a
-lot more entropy elsewhere. You can see the major areas of OS fingerprinting
-we're aware of using the tag <ulink
+We have no defenses deployed that address OS type fingerprinting by itself.
+Several defenses may help also mitigate it, in addition to reducing a lot more
+entropy elsewhere. You can see the major areas of OS fingerprinting we're
+aware of using the <ulink
 url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting-os">tbb-fingerprinting-os
-on our bugtracker</ulink>.
+tag on our bugtracker</ulink>.
 
      </para>
     </listitem>
