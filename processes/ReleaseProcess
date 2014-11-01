@@ -48,28 +48,28 @@
 #. Sign individual bundle files
 #  XXX: This blocks on Erinn currently. We use her key for file sigs
 
-#. Clear out old builds, transfer builds to vescum
+#. Clear out old builds, transfer builds to staticiforme
 #. Remote:
-   torsocks ssh www-master.torproject.org "rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.*"
-   torsocks rsync -avP $TORBROWSER_VERSION www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/
-   torsocks ssh www-master.torproject.org "chmod g+w,o+r -R /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.5*"
-   torsocks ssh www-master.torproject.org "/home/mirroradm/bin/trigger-mirrors"
-#. Local to vescum:
+   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/4.*"
+   torsocks rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/
+   torsocks ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
+   torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
+#. Local to staticiforme:
    cd tmp
    wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION
    chmod 775 $TORBROWSER_VERSION
    chmod 664 $TORBROWSER_VERSION/*
    rm $TORBROWSER_VERSION/index.html*
-   rm -rf /srv/www-master.torproject.org/htdocs/dist/torbrowser/3.*
-   cp -r $TORBROWSER_VERSION /srv/www-master.torproject.org/htdocs/dist/torbrowser/
-   /home/mirroradm/bin/trigger-mirrors
+   rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/4*
+   cp -r $TORBROWSER_VERSION /srv/dist-master.torproject.org/htdocs/torbrowser/ 
+   static-update-component dist.torproject.org
 
 #. Update website's torbrowser versions file
-   cd website
-   torsocks svn up .
+   cd webwml
+   torsocks git pull origin
    vim ./include/versions.wmi ./projects/torbrowser/RecommendedTBBVersions
-   torsocks svn commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Bump TBB version"
-   ./publish
+   git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Bump TBB version"
+   torsocks git push origin master:master
    cd ..
 
 #. Create blog post from changelog
