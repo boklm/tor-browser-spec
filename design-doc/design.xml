@@ -1200,7 +1200,7 @@ security of the isolation</ulink> and to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3754">solve conflicts
 with OCSP relying the cacheKey property for reuse of POST requests</ulink>, we
 had to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0004-Add-a-string-based-cacheKey.patch">patch
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/18dfd3064aff23a402fec248aab797036a9ba615">patch
 Firefox to provide a cacheDomain cache attribute</ulink>. We use the fully
 qualified url bar domain as input to this field, to avoid the complexities
 of heuristically determining the second-level DNS name.
@@ -1232,7 +1232,7 @@ FQDN that was used to source the third party element.
 
 Additionally, because the image cache is a separate entity from the content
 cache, we had to patch Firefox to also <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0024-Isolate-the-Image-Cache-per-url-bar-domain.patch">isolate
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/114cd22282f8b3cd6e6a5c29de8a8c396a79acc0">isolate
 this cache per url bar domain</ulink>.
 
      </para>
@@ -1254,7 +1254,7 @@ linkability between domains</ulink>.
 DOM storage for third party domains MUST be isolated to the url bar origin,
 to prevent linkability between sites. This functionality is provided through a
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0026-Isolate-DOM-storage-to-first-party-URI.patch">patch
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/973468a07fb9e7d9995d01b250223a8df16d6cfd">patch
 to Firefox</ulink>.
 
      </para>
@@ -1292,7 +1292,7 @@ We currently clear SSL Session IDs upon <link linkend="new-identity">New
 Identity</link>, we disable TLS Session Tickets via the Firefox Pref
 <command>security.enable_tls_session_tickets</command>. We disable SSL Session
 IDs via a <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0008-Disable-SSL-Session-ID-tracking.patch">patch
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/5524ae43780e4738310852cc2a0b7c5d25aa69ed">patch
 to Firefox</ulink>. To compensate for the increased round trip latency from disabling
 these performance optimizations, we also enable
 <ulink url="https://tools.ietf.org/html/draft-bmoeller-tls-falsestart-00">TLS
@@ -1498,7 +1498,7 @@ compromise due to the popularity of Flash, we allow users to re-enable Flash,
 and flash objects are blocked behind a click-to-play barrier that is available
 only after the user has specifically enabled plugins. Flash is the only plugin
 available, the rest are <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0005-Block-all-plugins-except-flash.patch">entirely
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/1ef32dcf0cc64876f5b92a583b788dc921f22c5d">entirely
 blocked from loading by a Firefox patch</ulink>. We also set the Firefox
 preference <command>plugin.expose_full_path</command> to false, to avoid
 leaking plugin installation information.
@@ -1652,7 +1652,7 @@ In the meantime while we investigate shipping our own fonts, we disable
 plugins, which prevents font name enumeration. Additionally, we limit both the
 number of font queries from CSS, as well as the total number of fonts that can
 be used in a document <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0011-Limit-the-number-of-fonts-per-document.patch">with
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/d515c79ffd115b132caade7f881e5b467448964d">with
 a Firefox patch</ulink>. We create two prefs,
 <command>browser.display.max_font_attempts</command> and
 <command>browser.display.max_font_count</command> for this purpose. Once these
@@ -1768,7 +1768,7 @@ Firefox provides several options for controlling the browser user agent string
 which we leverage. We also set similar prefs for controlling the
 Accept-Language and Accept-Charset headers, which we spoof to English by default. Additionally, we
 <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0001-Block-Components.interfaces-from-content.patch">remove
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/95cd0e8071aa1fe3f4914331d4036f218007e31d">remove
 content script access</ulink> to Components.interfaces, which <ulink
 url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
@@ -2112,7 +2112,7 @@ network, making them also effectively no-overhead.
        <blockquote>
        <para>
 Currently, we patch Firefox to <ulink
-url="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.4:/src/current-patches/firefox/0017-Randomize-HTTP-request-order-and-pipeline-depth.patch">randomize
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/27ef32d509ed1c9eeb28f7affee0f9ba11773f72">randomize
 pipeline order and depth</ulink>. Unfortunately, pipelining is very fragile.
 Many sites do not support it, and even sites that advertise support for
 pipelining may simply return error codes for successive requests, effectively
