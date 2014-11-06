@@ -40,7 +40,7 @@ This document describes the <link linkend="adversary">adversary model</link>,
 linkend="Implementation">implementation</link> <!-- and <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
 procedures</link> --> of the Tor Browser. It is current as of Tor Browser
-4.0.
+4.5-alpha-1.
 
   </para>
   <para>
@@ -530,10 +530,14 @@ least <link linkend="fingerprinting">tracking their activities</link>.
      <listitem><command>History records and other on-disk
 information</command>
      <para>
+
 In some cases, the adversary may opt for a heavy-handed approach, such as
 seizing the computers of all Tor users in an area (especially after narrowing
 the field by the above two pieces of information). History records and cache
-data are the primary goals here.
+data are the primary goals here. Secondary goals may include confirming
+on-disk identifiers (such as hostname and disk-logged spoofed MAC adddress
+history) obtained by other means.
+
      </para>
      </listitem>
     </orderedlist>
@@ -936,13 +940,6 @@ WebSockets, and live bookmark updates. We have also verified that IPv6
 connections are not attempted, through the proxy or otherwise (Tor does not
 yet support IPv6). We have also verified that external protocol helpers, such
 as smb urls and other custom protocol handlers are all blocked.
-
- </para>
- <para>
-
-Numerous other third parties have also reviewed and tested the proxy settings
-and have provided test cases based on their work. See in particular <ulink
-url="http://decloak.net/">decloak.net</ulink>. 
 
  </para>
 </listitem>
@@ -1407,22 +1404,13 @@ Identity</command> invocations.
       </para>
      </listitem>
     <listitem>Exit node usage
-     <para><command>Design Goal:</command>
+    <para>
 
-Every distinct navigation session (as defined by a non-blank Referer header)
-MUST exit through a fresh Tor circuit in Tor Browser to prevent exit node
-observers from linking concurrent browsing activity.
+All content elements associated with a given URL bar domain (including the
+main page) are given a SOCKS username and password for this domain, which
+causes Tor to isolate all of these requests on their own set of Tor circuits.
 
-     </para>
-     <para><command>Implementation Status:</command>
-
-The Tor feature that supports this ability only exists in the 0.2.3.x-alpha
-series. <ulink
-url="https://trac.torproject.org/projects/tor/ticket/3455">Ticket
-#3455</ulink> is the Torbutton ticket to make use of the new Tor
-functionality.
-
-     </para>
+    </para>
     </listitem>
    </orderedlist>
    <para>
@@ -1829,10 +1817,7 @@ the browser can obtain this clock skew via a mechanism similar to that used in
      <para><command>Implementation Status:</command>
 
 We set the timezone using the TZ environment variable, which is supported on
-all platforms. Additionally, we plan to <ulink
-url="https://trac.torproject.org/projects/tor/ticket/3652">obtain a clock
-offset from Tor</ulink>, but this won't be available until Tor 0.2.3.x is in
-use.
+all platforms.
 
      </para>
     </listitem>
@@ -2037,6 +2022,46 @@ privacy and security issues.
 
    </para>
    <orderedlist>
+    <listitem id="security-slider"><command>Security Slider</command>
+     <para>
+
+In order to provide vulnerability surface reduction for users that need high
+security, we have implemented a "Security Slider" that essentially represents a
+tradeoff between usability and security. Using metrics collected from
+Mozilla's bugtracker, we analyzed the vulnerability counts of core components,
+and used <ulink
+url="https://github.com/iSECPartners/publications/tree/master/reports/Tor%20Browser%20Bundle">information
+gathered from a study performed by iSec Partners</ulink> to inform which
+features should be disabled at which security levels.
+
+     </para>
+     <para>
+
+The Security Slider consists of four positions. At the lowest security level
+(the default), we disable
+<command>gfx.font_rendering.graphite.enabled</command> for Latin locales, as
+well as <command>gfx.font_rendering.graphite.enabled</command>. At the
+medium-low level, we disable most Javascript JIT and related optimizations
+(<command>javascript.options.ion.content</command>,
+<command>javascript.options.typeinference</command>,
+<command>javascript.options.asmjs</command>). We also make HTML5 media
+click-to-play (<command>noscript.forbidMedia</command>), and disable WebAudio
+(<command>media.webaudio.enabled</command>). At the medium-high level, we
+disable the baseline JIT
+(<command>javascript.options.baselinejit.content</command>), disable
+Javascript entirely all elements that are loaded when the URL bar is not
+HTTPS (<command>noscript.globalHttpsWhitelist</command>), and fully disable
+graphite font rendering for all locales
+(<command>gfx.font_rendering.graphite.enable</command>). At the highest level,
+Javascript is fully disabled (<command>noscript.global</command>), as well as
+all non-WebM HTML5 codecs (<command>media.ogg.enabled</command>,
+<command>media.opus.enabled</command>, <command>media.opus.enabled</command>,
+<command>media.DirectShow.enabled</command>,
+<command>media.wave.enabled</command>, and
+<command>media.apple.mp3.enabled</command>).
+
+     </para>
+    </listitem>
     <listitem id="traffic-fingerprinting-defenses"><command>Website Traffic Fingerprinting Defenses</command>
      <para>
 
@@ -2144,6 +2169,14 @@ homepage to point to a <ulink
 url="https://check.torproject.org/?lang=en-US&amp;small=1&amp;uptodate=0">page that
 informs the user</ulink> that their browser is out of
 date.
+
+     </para>
+     <para>
+
+We also make use of the in-browser Mozilla updater, and have <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commitdiff/777695d09e3cff4c79c48839e1c9d5102b772d6f">patched
+the updater</ulink> to avoid sending OS and Kernel version information as part
+of its update pings.
 
      </para>
     </listitem>
