@@ -1468,7 +1468,7 @@ operating system type and even processor speed.
    <para>
 
 The following defenses are listed roughly in order of most severe
-fingerprinting threat first. This ordering based on the above intuition that
+fingerprinting threat first. This ordering is based on the above intuition that
 user configurable aspects of the computer are the most severe source of
 fingerprintability, though we are in need of updated measurements to determine
 this with certainty.
