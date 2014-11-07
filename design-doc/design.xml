@@ -1664,7 +1664,7 @@ font (in any order), we use that font instead of any of the named local fonts.
 
      </para>
     </listitem>
-    <listitem>Monitor and OS Desktop Resolution
+    <listitem>Monitor, Widget, and OS Desktop Resolution
      <para>
 
 Both CSS and Javascript have access to a lot of information about the screen
@@ -1721,8 +1721,8 @@ to privacy in this mode.
 Beyond simple resolution information, a large amount of so-called "Media"
 information is also exported to content. Even without Javascript, CSS has
 access to a lot of information about the device orientation, system theme
-colors, and other desktop features that are not at all relevant to rendering
-and also user configurable. Most of this
+colors, and other desktop and display features that are not at all relevant to
+rendering and also user configurable. Most of this
 information comes from <ulink
 url="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Media_queries">CSS
 Media Queries</ulink>, but Mozilla has exposed <ulink
