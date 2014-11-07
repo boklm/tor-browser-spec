@@ -1435,46 +1435,59 @@ determine how many bits of identifying information each attribute provided.
    </para>
    <para>
 
-Because fingerprinting is a problem that potentially touches every aspect of
-the browser, we reduce the efforts for fingerprinting resistance by only
-concerning ourselves with reducing the fingerprintable differences
-<emphasis>among</emphasis> Tor Browser users. We do not believe it is possible
-to solve cross-browser fingerprinting issues.
+Unfortunately, there are limitations to the way the Panopticlick study was
+conducted. Because the Panopticlick dataset is based on browser data spanning
+a number of widely deployed browsers over a number of years, any
+fingerprinting defenses attempted by browsers today are very likely to cause
+Panopticlick to report an <emphasis>increase</emphasis> in fingerprintability
+and entropy, because those defenses will stand out in sharp contrast to
+historical data. Moreover, because fingerprinting is a problem that
+potentially touches every aspect of the browser, we do not believe it is
+possible to solve cross-browser fingerprinting issues. We reduce the efforts
+for fingerprinting resistance by only concerning ourselves with reducing the
+fingerprintable differences <emphasis>among</emphasis> Tor Browser users. 
 
    </para>
    <para>
 
-Unfortunately, the unsolvable nature of the cross-browser fingerprinting
-problem means that the Panopticlick test website itself is not useful for
-evaluating the actual effectiveness of our defenses, or the fingerprinting
-defenses of any other web browser. Because the Panopticlick dataset is based
-on browser data spanning a number of widely deployed browsers over a number of
-years, any fingerprinting defenses attempted by browsers today are very likely
-to cause Panopticlick to report an <emphasis>increase</emphasis> in
-fingerprintability and entropy, because those defenses will stand out in sharp
-contrast to historical data. We have been <ulink
-url="https://trac.torproject.org/projects/tor/ticket/6119">working to convince
-the EFF</ulink> that it is worthwhile to release the source code to
-Panopticlick to allow us to run our own version for this reason.
+The unsolvable nature of the cross-browser fingerprinting problem also means
+that the Panopticlick test website itself is not useful for evaluating the
+actual effectiveness of our defenses, or the fingerprinting defenses of any
+other web browser. We are interested in deploying an improved version of
+Panopticlick that measures entropy and variance only among a specific user
+agent population, but until then, intuition serves as a decent guide.
+Essentially, anything that reveals custom user configuration, third party
+software, highly variable hardware details, and external devices attached to
+the users computer is likely to more fingerprintable than things like
+operating system type and even processor speed.
 
    </para>
+  
   <sect3 id="fingerprinting-defenses">
    <title>Fingerprinting defenses in the Tor Browser</title>
    <para>
 
 The following defenses are listed roughly in order of most severe
-fingerprinting threat first, though we are desperately in need of updated
-measurements to determine this with certainty. Where our actual implementation
-differs from an ideal solution, we separately describe our <command>Design
-Goal</command> and our <command>Implementation Status</command>.
+fingerprinting threat first. This ordering based on the above intuition that
+user configurable aspects of the computer are the most severe source of
+fingerprintability, though we are in need of updated measurements to determine
+this with certainty.
+
+   </para>
+
+   <para>
+Where our actual implementation differs from
+an ideal solution, we separately describe our <command>Design Goal</command>
+and our <command>Implementation Status</command>.
 
    </para>
    <orderedlist>
     <listitem>Plugins
      <para>
 
-Plugins add to fingerprinting risk via two main vectors: their mere presence in
-window.navigator.plugins, as well as their internal functionality.
+Plugins add to fingerprinting risk via two main vectors: their mere presence
+in window.navigator.plugins (because they are optional, end-user installed
+third party software), as well as their internal functionality.
 
      </para>
      <para><command>Design Goal:</command>
@@ -1508,11 +1521,10 @@ leaking plugin installation information.
     <listitem>HTML5 Canvas Image Extraction
      <para>
 
-The <ulink url="https://developer.mozilla.org/en-US/docs/HTML/Canvas">HTML5
-Canvas</ulink> is a feature that has been added to major browsers after the
-EFF developed their Panopticlick study. After plugins and plugin-provided
-information, we believe that the HTML5 Canvas is the single largest
-fingerprinting threat browsers face today. <ulink
+After plugins and plugin-provided information, we believe that the <ulink
+url="https://developer.mozilla.org/en-US/docs/HTML/Canvas">HTML5
+Canvas</ulink> is the single largest fingerprinting threat browsers face
+today. <ulink
 url="http://www.w2spconf.com/2012/papers/w2sp12-final4.pdf">Initial
 studies</ulink> show that the Canvas can provide an easy-access fingerprinting
 target: The adversary simply renders WebGL, font, and named color data to a
@@ -1526,8 +1538,9 @@ image can be used almost identically to a tracking cookie by the web server.
      <para>
 
 In some sense, the canvas can be seen as the union of many other
-fingerprinting vectors. If WebGL were normalized through software rendering,
-and the browser shipped a fixed collection of fonts, it might not be necessary
+fingerprinting vectors. If WebGL is normalized through software rendering,
+system colors were standardized, and the browser shipped a fixed collection of
+fonts (see later points in this list), it might not be necessary
 to create a canvas permission. However, until then, to reduce the threat from
 this vector, we have patched Firefox to <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commitdiff/3b53f525cfb68880e676e64f13cbc0b928ae3ecf">prompt
@@ -1548,7 +1561,13 @@ In Firefox, by using either WebSockets or XHR, it is possible for remote
 content to <ulink url="http://www.andlabs.org/tools/jsrecon.html">enumerate
 the list of TCP ports open on 127.0.0.1</ulink>. In other browsers, this can
 be accomplished by DOM events on image or script tags. This open vs filtered
-vs closed port list can provide a very unique fingerprint of a machine.
+vs closed port list can provide a very unique fingerprint of a machine,
+because it essentially enables the detection of many different popular third
+party applications and optional system services (Skype, Bitcoin, Bittorrent
+and other P2P software, SSH ports, SMB and related LAN services, CUPS and
+printer daemon config ports, mail servers, and so on). It is also possible to
+determine when ports are closed versus filtered/blocked (and thus probe
+custom firewall configuration).
 
      </para>
 
@@ -1561,7 +1580,21 @@ addresses by default.
      </para>
 
     </listitem>
-    <listitem>USB Device ID enumeration
+     <listitem>Invasive Authentication Mechanisms (NTLM and SPNEGO)
+     <para>
+
+Both NTLM and SPNEGO authentication mechanisms can leak the hostname, and in
+some cases the current username. The only reason why these aren't a more
+serious problem is that they typically involve user interaction, and likely
+aren't an attractive vector for this reason. However, because it is not clear
+if certain carefully-crafted error conditions in these protocols could cause
+them to reveal machine information and still fail silently prior to the
+password prompt, these authentication mechanisms should either be disabled, or
+placed behind a site permission before their use. We simply disable them.
+
+     </para>
+    </listitem>
+   <listitem>USB Device ID Enumeration
      <para>
 
 The <ulink
@@ -1576,45 +1609,6 @@ We simply disable it via the pref <command>dom.gamepad.enabled</command>.
 
      </para>
     </listitem>
-    <listitem>Invasive Authentication Mechanisms (NTLM and SPNEGO)
-     <para>
-Both NTLM and SPNEGO authentication mechanisms can leak the hostname, and in
-some cases the machine username. These authentication mechanisms should either
-be disabled, or placed behind a site permission before their use. We simply
-disable them.
-     </para>
-    </listitem>
-    <listitem>WebGL
-     <para>
-
-WebGL is fingerprintable both through information that is exposed about the
-underlying driver and optimizations, as well as through performance
-fingerprinting.
-
-     </para>
-     <para>
-
-Because of the large amount of potential fingerprinting vectors and the <ulink
-url="http://www.contextis.com/resources/blog/webgl/">previously unexposed
-vulnerability surface</ulink>, we deploy a similar strategy against WebGL as
-for plugins. First, WebGL Canvases have click-to-play placeholders (provided
-by NoScript), and do not run until authorized by the user. Second, we
-obfuscate driver information by setting the Firefox preferences
-<command>webgl.disable-extensions</command> and
-<command>webgl.min_capability_mode</command>, which reduce the information
-provided by the following WebGL API calls: <command>getParameter()</command>,
-<command>getSupportedExtensions()</command>, and
-<command>getExtension()</command>.
-
-     </para>
-     <para>
-
-Another option for WebGL might be to use software-only rendering, using a
-library such as <ulink url="http://www.mesa3d.org/">Mesa</ulink>. The use of
-such a library would avoid hardware-specific rendering differences.
-
-     </para>
-    </listitem>
     <listitem>Fonts
      <para>
 
@@ -1623,7 +1617,8 @@ they are provided as an enumerable list in filesystem order, via either the
 Flash or Java plugins. However, it is still possible to use CSS and/or
 Javascript to query for the existence of specific fonts. With a large enough
 pre-built list to query, a large amount of fingerprintable information may
-still be available.
+still be available, especially given that additional fonts often end up
+installed by third party software and for multilingual support.
 
      </para>
 
@@ -1669,13 +1664,16 @@ font (in any order), we use that font instead of any of the named local fonts.
 
      </para>
     </listitem>
-    <listitem>Monitor and OS Desktop resolution
+    <listitem>Monitor and OS Desktop Resolution
      <para>
 
 Both CSS and Javascript have access to a lot of information about the screen
 resolution, usable desktop size, OS widget size, toolbar size, title bar size,
 and OS desktop widget sizing information that are not at all relevant to
-rendering and serve only to provide information for fingerprinting.
+rendering and serve only to provide information for fingerprinting. Since many
+aspects of desktop widget positioning and size are user configurable, these
+properties yield customized information about the computer, even beyond the
+monitor size.
 
      </para>
      <para><command>Design Goal:</command>
@@ -1724,7 +1722,7 @@ Beyond simple resolution information, a large amount of so-called "Media"
 information is also exported to content. Even without Javascript, CSS has
 access to a lot of information about the device orientation, system theme
 colors, and other desktop features that are not at all relevant to rendering
-and serve only to provide information for fingerprinting. Most of this
+and also user configurable. Most of this
 information comes from <ulink
 url="https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Media_queries">CSS
 Media Queries</ulink>, but Mozilla has exposed <ulink
@@ -1753,6 +1751,37 @@ landscape-primary</ulink> for the screen orientation.
 
      </para>
     </listitem>
+    <listitem>WebGL
+     <para>
+
+WebGL is fingerprintable both through information that is exposed about the
+underlying driver and optimizations, as well as through performance
+fingerprinting.
+
+     </para>
+     <para>
+
+Because of the large amount of potential fingerprinting vectors and the <ulink
+url="http://www.contextis.com/resources/blog/webgl/">previously unexposed
+vulnerability surface</ulink>, we deploy a similar strategy against WebGL as
+for plugins. First, WebGL Canvases have click-to-play placeholders (provided
+by NoScript), and do not run until authorized by the user. Second, we
+obfuscate driver information by setting the Firefox preferences
+<command>webgl.disable-extensions</command> and
+<command>webgl.min_capability_mode</command>, which reduce the information
+provided by the following WebGL API calls: <command>getParameter()</command>,
+<command>getSupportedExtensions()</command>, and
+<command>getExtension()</command>.
+
+     </para>
+     <para>
+
+Another option for WebGL might be to use software-only rendering, using a
+library such as <ulink url="http://www.mesa3d.org/">Mesa</ulink>. The use of
+such a library would avoid hardware-specific rendering differences.
+
+     </para>
+    </listitem>
     <listitem>User Agent and HTTP Headers
      <para><command>Design Goal:</command>
 
@@ -1774,7 +1803,6 @@ url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
 
     </listitem>
-
     <listitem>Locale Fingerprinting
      <para>
 
@@ -1795,13 +1823,13 @@ and exception handling.
 
      </para>
     </listitem>
-
-    <listitem>Timezone and clock offset
+    <listitem>Timezone and Clock Offset
      <para>
 
 While the latency in Tor connections varies anywhere from milliseconds to
-several seconds, it is still possible for the remote site to detect large
-differences between the user's clock and an official reference timesource. 
+a few seconds, it is still possible for the remote site to detect large
+differences between the user's clock and an official reference time source. 
+
      </para>
 
   <para><command>Design Goal:</command>
@@ -1824,7 +1852,7 @@ all platforms.
 
      </para>
     </listitem>
-    <listitem>Javascript performance fingerprinting
+    <listitem>Javascript Performance Fingerprinting
      <para>
 
 <ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">Javascript performance
@@ -1840,14 +1868,19 @@ url="https://trac.torproject.org/projects/tor/ticket/3059">several potential
 mitigation approaches</ulink> to reduce the accuracy of performance
 fingerprinting without risking too much damage to functionality. Our current
 favorite is to reduce the resolution of the Event.timeStamp and the Javascript
-Date() object, while also introducing jitter. Our goal is to increase the
+Date() object, while also introducing jitter. We believe that Javascript time
+resolution may be reduced all the way up to the second before it seriously
+impacts site operation. Our goal with this quantization is to increase the
 amount of time it takes to mount a successful attack. <ulink
-url="http://w2spconf.com/2011/papers/jspriv.pdf">Mowery et al</ulink> found that
-even with the default precision in most browsers, they required up to 120
+url="http://w2spconf.com/2011/papers/jspriv.pdf">Mowery et al</ulink> found
+that even with the default precision in most browsers, they required up to 120
 seconds of amortization and repeated trials to get stable results from their
 feature set. We intend to work with the research community to establish the
-optimum trade-off between quantization+jitter and amortization time.
-
+optimum trade-off between quantization+jitter and amortization time, as well
+as identify highly variable Javascript operations. As long as these attacks
+take several seconds or more to execute, they are unlikely to be appealing to
+advertisers, and are also very likely to be noticed if deployed against a
+large number of people.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1859,21 +1892,7 @@ Timing</ulink> through the Firefox preference
 
      </para>
     </listitem>
-    <listitem>Non-Uniform HTML5 API Implementations
-     <para>
-
-At least two HTML5 features have different implementation status across the
-major OS vendors: the <ulink
-url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.battery">Battery
-API</ulink> and the <ulink
-url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.connection">Network
-Connection API</ulink>. We disable these APIs
-through the Firefox preferences <command>dom.battery.enabled</command> and
-<command>dom.network.enabled</command>. 
-
-     </para>
-    </listitem>
-    <listitem>Keystroke fingerprinting
+    <listitem>Keystroke Fingerprinting
      <para>
 
 Keystroke fingerprinting is the act of measuring key strike time and key
@@ -1890,7 +1909,7 @@ fingerprinting: timestamp quantization and jitter.
 We have no implementation as of yet.
      </para>
     </listitem>
-    <listitem>Operating system type fingerprinting
+    <listitem>Operating System Type Fingerprinting
      <para>
 
 As we mentioned in the introduction of this section, OS type fingerprinting is
@@ -1902,7 +1921,6 @@ scrollbar size, and other rendered details on a page. Also, directly exported
 OS routines, such as the Math library, expose differences in their
 implementations due to these results.
 
-
      </para>
      <para><command>Design Goal:</command>
 
@@ -1910,17 +1928,22 @@ We intend to reduce or eliminate OS type fingerprinting to the best extent
 possible, but recognize that the effort for reward on this item is not as high
 as other areas. The entropy on the current OS distribution is somewhere around
 2 bits, which is much lower than other vectors which can also be used to
-fingerprint configuration and user-specific information.
+fingerprint configuration and user-specific information.  You can see the
+major areas of OS fingerprinting we're aware of using the <ulink
+url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting-os">tbb-fingerprinting-os
+tag on our bug tracker</ulink>.
 
      </para>
      <para><command>Implementation Status:</command>
 
-We have no defenses deployed that address OS type fingerprinting by itself.
-Several defenses may help also mitigate it, in addition to reducing a lot more
-entropy elsewhere. You can see the major areas of OS fingerprinting we're
-aware of using the <ulink
-url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting-os">tbb-fingerprinting-os
-tag on our bugtracker</ulink>.
+At least two HTML5 features have different implementation status across the
+major OS vendors: the <ulink
+url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.battery">Battery
+API</ulink> and the <ulink
+url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.connection">Network
+Connection API</ulink>. We disable these APIs through the Firefox preferences
+<command>dom.battery.enabled</command> and
+<command>dom.network.enabled</command>. 
 
      </para>
     </listitem>
@@ -1928,7 +1951,7 @@ tag on our bugtracker</ulink>.
    </sect3>
    <para>
 For more details on fingerprinting bugs and enhancements, see the <ulink
-url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting&amp;status=!closed">tbb-fingerprinting tag in our bugtracker</ulink>
+url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-fingerprinting&amp;status=!closed">tbb-fingerprinting tag in our bug tracker</ulink>
   </para>
   </sect2>
   <sect2 id="new-identity">
@@ -2031,7 +2054,7 @@ privacy and security issues.
 In order to provide vulnerability surface reduction for users that need high
 security, we have implemented a "Security Slider" that essentially represents a
 tradeoff between usability and security. Using metrics collected from
-Mozilla's bugtracker, we analyzed the vulnerability counts of core components,
+Mozilla's bug tracker, we analyzed the vulnerability counts of core components,
 and used <ulink
 url="https://github.com/iSECPartners/publications/tree/master/reports/Tor%20Browser%20Bundle">information
 gathered from a study performed by iSec Partners</ulink> to inform which
@@ -2754,7 +2777,7 @@ privately download our source code, verify it against public signed, audited,
 and mirrored git repositories, and reproduce our builds exactly, without being
 subject to targeted attacks. If they notice any differences, they can alert
 the public builders/signers, hopefully using a pseudonym or our anonymous
-bugtracker account, to avoid revealing the fact that they are a build
+bug tracker account, to avoid revealing the fact that they are a build
 verifier.
 
    </para>
