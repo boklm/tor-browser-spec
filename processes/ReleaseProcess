@@ -4,7 +4,12 @@
 #
 
 #. Tag any relevant component versions.
-   # XXX: Depends on which components have been updated
+   # Depends on which components have been updated
+   # If this is a firefox version update, you must rebase the patches, and
+   # then:
+   vim browser/config/version.txt config/milestone.txt
+   git commit browser/config/version.txt config/milestone.txt -m "Bug 10895: Fix versioning for langpacks."
+   # git tag and push..
 
 #. Update changelog and versions file in tor-browser-bundle:
    cd gitian/tor-browser-bundle
@@ -25,6 +30,9 @@
 
 #. Build:
    make
+   make incrementals
+   # XXX: it sucks to have to re-hash here
+   make hash
    make sign
    make match
 
@@ -78,10 +86,12 @@
 #  Don't forget to link to Mozilla's security advisories if this is a security
 #  update, or Nadim will yell at you.
 
-#. Generate and upload new update responses for the updater
+#. Upload new update responses for the updater
+# (these were created earlier with 'make incrementals')
    cd tor-browser-bundle/tools/update-responses
-   vim config.yml
-   # add the new version in 'versions' and to one of the channels
-   # detailsURL can be a link to the blog post
-   ./update_responses
-   torsocks rsync -av htdocs/ www-master.torproject.org:/srv/www-master.torproject.org/htdocs/dist/torbrowser/update_2/
+   chmod 644 htdocs/*
+   chmod 644 htdocs/.htaccess
+   chmod 755 htdocs/
+   torsocks rsync -av htdocs/ staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
+   torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
+
