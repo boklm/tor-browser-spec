@@ -11,9 +11,13 @@
    git commit browser/config/version.txt config/milestone.txt -m "Bug 10895: Fix versioning for langpacks."
    # git tag and push..
 
-#. Update changelog and versions file in tor-browser-bundle:
+#. Update changelog, updater relevant config and versions file in
+#  tor-browser-bundle:
    cd gitian/tor-browser-bundle
    vim Bundle-Data/Docs/ChangeLog.txt
+   vim tools/update-responses/config.yml
+# No need to bother with old .xml and .htaccess files
+   rm tools/update-resonses/htdocs/*
    cd gitian
    vim versions*
    git commmit ..
@@ -58,18 +62,23 @@
 
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
+#  XXX: Be aware that this command would delete ALL Tor Browser 4.x.x versions!
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/4.*"
    torsocks rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/
    torsocks ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 #. Local to staticiforme:
-   cd tmp
+   cd /tmp
    wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION
+   rm $TORBROWSER_VERSION/index.html*
+#  $OLD_TORBROWSER_VERSION is the value for exactly the one version that should
+#  get superseded by $TORBROWSER_VERSION.
+   rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION
+   cd /srv/dist-master.torproject.org/htdocs/torbrowser/
+   mv /tmp/$TORBROWSER_VERSION .
+# We need to adjust permissions *after* we copied the new version to dist-master
    chmod 775 $TORBROWSER_VERSION
    chmod 664 $TORBROWSER_VERSION/*
-   rm $TORBROWSER_VERSION/index.html*
-   rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/4*
-   cp -r $TORBROWSER_VERSION /srv/dist-master.torproject.org/htdocs/torbrowser/ 
    static-update-component dist.torproject.org
 
 #. Update website's torbrowser versions file
@@ -82,12 +91,20 @@
 
 #. Create blog post from changelog
 #  XXX: Template?
-#  See https://blog.torproject.org/blog/tor-browser-352-released for now
-#  Don't forget to link to Mozilla's security advisories if this is a security
-#  update, or Nadim will yell at you.
+   See https://blog.torproject.org/blog/tor-browser-352-released for now
+   Don't forget to link to Mozilla's security advisories if this is a security
+   update, or Nadim will yell at you.
 
 #. Upload new update responses for the updater
 # (these were created earlier with 'make incrementals')
+#  XXX: As long as the incremental .mar files are not deterministic AND we are
+#  recreating all .xml files with every new release upload only .htaccess and
+#  the .xml files that are new due to this release. Otherwise it can happen that
+#  the .xml files contain the hashes of your .mar files but the .mar files on
+#  our servers are different due to being uploaded by someone else doing the
+#  release which might break the incremental updates (one scenario would be
+#  doing a stable release but overwriting the alpha related .xml files, too,
+#  while the last alpha release has been done by someone else).
    cd tor-browser-bundle/tools/update-responses
    chmod 644 htdocs/*
    chmod 644 htdocs/.htaccess
