@@ -1,0 +1,65 @@
+Tor Browser Signing Key
+=======================
+
+Preparations:
+-------------
+
+1) Go offline (ideally use TAILS)
+2) Mount your encrypted offline storage device
+3) If not already done prepare the gpg.conf used for that device
+   (See: https://help.riseup.net/en/security/message-security/openpgp/best-practices
+   for help)
+4) `exp rt nGNUPGHOME=/path/to/offline/storage/.gnupg`
+
+Key Creation Incantations and Instructions
+------------------------------------------
+
+1) `gpg --gen-key --expert`
+2) Choose "(8) RSA (set your own capabilities)a"
+3) Choose "(S) Toggle the sign capability"
+4) Choose "(E) Toggle the encrypt capability"
+5) Choose "(Q) Finished"
+6) Choose 4096 bit
+7) Choose "0 = key does not expire"
+8) Choose "Tor Browser Developers" as real name
+9) Choose "torbrowser@torproject.org" as email address
+10) Choose "signing key" as comment
+11) Choose a strong passphrase to protect your keys
+12) `gpg --edit-key YOURMASTERKEYID`
+13) At the gpg> prompt enter: addkey
+14) Choose "(4) RSA (sign only)"
+15) Repeat step 6, 7, 13 and 14 as often as needed
+16) At the gpg> prompt enter: save
+16) Check whether the keys look good, e.g. with
+   `hkt export-pubkeys YOURMASTERKEYID | hokey lint`
+17) `gpg --export-secret-subkeys SUBKEYID_N! > subkeys_n`
+18) `gpg --export YOURMASTERKEYID > pubkeys`
+19) Repeat 17) as needed
+20) Send subkeys_n and pubkeys to recipients
+21) `gpg --output revoke.asc --gen-revoke YOURMASTERKEYID`
+
+MAR Signing Key
+===============
+
+Preparations
+------------
+
+1) Go offline (ideally use TAILS)
+2) Mount your encrypted offline storage device
+3) `cd /path/to/offline/storage`
+4) make sure you have libnss3-tools installed (for certutil)
+   (or use the one we built ourselves which is included in mar-tools)
+
+Key Creation Incantations and Instructions
+------------------------------------------
+
+1) `mkdir nssdb`
+2) `certutils -d nssdb -N`
+3) Choose a strong passphrase to protect the keys
+4) `certutil -d .nss -S -x -g 4096 -Z SHA512 -n marsigner -s "CN=Tor Browser MAR signing key" -t,,`
+5) If there should be additional keys in the database repeat step 4. Note, you
+   need a different CN and ideally a different nickname ("marsigner" in the
+   example above).
+6) `certutil -d .nss -L -r -n marsigner -o marsigner.der`
+7) If you want to export more than one certificate repeat step 6 adjusting the
+   certificate nickname and the name of the output file
