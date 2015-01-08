@@ -95,8 +95,9 @@
    Don't forget to link to Mozilla's security advisories if this is a security
    update, or Nadim will yell at you.
 
-#. Upload new update responses for the updater
-# (these were created earlier with 'make incrementals')
+#. Update and upload new update responses for the updater
+   cd tor-browser-bundle/gitian
+   make update_responses # (or update_responses-alpha, update_responses-beta)
    cd tor-browser-bundle/tools/update-responses
    chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/*
    chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/.htaccess
