@@ -17,7 +17,7 @@
    vim Bundle-Data/Docs/ChangeLog.txt
    vim tools/update-responses/config.yml
 # No need to bother with old .xml and .htaccess files
-   rm tools/update-resonses/htdocs/*
+   rm tools/update-resonses/htdocs/$TORBROWSER_UPDATE_CHANNEL/*
    cd gitian
    vim versions*
    git commmit ..
@@ -97,18 +97,10 @@
 
 #. Upload new update responses for the updater
 # (these were created earlier with 'make incrementals')
-#  XXX: As long as the incremental .mar files are not deterministic AND we are
-#  recreating all .xml files with every new release upload only .htaccess and
-#  the .xml files that are new due to this release. Otherwise it can happen that
-#  the .xml files contain the hashes of your .mar files but the .mar files on
-#  our servers are different due to being uploaded by someone else doing the
-#  release which might break the incremental updates (one scenario would be
-#  doing a stable release but overwriting the alpha related .xml files, too,
-#  while the last alpha release has been done by someone else).
    cd tor-browser-bundle/tools/update-responses
-   chmod 644 htdocs/*
-   chmod 644 htdocs/.htaccess
-   chmod 755 htdocs/
-   torsocks rsync -av htdocs/ staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
+   chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/*
+   chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/.htaccess
+   chmod 755 htdocs/$TORBROWSER_UPDATE_CHANNEL/
+   torsocks rsync -av htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 
