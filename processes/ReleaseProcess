@@ -98,7 +98,7 @@
 #. Update and upload new update responses for the updater
    cd tor-browser-bundle/gitian
    make update_responses # (or update_responses-alpha, update_responses-beta)
-   cd tor-browser-bundle/tools/update-responses
+   cd ../tools/update-responses
    chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/*
    chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/.htaccess
    chmod 755 htdocs/$TORBROWSER_UPDATE_CHANNEL/
