@@ -81,19 +81,22 @@
    chmod 664 $TORBROWSER_VERSION/*
    static-update-component dist.torproject.org
 
-#. Update website's torbrowser versions file
+#. Update website's torbrowser versions file in the website git
+#  NOTE: This *must* be done immediately after the previous step!
    cd webwml
    torsocks git pull origin
+   # In the RecommendedTBBVersions file, only add the new version. Don't
+   # remove the old one yet. That comes later.
    vim ./include/versions.wmi ./projects/torbrowser/RecommendedTBBVersions
-   git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Bump TBB version"
+   git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Add new TBB version"
    torsocks git push origin master:master
    cd ..
 
 #. Create blog post from changelog
 #  XXX: Template?
-   See https://blog.torproject.org/blog/tor-browser-352-released for now
-   Don't forget to link to Mozilla's security advisories if this is a security
-   update, or Nadim will yell at you.
+   # See https://blog.torproject.org/blog/tor-browser-352-released for now
+   # Don't forget to link to Mozilla's security advisories if this is a security
+   # update, or Nadim will yell at you.
 
 #. Update and upload new update responses for the updater
    cd tor-browser-bundle/gitian
@@ -104,4 +107,13 @@
    chmod 755 htdocs/$TORBROWSER_UPDATE_CHANNEL/
    torsocks rsync -av htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
+
+#. Update website's torbrowser versions file to remove old versions
+   cd webwml
+   torsocks git pull origin
+   # Now it's time to remove the obsolete version(s)
+   vim ./projects/torbrowser/RecommendedTBBVersions
+   git commit projects/torbrowser/RecommendedTBBVersions -m "Deprecate old TBB version"
+   torsocks git push origin master:master
+   cd ..
 
