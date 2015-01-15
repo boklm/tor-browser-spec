@@ -25,8 +25,13 @@
    cd ../..
 
 #. Tag a build tag in tor-browser-bundle.git
-   . versions # Or versions.alpha/versions.beta
+   TORBROWSER_VERSION=x.x.x
    git tag -s tbb-$TORBROWSER_VERSION-build1
+
+#. Check that the build is correctly tagged
+   eval $( ./get-tb-version release ) # or alpha / beta
+   echo $TORBROWSER_VERSION
+   echo $TORBROWSER_BUILDDIR
 
 #. Push tag and version to tor-browser-bundle.git   
    torsocks git push origin master:master
