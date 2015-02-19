@@ -32,6 +32,8 @@
    eval $( ./get-tb-version release ) # or alpha / beta
    echo $TORBROWSER_VERSION
    echo $TORBROWSER_BUILDDIR
+   echo
+   echo 'You must still set $OLD_TORBROWSER_VERSION and $OLD_TORBROWSER_BUILDDIR!'
 
 #. Push tag and version to tor-browser-bundle.git   
    torsocks git push origin master:master
@@ -44,43 +46,46 @@
 
 #. Place all build signatures in the correct location and fix permissions
    source versions
-   for i in gk linus erinn mikeperry dcf
+   for i in gk linus mikeperry boklm
    do
-     if [ -d ${TORBROWSER_VERSION}/$i ]; then
-       if [ -f ${TORBROWSER_VERSION}/${i}/sha256sums.txt.asc ]; then
-         cp ${TORBROWSER_VERSION}/$i/sha256sums.txt.asc ${TORBROWSER_VERSION]/sha256sums.txt-${i}.asc
+     if [ -d ${TORBROWSER_BUILDDIR}/$i ]; then
+       if [ -f ${TORBROWSER_BUILDDIR}/${i}/sha256sums.txt.asc ]; then
+         cp ${TORBROWSER_BUILDDIR}/$i/sha256sums.txt.asc ${TORBROWSER_BUILDDIR}/sha256sums.txt-${i}.asc
        fi
-       rm -rf ${TORBROWSER_VERSION/$i
+       rm -rf ${TORBROWSER_BUILDDIR}/$i
      fi
    done
-   chmod 755 $TORBROWSER_VERSION
-   chmod 644 $TORBROWSER_VERSION/*
+   chmod 755 $TORBROWSER_BUILDDIR
+   chmod 644 $TORBROWSER_BUILDDIR/*
+
+#. (Optional): Upload your binaries to people using partial rsync over old version
+   torsocks ssh people.torproject.org "mv ~/public_html/builds/$OLD_TORBROWSER_BUILDDIR ~/public_html/builds/$TORBROWSER_BUILDDIR"
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
 
 #. Distribute build to tor-qa@lists.torproject.org
    #XXX: Currently manual
 
 #. Sign individual bundle files
-#  XXX: This blocks on Erinn currently. We use her key for file sigs
+#  XXX: Document this
 
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
-#  XXX: Be aware that this command would delete ALL Tor Browser 4.x.x versions!
-   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/4.*"
-   torsocks rsync -avP $TORBROWSER_VERSION-build1/ staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
+   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/ staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
    torsocks ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 #. Local to staticiforme:
-   cd /tmp
-   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION-build1
-   rm $TORBROWSER_VERSION-build1/index.html*
-#  $OLD_TORBROWSER_VERSION is the value for exactly the one version that should
-#  get superseded by $TORBROWSER_VERSION.
+   # XXX: Still requires $OLD_TORBROWSER_VERSION to be set manually
+   cd ~/tbb-builds/tor-browser-bundle/gitian
+   git pull origin
+   eval $( ./get-tb-version release ) # or alpha / beta
+   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_BUILDDIR
+   rm $TORBROWSER_BUILDDIR/index.html*
    rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION
-   cd /srv/dist-master.torproject.org/htdocs/torbrowser/
-   mv /tmp/$TORBROWSER_VERSION-build1 $TORBROWSER_VERSION
+   mv $TORBROWSER_BUILDDIR /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
 # We need to adjust permissions *after* we copied the new version to dist-master
-   chmod 775 $TORBROWSER_VERSION
-   chmod 664 $TORBROWSER_VERSION/*
+   chmod 775 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
+   chmod 664 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION/*
    static-update-component dist.torproject.org
 
 #. Update website's torbrowser versions file in the website git
