@@ -39,9 +39,6 @@
 
 #. Build:
    make
-   make incrementals
-   # XXX: it sucks to have to re-hash here
-   make hash
    make sign
    make match
 
