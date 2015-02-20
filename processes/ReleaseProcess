@@ -33,7 +33,7 @@
    echo $TORBROWSER_VERSION
    echo $TORBROWSER_BUILDDIR
    echo
-   echo 'You must still set $OLD_TORBROWSER_VERSION and $OLD_TORBROWSER_BUILDDIR!'
+   echo 'You must still set $OLD_TORBROWSER_VERSION'
 
 #. Push tag and version to tor-browser-bundle.git   
    torsocks git push origin master:master
@@ -59,7 +59,7 @@
    chmod 644 $TORBROWSER_BUILDDIR/*
 
 #. (Optional): Upload your binaries to people using partial rsync over old version
-   torsocks ssh people.torproject.org "mv ~/public_html/builds/$OLD_TORBROWSER_BUILDDIR ~/public_html/builds/$TORBROWSER_BUILDDIR"
+   torsocks ssh people.torproject.org "mv ~/public_html/builds/${TORBROWSER_VERSION}-build1 ~/public_html/builds/$TORBROWSER_BUILDDIR"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
 
 #. Distribute build to tor-qa@lists.torproject.org
