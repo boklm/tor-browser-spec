@@ -65,8 +65,18 @@
 #. Distribute build to tor-qa@lists.torproject.org
    #XXX: Currently manual
 
-#. Sign individual bundle files
-#  XXX: Document this
+#. Sign the MAR update files
+   # First, copy the torbrowser tree to removable storage:
+   rsync -avP $TORBROWSER_BUILDDIR/../../../ /media/storage/TBB/
+   # Then, remove storage, attach to offline computer that houses TBB signing key.
+   # Run the following from that rsync'ed removable storage dir:
+   export NSS_DB_DIR=/path/to/nssdb
+   make signmars
+   # Then, re-attach storage, and rsync signed MARs to builddir
+   torsocks rsync -avP /media/storage/TBB/tor-browser-bundle/gitian/$TORBROWSER_BUILDDIR/*.mar people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
+
+#. Sign individual bundle files:
+   # XXX: Document
 
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
