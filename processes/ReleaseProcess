@@ -64,6 +64,7 @@
 
 #. Distribute build to tor-qa@lists.torproject.org
    #XXX: Currently manual
+   # For stable releases put tails-dev@boum.org into Cc
 
 #. Sign the MAR update files
    # First, copy the torbrowser tree to removable storage:
@@ -71,6 +72,8 @@
    # Then, remove storage, attach to offline computer that houses TBB signing key.
    # Run the following from that rsync'ed removable storage dir:
    export NSS_DB_DIR=/path/to/nssdb
+   # Only needed if you are not owner of the marsigner cert
+   export NSS_CERTNAME=your_certname
    make signmars
    # Then, re-attach storage, and rsync signed MARs to builddir
    torsocks rsync -avP /media/storage/TBB/tor-browser-bundle/gitian/$TORBROWSER_BUILDDIR/*.mar people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
@@ -96,6 +99,8 @@
 # We need to adjust permissions *after* we copied the new version to dist-master
    chmod 775 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
    chmod 664 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION/*
+   # Set the owner to the group
+   chown :torwww $TORBROWSER_VERSION -R
    static-update-component dist.torproject.org
 
 #. Update website's torbrowser versions file in the website git
@@ -119,6 +124,8 @@
 
 #. Update and upload new update responses for the updater
    cd tor-browser-bundle/gitian
+   # IMPORTANT: Copy the signed MAR files back before creating the update
+   # responses!
    make update_responses # (or update_responses-alpha, update_responses-beta)
    cd ../tools/update-responses
    chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/*
