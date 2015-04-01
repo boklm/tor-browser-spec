@@ -75,32 +75,31 @@
    # Only needed if you are not owner of the marsigner cert
    export NSS_CERTNAME=your_certname
    make signmars
-   # Then, re-attach storage, and rsync signed MARs to builddir
-   torsocks rsync -avP /media/storage/TBB/tor-browser-bundle/gitian/$TORBROWSER_BUILDDIR/*.mar people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
+   # Now, re-attach storage to the online computer, and sync the signed
+   # results to a version-only directory (without the build number)
+   torsocks ssh people.torproject.org "cp -a public_html/builds/$TORBROWSER_BUILDDIR public_html/builds/$TORBROWSER_VERSION"
+   torsocks rsync -avP /media/storage/TBB/tor-browser-bundle/gitian/$TORBROWSER_BUILDDIR/*.mar people.torproject.org:public_html/builds/$TORBROWSER_VERSION
 
 #. Sign individual bundle files:
    # XXX: Document
 
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
-   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
-   torsocks rsync -avP $TORBROWSER_BUILDDIR/ staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
+   # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
+   torsocks rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
    torsocks ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 #. Local to staticiforme:
-   # XXX: Still requires $OLD_TORBROWSER_VERSION to be set manually
    cd ~/tbb-builds/tor-browser-bundle/gitian
    git pull origin
    eval $( ./get-tb-version release ) # or alpha / beta
-   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_BUILDDIR
-   rm $TORBROWSER_BUILDDIR/index.html*
-   rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION
-   mv $TORBROWSER_BUILDDIR /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
-# We need to adjust permissions *after* we copied the new version to dist-master
+   # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
+   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION
+   rm $TORBROWSER_VERSION/index.html*
+   mv $TORBROWSER_VERSION /srv/dist-master.torproject.org/htdocs/torbrowser/
    chmod 775 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
    chmod 664 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION/*
-   # Set the owner to the group
-   chown :torwww $TORBROWSER_VERSION -R
+   chown -R :torwww /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
    static-update-component dist.torproject.org
 
 #. Update website's torbrowser versions file in the website git
@@ -115,6 +114,7 @@
    git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Add new TBB version"
    torsocks git push origin master:master
    cd ..
+
 
 #. Create blog post from changelog
 #  XXX: Template?
@@ -132,6 +132,9 @@
    chmod 644 htdocs/$TORBROWSER_UPDATE_CHANNEL/.htaccess
    chmod 755 htdocs/$TORBROWSER_UPDATE_CHANNEL/
    torsocks rsync -av htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
+   # Finally, remove old version as we point the update channel at the new version.
+   # XXX: CAREFUL! $OLD_TOR_BROWSER_VERSION must be set!
+   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 
 #. Update website's torbrowser versions file to remove old versions
