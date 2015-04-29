@@ -47,7 +47,15 @@ adversary currently addressed by the major browsers.
 
   </para>
 
-<!-- XXX-4.5: Link to hacking document -->
+  <para>
+
+For more practical information regarding Tor Browser development, please
+consult the <ulink
+url="https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Hacking">Tor
+Browser Hacking Guide</ulink>.
+
+  </para>
+
   <sect2 id="components">
    <title>Browser Component Overview</title>
    <para>
@@ -213,13 +221,17 @@ ephemeral-keyed encrypted swap.
 
 </para></listitem>
  
-<!-- XXX-4.5: Now present in 4.5 -->
-<!--
- <listitem><link linkend="update-safety"><command>Update
-Safety</command></link>
+ <listitem><link linkend="update-safety"><command>Update Safety</command></link>
 
-<para>The browser SHOULD NOT perform unsafe updates or upgrades.</para></listitem>
--->
+<para>
+The browser MUST NOT perform unsafe updates or upgrades. Update checks
+and downloads MUST protected by a pinned TLS certificate. All automatic update
+packages SHOULD be signed with at least one offline key. The update mechanism
+MUST have defenses against holdback/freeze attacks, downgrade attacks, and
+general availability attacks.
+
+</para></listitem>
+
 </orderedlist>
 
   </sect2>
@@ -1161,8 +1173,6 @@ form history, login values, and so on within a context menu for each site.
 </caption>
    </figure>
    <orderedlist>
-<!-- XXX-4.5: SharedWorkers are disabled -->
-<!-- XXX-4.5: blob: URIs are isolated -->
     <listitem>Cookies
      <para><command>Design Goal:</command>
 
@@ -1283,13 +1293,11 @@ file on Windows, so Flash remains difficult to enable.
 
      </para>
     </listitem>
-    <listitem>SSL+TLS session resumption, HTTP Keep-Alive and SPDY
+    <listitem>SSL+TLS session resumption
      <para><command>Design Goal:</command>
 
-<!-- XXX-4.5: keep-alive is now properly isolated -->
 TLS session resumption tickets and SSL Session IDs MUST be limited to the url
-bar origin.  HTTP Keep-Alive connections from a third party in one url bar
-origin MUST NOT be reused for that same third party in another url bar origin.
+bar origin.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1305,20 +1313,82 @@ these performance optimizations, we also enable
 False Start</ulink> via the Firefox Pref 
 <command>security.ssl.enable_false_start</command>.
     </para>
-    <para>
+    </listitem>
+    <listitem>IP address, Tor Circuit, and HTTP Keep-Alive linkability
+     <para>
 
-Because of the extreme performance benefits of HTTP Keep-Alive for interactive
-web apps, and because of the difficulties of conveying urlbar origin
-information down into the Firefox HTTP layer, as a compromise we currently
-merely reduce the HTTP Keep-Alive timeout to 20 seconds (which is measured
-from the last packet read on the connection) using the Firefox preference
-<command>network.http.keep-alive.timeout</command>.
+IP addresses, Tor Circuits, and HTTP connections from a third party in one URL
+bar origin MUST NOT be reused for that same third party in another URL bar
+origin.
+     </para>
+     <para>
+
+This isolation functionality is provided by the combination of a <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&id=b3ea705cc35b79a9ba27323cb3e32d5d004ea113">Firefox
+patch to allow SOCKS username and passwords</ulink>, as well as a Torbutton
+component that <ulink
+linkend="https://gitweb.torproject.org/torbutton.git/tree/src/components/domain-isolator.js">sets
+the SOCKS username and password for each request</ulink>. The Tor client has
+logic to prevent connections with different SOCKS usernames and passwords from
+using the same Tor Circuit, which provides us with IP address unlinkability.
+Firefox has existing logic to ensure that connections with SOCKS proxy do not
+re-use existing HTTP Keep Alive connections unless the proxy settings match.
+We extended this logic to cover SOCKS username and password authentication,
+providing us with HTTP Keep-Alive unlinkability.
+
+     </para>
+    </listitem>
+    <listitem>SharedWorkers
+     <para>
+
+<ulink
+url="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker">SharedWorkers</ulink>
+are a special form of Javascript Worker Threads that have a shared scope
+between all threads from the same Javascript origin.
+     </para>
+     <para><command>Design Goal:</command>
+
+SharedWorker scope MUST be isolated to the URL bar domain. A SharedWorker
+launched from a third party from one URL bar domain MUST NOT have access to
+the objects created by that same third party loaded under another URL bar domain.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+For now, we disable SharedWorkers via the pref
+<command>dom.workers.sharedWorkers.enabled</command>.
+
+     </para>
+    </listitem>
+    <listitem>blob: URIs (URL.createObjectURL)
+     <para>
+
+The <ulink
+url="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL">URL.createObjectURL</ulink>
+API allows a site to load arbitrary content into a random UUID that is stored
+in the user's browser, and this content can be accessed via a URL of the form
+<command>blob:UUID</command> from any other content element anywhere on the
+web. While this UUID value is neither under control of the site nor
+predictable, it can still be used to tag a set of users that are of high
+interest to an adversary.
 
      </para>
      <para>
-However, because SPDY can store identifiers and has extremely long keepalive
-duration, it is disabled through the Firefox preference
-<command>network.http.spdy.enabled</command>.
+
+URIs created with URL.createObjectURI MUST be limited in scope to the first
+party URL bar domain that created them. We provide this isolation in Tor
+Browser via a <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&id=0d67ab406bdd3cf095802cb25c081641aa1f0bcc">direct
+patch to Firefox</ulink>.
+
+     </para>
+    </listitem>
+    <listitem>SPDY
+     <para>
+
+Because SPDY can store identifiers, it is disabled through the
+Firefox preference <command>network.http.spdy.enabled</command>.
+
      </para>
     </listitem>
     <listitem>Automated cross-origin redirects MUST NOT store identifiers
@@ -1409,15 +1479,6 @@ defend against the creation of these cookies between <command>New
 Identity</command> invocations.
       </para>
      </listitem>
-    <listitem>Exit node usage
-    <para>
-
-All content elements associated with a given URL bar domain (including the
-main page) are given a SOCKS username and password for this domain, which
-causes Tor to isolate all of these requests on their own set of Tor circuits.
-
-    </para>
-    </listitem>
    </orderedlist>
    <para>
 For more details on identifier linkability bugs and enhancements, see the <ulink
@@ -1489,7 +1550,6 @@ and our <command>Implementation Status</command>.
 
    </para>
    <orderedlist>
-<!-- XXX-4.5: Socks U+P isolation for IP address unlinkability -->
 <!-- XXX-4.5: HTML5 mozilla Video stat extensions -->
 <!-- XXX-4.5: Sensor APIs are disabled -->
     <listitem>Plugins
