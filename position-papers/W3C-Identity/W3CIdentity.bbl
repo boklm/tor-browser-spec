@@ -1,0 +1,73 @@
+\begin{thebibliography}{10}
+
+\bibitem{private-browsing}
+Gaurav Aggrawal, Elie Bursztein, Collin Jackson, and Dan Boneh.
+\newblock An analysis of private browsing modes in modern browsers.
+\newblock In {\em Proc. of 19th Usenix Security Symposium}, 2010.
+
+\bibitem{panopticlick}
+Peter Eckersley.
+\newblock How unique is your web browser?
+\newblock In {\em Proceedings of the 10th international conference on Privacy
+  enhancing technologies}, PETS'10, pages 1--18, Berlin, Heidelberg, 2010.
+  Springer-Verlag.
+
+\bibitem{safecache}
+Collin Jackson and Dan Boneh.
+\newblock Protecting browser state from web privacy attacks.
+\newblock In {\em In Proceedings of the International World Wide Web
+  Conference}, pages 737--744, 2006.
+
+\bibitem{security-fingerprinting}
+{Jennifer Valentino-DeVries}.
+\newblock {Evercookies and Fingerprinting: Are Anti-Fraud Tools Good for Ads?},
+  2010.
+\newblock
+  \url{http://blogs.wsj.com/digits/2010/12/01/evercookies-and-fingerprinting-f%
+inding-fraudsters-tracking-consumers/}.
+
+\bibitem{wsj-fingerprinting}
+{Julia Angwin and Jennifer Valentino-DeVries}.
+\newblock {Race Is On to 'Fingerprint' Phones, PCs}, 2010.
+\newblock
+  \url{http://online.wsj.com/article/SB100014240527487046792045756467041009595%
+46.html}.
+
+\bibitem{firefox-personas}
+Mozilla.
+\newblock Personas.
+\newblock \url{https://mozillalabs.com/personas/}.
+
+\bibitem{weave-manager}
+Mozilla.
+\newblock {The Weave Account Manager}.
+\newblock \url{https://wiki.mozilla.org/Labs/Weave/Identity/Account_Manager}.
+
+\bibitem{not-to-toggle}
+Mike Perry.
+\newblock To toggle, or not to toggle: The end of torbutton.
+\newblock
+  \url{https://lists.torproject.org/pipermail/tor-talk/2011-April/020077.html}.
+
+\bibitem{torbutton}
+Mike Perry.
+\newblock {The Torbutton Design Document}, 2011.
+\newblock \url{https://www.torproject.org/torbutton/en/design/}.
+
+\bibitem{facebook-like}
+Arnold Roosendaal.
+\newblock {Facebook Tracks and Traces Everyone: Like This!}
+\newblock {\em SSRN eLibrary}, 2010.
+
+\bibitem{tracking-identity}
+Emily Steel.
+\newblock {Online Tracking Company RapLeaf Profiles Users By Name}, 2010.
+\newblock
+  \url{http://online.wsj.com/article/SB100014240527023044105045755602432594160%
+72.html}.
+
+\bibitem{thirdparty}
+Dan Witte.
+\newblock \url{https://wiki.mozilla.org/Thirdparty}.
+
+\end{thebibliography}
