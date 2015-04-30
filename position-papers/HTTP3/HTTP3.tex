@@ -1,0 +1,128 @@
+%\documentclass{llncs}
+\documentclass[letterpaper,11pt]{llncs}
+%\documentclass{article} % llncs
+
+\usepackage{usenix}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{epsfig}
+\usepackage{epsf}
+\usepackage{listings}
+
+%\setlength{\textwidth}{6in}
+%\setlength{\textheight}{8.4in}
+%\setlength{\topmargin}{.5cm}
+%\setlength{\oddsidemargin}{1cm}
+%\setlength{\evensidemargin}{1cm}
+
+\begin{document}
+
+\title{The Future of HTTP and Anonymity on the Internet}
+
+\author{Georg Koppen \\ The Tor Project, Inc \\ georg@torproject.org}
+\author{Mike Perry \\ The Tor Project, Inc \\ mikeperry@torproject.org}
+
+%\institute{The Internet}
+
+\maketitle
+\pagestyle{plain}
+
+\begin{abstract}
+
+
+\end{abstract}
+ 
+
+\section{Introduction}
+
+% XXX: Describe our organization? The Tor Project, Inc is a non-profit...
+
+% XXX: In this position paper, we describe the current and potential issues with
+
+Dangers and opportunities with resepect to browsing the Internet anonymously are
+often tied to the browser itself and not its underlying transport protocols:
+canvas fingerprinting, plugin enumeration and linking users via the DOM storage
+are just a few of the means the browser offers for trying to single users out.
+And even things like cookies and referrers, although belonging strictly speaking
+to HTTP, the transport protocol powering the web, are usually seen in the
+context of the browser itself as its additional policies shape the particular
+tracking potential of these and other transport related features.
+This is not much different for features in HTTP/2 although, compared to
+HTTP/1.1, it has a growing list of tracking risks that should be addressed in
+the specification itself. We discuss some of them below proposing ways to take
+these and other risks into account in future HTTP specifications.
+
+Apart from the dangers we just hinted at, beginning with HTTP/2 opportunities
+emerge as well: Using HTTP/2's flow control could make it easier to defend
+against adversaries sniffing a user's encrypted traffic and trying to extract
+information out of it by means of website traffic fingerprinting. We discuss
+current limitations and potential improvements for HTTP/3.
+
+\section{A Short Tracking Guide(1)}
+
+
+If we are talking about tracking on the Internet then we mainly have third-party
+tracking in mind. In this scenario the attacker has basically two mechanisms
+available: identifier based tracking (e.g. using cookies or cache cookies) and
+fingerprinting a user's device or environment.
+
+Additionally, we may encounter powerful parties that see a lot of a user's
+traffic due to being in a privileged position (e.g. search engines). They don't
+necessarily need to bother with third party tracking and would still be able to
+learn a lot of a user's details by correlating traffic which is endangering her
+anonymity.
+
+The defenses we develop in Tor Browser are:
+
+1) Binding identifiers to the URL bar domain. This is retaining functionality
+while preventing cross-origin identifier linkability: saving third party
+identifiers (e.g. via DOM storage) in a URL bar domain context does not make
+them available in a different URL bar domain context.
+2) Making users as uniform as possible while not breaking functionality.
+3) Providing a "New Identity" button that is clearing all browser state and
+giving the user a clean, new session.
+
+
+\subsection{User Tracking with HTTP}
+
+\subsection{Re-Using Connections}
+Coalescing connections might allow tracking users across origins just by means
+of HTTP. Together with a long keep-alive this might make it easy to correlate a
+lot of cross-domain traffic of a privacy conscious user even if she has
+JavaScript and third-party cookies disabled. Granted, having this feature in
+HTTP/2 is a big deal especially with respect to CDNs. But still we think
+allowing implementers to provide means to mitigate the issue directly in the
+specification seems worthwhile to do. This does not imply avoiding coalescing
+connections in the first place. Not at all. One could think about proposing a
+middle ground safe-guarding privacy while still providing advantages speed- and
+resource-wise: connections should not be reused across different URL bar
+domains.
+
+\subsection{Timing Side-Channels}
+
+PING and SETTINGS frames are acknowledged immediately by the client which might
+give servers the option to collect information about a client via timing
+side-channels. It is true, there are other means an attacker could use for the
+same purpose but they are either visible in the browser UI or users can disable
+them. As a countermeasure the specification could at least allow jitter in some
+cases (PING frames come to mind). If that is not an option one could specify
+that a client may close the connection to prevent timing side-channel attacks.
+
+
+\section{A Short Website Traffic Fingerprinting Guide}
+
+
+\subsection{Defending against Website Traffic Fingerprinting with HTTP}
+
+(1) For a detailed explanation including a theroretical background see:
+https://www.torproject.org/projects/torbrowser/design/.
+
+\section{Conclusions}
+
+
+\bibliographystyle{plain} \bibliography{W3C-DNT}
+
+\clearpage
+\appendix
+
+\end{document}
