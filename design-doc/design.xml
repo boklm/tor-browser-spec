@@ -221,19 +221,6 @@ ephemeral-keyed encrypted swap.
 
 </para></listitem>
 
-<!-- XXX-4.5: Add a section for this.
- <listitem><link linkend="update-safety"><command>Update Safety</command></link>
-
-<para>
-The browser MUST NOT perform unsafe updates or upgrades. Update checks
-and downloads MUST protected by a pinned TLS certificate. All automatic update
-packages SHOULD be signed with at least one offline key. The update mechanism
-MUST have defenses against holdback/freeze attacks, downgrade attacks, and
-general availability attacks.
-
-</para></listitem>
--->
-
 </orderedlist>
 
   </sect2>
@@ -1121,13 +1108,6 @@ $HOME environment variable to be the TBB extraction directory.
    </para>
 
   </sect2>
-<!-- FIXME: Write me... 
-  <sect2 id="update-safety">
-   <title>Update Safety</title>
-   <para>FIXME: Write me..
-   </para>
-  </sect2>
--->
   <sect2 id="identifier-linkability">
    <title>Cross-Origin Identifier Unlinkability</title>
    <para>
@@ -2367,7 +2347,6 @@ of its update pings.
 <sect1 id="BuildSecurity">
   <title>Build Security and Package Integrity</title>
   <para>
-<!-- XXX-4.5: signatures of MARs and exes are reproducibly removable -->
 
 In the age of state-sponsored malware, <ulink
 url="https://blog.torproject.org/blog/deterministic-builds-part-one-cyberwar-and-global-compromise">we
@@ -2532,7 +2511,6 @@ time-based dependency tracking</ulink> that only appear in LXC containers.
   </sect2>
 
   <sect2>
-<!-- XXX-4.5: unsigning -->
     <title>Package Signatures and Verification</title>
     <para>
 
@@ -2565,11 +2543,11 @@ consensus, and encoding the package hashes in the Bitcoin blockchain.
      </para>
     <para>
 
-At the time of this writing, we do not yet support native code signing for Mac
-OS or Windows. Because these signatures are embedded in the actual packages,
-and by their nature are based on non-public key material, providing native
-code-signed packages while still preserving ease of reproducibility
-verification has not yet been achieved.
+The Windows releases are also signed by a hardware token provided by Digicert.
+In order to verify package integrity, the signature must be sripped off using
+the osslsigncode tool, as described on the <ulink
+url="https://www.torproject.org/docs/verifying-signatures.html.en#BuildVerification">Signature
+Vericication</ulink> page.
 
     </para>
   </sect2>
@@ -2598,6 +2576,29 @@ verifier.
 
    </para>
   </sect2>
+  <sect2 id="update-safety">
+   <title>Update Safety</title>
+   <para>
+
+We make use of the Firefox updater in order to provide automatic updates to
+users. We make use of certificate pinning to ensure that update checks
+be tampered with, and we sign the individual MAR update files with an offline
+signing key.
+
+   </para>
+   <para>
+
+The Firefox updater also has code to ensure that it can reliably access the
+update server to prevent availability attacks, and complains to the user of 48
+hours go by without a successful response from the server. Additionally, we
+use Tor's SOCKS username and password isolation to ensure that every new
+request to the updater traverses a separate circuit, to avoid holdback attacks
+by exit nodes.
+
+   </para>
+  </sect2>
+
+
 </sect1>
 <!--
   <sect2 id="components">
