@@ -936,7 +936,7 @@ geolocation queries, searchbox queries, XPCOM addon HTTPS/HTTP activity,
 WebSockets, and live bookmark updates. We have also verified that IPv6
 connections are not attempted, through the proxy or otherwise (Tor does not
 yet support IPv6). We have also verified that external protocol helpers, such
-as smb urls and other custom protocol handlers are all blocked.
+as SMB URLs and other custom protocol handlers are all blocked.
 
  </para>
 </listitem>
@@ -1321,7 +1321,7 @@ interest to an adversary.
      </para>
      <para>
 
-URIs created with URL.createObjectURI MUST be limited in scope to the first
+URIs created with URL.createObjectURL MUST be limited in scope to the first
 party URL bar domain that created them. We provide this isolation in Tor
 Browser via a <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=0d67ab406bdd3cf095802cb25c081641aa1f0bcc">direct
@@ -1445,7 +1445,7 @@ fingerprinting makes use of any information that can be extracted from the
 browser by some specific website action, usually involving Javascript.
 Some definitions of browser fingerprinting also include supercookies and
 cookie-like identifier storage, but we deal with those issues separately in
-the <link linkend="identifier-linkability">preceeding section on identifier
+the <link linkend="identifier-linkability">preceding section on identifier
 linkability</link>.
 
    </para>
@@ -1503,14 +1503,14 @@ concurrent activity, we are less concerned with this mechanism of extracting
 this information. We also expect that reducing the resolution of Javascript's
 time sources will significantly increase the duration of execution required to
 extract accurate results, and thus make statistical approaches both
-unattractive and highly noticable due to execessive resource consumption.
+unattractive and highly noticeable due to excessive resource consumption.
 
       </para>
      </listitem>
      <listitem><command>Operating System Vendor and Version Differences</command>
       <para>
 
-Operating system vendor and version differences permiate many different
+Operating system vendor and version differences permeate many different
 aspects of the browser. While it is possible to address these issues with some
 effort, the relative lack of diversity in operating systems causes us to
 primarily focus our efforts on passive operating system fingerprinting
@@ -1529,7 +1529,7 @@ Due to vast differences in feature set and implementation behavior even
 between different versions of the same browser, browser vendor and version
 differences are simply not possible to conceal in any realistic way. It
 is only possible to minimize the differences among different installations of
-the same browser vendor and version. We make no effort to mimick any other
+the same browser vendor and version. We make no effort to mimic any other
 major browser vendor, and in fact most of our fingerprinting defenses serve to
 differentiate Tor Browser users from normal Firefox users. Because of this,
 any study that lumps browser vendor and version differences in to its analysis
@@ -2121,7 +2121,7 @@ closed (this does not spawn a new Firefox process, only a new window). Upon
 the close of the final window, an unload handler is fired to invoke the <ulink
 url="https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIDOMWindowUtils#garbageCollect%28%29">garbage
 collector</ulink>, which has the effect of immediately purging any blob:UUID
-urls that were created by website content via <ulink
+URLs that were created by website content via <ulink
 url="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL">URL.createObjectURL</ulink>.
 
      </para>
@@ -2569,10 +2569,10 @@ consensus, and encoding the package hashes in the Bitcoin blockchain.
     <para>
 
 The Windows releases are also signed by a hardware token provided by Digicert.
-In order to verify package integrity, the signature must be sripped off using
+In order to verify package integrity, the signature must be stripped off using
 the osslsigncode tool, as described on the <ulink
 url="https://www.torproject.org/docs/verifying-signatures.html.en#BuildVerification">Signature
-Vericication</ulink> page.
+Verification</ulink> page.
 
     </para>
   </sect2>
