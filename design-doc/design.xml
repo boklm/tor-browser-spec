@@ -1184,8 +1184,7 @@ each cache key</ulink> to include an additional ID that includes the URL bar
 domain. This functionality can be observed by navigating to <ulink
 url="about:cache">about:cache</ulink> and viewing the key used for each cache
 entry. Each third party element should have an additional "id=string"
-property prepended, which will list the FQDN that was used to source the third
-party element.
+property prepended, which will list the FQDN that was used to source it.
 
      </para>
      <para>
@@ -1200,12 +1199,12 @@ this cache per url bar domain</ulink>.
     <listitem>HTTP Auth
      <para>
 
-HTTP Authorization headers can be used by Javascript to encode <ulink
+HTTP Authorization headers can be used to encode <ulink
 url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">silent
 third party tracking identifiers</ulink>. To prevent this, we remove HTTP
 authentication tokens for third party elements through a <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=b8ce4a0760759431f146c71184c89fbd5e1a27e4">patch
-to nsHTTPChannel</ulink>. 
+to nsHTTPChannel</ulink>.
 
      </para>
     </listitem>
@@ -1256,14 +1255,14 @@ url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0e
 to Firefox</ulink>. To compensate for the increased round trip latency from disabling
 these performance optimizations, we also enable
 <ulink url="https://tools.ietf.org/html/draft-bmoeller-tls-falsestart-00">TLS
-False Start</ulink> via the Firefox Pref 
+False Start</ulink> via the Firefox Pref
 <command>security.ssl.enable_false_start</command>.
     </para>
     </listitem>
-    <listitem>IP address, Tor Circuit, and HTTP Keep-Alive linkability
+    <listitem>IP address, Tor circuit, and HTTP Keep-Alive linkability
      <para>
 
-IP addresses, Tor Circuits, and HTTP connections from a third party in one URL
+IP addresses, Tor circuits, and HTTP connections from a third party in one URL
 bar origin MUST NOT be reused for that same third party in another URL bar
 origin.
      </para>
@@ -1271,14 +1270,14 @@ origin.
 
 This isolation functionality is provided by the combination of a <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=b3ea705cc35b79a9ba27323cb3e32d5d004ea113">Firefox
-patch to allow SOCKS username and passwords</ulink>, as well as a Torbutton
+patch to allow SOCKS usernames and passwords</ulink>, as well as a Torbutton
 component that <ulink
 linkend="https://gitweb.torproject.org/torbutton.git/tree/src/components/domain-isolator.js">sets
 the SOCKS username and password for each request</ulink>. The Tor client has
 logic to prevent connections with different SOCKS usernames and passwords from
-using the same Tor Circuit, which provides us with IP address unlinkability.
-Firefox has existing logic to ensure that connections with SOCKS proxy do not
-re-use existing HTTP Keep Alive connections unless the proxy settings match.
+using the same Tor circuit, which provides us with IP address unlinkability.
+Firefox has existing logic to ensure that connections with SOCKS proxies do not
+re-use existing HTTP Keep-Alive connections unless the proxy settings match.
 We extended this logic to cover SOCKS username and password authentication,
 providing us with HTTP Keep-Alive unlinkability.
 
@@ -1325,7 +1324,7 @@ URIs created with URL.createObjectURL MUST be limited in scope to the first
 party URL bar domain that created them. We provide this isolation in Tor
 Browser via a <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=0d67ab406bdd3cf095802cb25c081641aa1f0bcc">direct
-patch to Firefox</ulink>.
+patch to Firefox</ulink> and disable URL.createObjectURL in a worker context as a stopgap.
 
      </para>
     </listitem>
@@ -1487,7 +1486,7 @@ do so only on a per-site basis via site permissions, to avoid linkability.
      <listitem><command>Device and Hardware Characteristics</command>
       <para>
 
-Device and hardware characteristics can be determined three ways: they can be
+Device and hardware characteristics can be determined in three ways: they can be
 reported explicitly by the browser, they can be inferred through API behavior,
 or they can be extracted through statistical measurements of system
 performance. We are most concerned with the cases where this information is
