@@ -1,0 +1,60 @@
+\begin{thebibliography}{10}
+
+\bibitem{web-send}
+Tyler Close, Rajiv Makhijani, Mark Seaborn, Kenton Varda, Johan Apelqvist,
+  Claes Nilsson, and Mike Hanson.
+\newblock {Web Introducer}.
+\newblock \url{http://web-send.org/introducer/}.
+
+\bibitem{target}
+Charles Duhigg.
+\newblock {How Companies Learn Your Secrets}.
+\newblock
+  \url{https://www.nytimes.com/2012/02/19/magazine/shopping-habits.html?pagewa%
+nted=9}.
+
+\bibitem{panopticlick}
+Peter Eckersley.
+\newblock How unique is your web browser?
+\newblock In {\em Proceedings of the 10th international conference on Privacy
+  enhancing technologies}, PETS'10, pages 1--18, Berlin, Heidelberg, 2010.
+  Springer-Verlag.
+
+\bibitem{DNT-adoption}
+Alex Fowler.
+\newblock {Mozilla Led Effort for DNT Finds Broad Support}.
+\newblock
+  \url{https://blog.mozilla.org/privacy/2012/02/23/mozilla-led-effort-for-dnt-%
+finds-broad-support/}.
+
+\bibitem{safecache}
+Collin Jackson and Dan Boneh.
+\newblock Protecting browser state from web privacy attacks.
+\newblock In {\em In Proceedings of the International World Wide Web
+  Conference}, pages 737--744, 2006.
+
+\bibitem{DNT-draft}
+J.~Mayer, A.~Narayanan, and S.~Stamm.
+\newblock {Do Not Track: A Universal Third-Party Web Tracking Opt Out}.
+\newblock \url{https://tools.ietf.org/html/draft-mayer-do-not-track-00}.
+
+\bibitem{fourthparty}
+Jonathan~R. Mayer and John~C. Mitchell.
+\newblock {Third-Party Web Tracking: Policy and Technology}.
+\newblock \url{https://www.stanford.edu/~jmayer/papers/trackingsurvey12.pdf}.
+
+\bibitem{Persona}
+Mozilla~Developer Network.
+\newblock {Persona}.
+\newblock \url{https://developer.mozilla.org/en-US/docs/persona}.
+
+\bibitem{torbrowser}
+Mike Perry.
+\newblock {The Design and Implementation of the Tor Browser}.
+\newblock \url{https://www.torproject.org/projects/torbrowser/design/}.
+
+\bibitem{thirdparty}
+Dan Witte.
+\newblock \url{https://wiki.mozilla.org/Thirdparty}.
+
+\end{thebibliography}
