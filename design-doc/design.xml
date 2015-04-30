@@ -2163,10 +2163,11 @@ privacy and security issues.
      <para>
 
 In order to provide vulnerability surface reduction for users that need high
-security, we have implemented a "Security Slider" that essentially represents a
-tradeoff between usability and security. Using metrics collected from
-Mozilla's bug tracker, we analyzed the vulnerability counts of core components,
-and used <ulink
+security, we have implemented a "Security Slider" to allow users to make a
+tradeoff between usability and security while minimizing the total number of
+choices (to reduce fingerprinting). Using metrics collected from
+Mozilla's bug tracker, we analyzed the vulnerability counts of core
+components, and used <ulink
 url="https://github.com/iSECPartners/publications/tree/master/reports/Tor%20Browser%20Bundle">information
 gathered from a study performed by iSec Partners</ulink> to inform which
 features should be disabled at which security levels.
@@ -2174,32 +2175,56 @@ features should be disabled at which security levels.
      </para>
      <para>
 
-<!-- XXX-4.5: These values have changed slightly.. Also SVG and MathML prefs -->
-
-The Security Slider consists of four positions. At the lowest security level
-(the default), we disable
-<command>gfx.font_rendering.graphite.enabled</command> for Latin locales, as
-well as <command>gfx.font_rendering.graphite.enabled</command>. At the
-medium-low level, we disable most Javascript JIT and related optimizations
-(<command>javascript.options.ion.content</command>,
-<command>javascript.options.typeinference</command>,
-<command>javascript.options.asmjs</command>). We also make HTML5 media
-click-to-play (<command>noscript.forbidMedia</command>), and disable WebAudio
-(<command>media.webaudio.enabled</command>). At the medium-high level, we
-disable the baseline JIT
-(<command>javascript.options.baselinejit.content</command>), disable
-Javascript entirely all elements that are loaded when the URL bar is not
-HTTPS (<command>noscript.globalHttpsWhitelist</command>), and fully disable
-graphite font rendering for all locales
-(<command>gfx.font_rendering.graphite.enable</command>). At the highest level,
-Javascript is fully disabled (<command>noscript.global</command>), as well as
-all non-WebM HTML5 codecs (<command>media.ogg.enabled</command>,
-<command>media.opus.enabled</command>, <command>media.opus.enabled</command>,
-<command>media.DirectShow.enabled</command>,
-<command>media.wave.enabled</command>, and
-<command>media.apple.mp3.enabled</command>).
+The Security Slider consists of four positions:
 
      </para>
+     <itemizedlist>
+      <listitem><command>Low</command>
+      <para>
+
+At this security level, the preferences are the Tor Browser defaults.
+
+      </para>
+      </listitem>
+      <listitem><command>Medium-Low</command>
+       <para>
+
+At this security level, we disable the ION JIT
+(<command>javascript.options.ion.content</command>), TypeInference JIT
+(<command>javascript.options.typeinference</command>), ASM.JS
+(<command>javascript.options.asmjs</command>), WebAudio
+(<command>media.webaudio.enabled</command>), MathML
+(<command>mathml.disabled</command>), block remote JAR files
+(<command>network.jar.block-remote-files</command>), and make HTML5 audio and
+video click-to-play via NoScript (<command>noscript.forbidMedia</command>).
+
+       </para>
+      </listitem>
+      <listitem><command>Medium-High</command>
+       <para>
+
+This security level inherits the preferences from the Medium-Low level, and
+additionally disables the baseline JIT
+(<command>javascript.options.baselinejit.content</command>), disables graphite
+font rendering (<command>gfx.font_rendering.graphite.enabled</command>), and
+only allows Javascript to run if it is loaded over HTTPS and the URL bar is
+HTTPS (by setting <command>noscript.global</command> to false and
+<command>noscript.globalHttpsWhitelist</command> to true).
+
+       </para>
+      </listitem>
+      <listitem><command>High</command>
+       <para>
+
+This security level inherits the preferences from the Medium-Low and
+Medium-High levels, and additionally disables remote fonts
+(<command>noscript.forbidFonts</command>), completely disables Javascript (by
+unsetting <command>noscript.globalHttpsWhitelist</command>), and disables SVG
+images (<command>svg.in-content.enabled</command>).
+
+       </para>
+      </listitem>
+     </itemizedlist>
     </listitem>
     <listitem id="traffic-fingerprinting-defenses"><command>Website Traffic Fingerprinting Defenses</command>
      <para>
