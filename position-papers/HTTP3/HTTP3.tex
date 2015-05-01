@@ -77,23 +77,21 @@ HTTP layer that persists beyond the duration or scope of a single connection.
 For background, the Tor Project has designed Tor Browser with two main
 properties for limiting identifier-based tracking: First Party Isolation, and
 Long Term Unlinkability.
-% FIXME: cite design doc
 
 First Party Isolation is the property that a user's actions at one
 top-level URL bar domain must not be correlated or linked to their actions on a
 different top-level URL bar domain. We maintain this property through a number
 of patches and modifications to various aspects of browser functionality and
-state keeping.
-% FIXME: Cite design doc
+state keeping\cite{torbrowser-identifiers}.
 
 Long Term Unlinkability is the property that a user's future activity must not
-be linked or correlated to any prior activity after that user's explicit request
-to sever this link. Tor Browser provides Long Term Unlinkability by allowing
-the user to clear all browser tracking data in a single click (called "New
-Identity"). Our long-term goal is to allow users to define their relationship
-with individual first parties, and alter that relationship by resetting or
-blocking the associated tracking data on a per-site basis.
-% FIXME: Cite design doc
+be linked or correlated to any prior activity after that user's explicit
+request to sever this link. Tor Browser provides Long Term Unlinkability by
+allowing the user to clear all browser tracking data in a single click (called
+"New Identity")\cite{torbrowser-longterm}. Our long-term goal is to allow
+users to define their relationship with individual first parties, and alter
+that relationship by resetting or blocking the associated tracking data on a
+per-site basis.
 
 \subsection{Identifier Linkability in HTTP/2}
 
@@ -136,8 +134,8 @@ The heavy use of connection multiplexing in HTTP/2 may present additional
 complexities for ensuring that requests are isolated. Unfortunately, unlike
 identifier usage, connection usage linkability is encouraged by the
 HTTP/2 specification in Section 9.1 (in the form of specifying that clients
-SHOULD NOT open more than one connection to a given host and port).
-% FIXME: Cite HTTP2 S 9.1
+SHOULD NOT open more than one connection to a given host and
+port)\cite{http2-spec}.
 
 \subsection{Avoiding Future Connection Usage Linkability}
 
@@ -168,7 +166,7 @@ to obtain or infer end user configuration details and device characteristics.
 We concern ourselves with operating system fingerprinting only to the point of
 removing ways of detecting a specific operating system version. We make no
 attempt to address fingerprinting due to browser vendor and version
-differences. % FIXME: cite fingerprinting doc
+differences\cite{torbrowser-fingerprinting}.
 
 Under this model, it is unlikely that very many fingerprinting vectors that
 concern us will arise in the HTTP layer. However, the possibility for end user
@@ -198,22 +196,21 @@ The Tor Project is very interested in any efforts to improve the
 confidentiality and integrity of the session layer of HTTP/3. 
 
 In particular, we are strong advocates for mandatory authenticated encryption
-of HTTP/3 connections.  The availability of entry-level authentication through
-the Let's Encrypt Project should eliminate the remaining barriers to requiring
-authenticated encryption, as opposed to deploying opportunistic mechanisms.
-% FIXME: Cite Let's Encrypt
+of HTTP/3 connections.  The availability of free and automated entry-level
+authentication through the Let's Encrypt Project\cite{lets-encrypt} should
+eliminate the remaining barriers to requiring authenticated encryption, as
+opposed to deploying opportunistic mechanisms.
 
 We are also interested in efforts to encrypt the ClientHello and ServerHello
 messages using an initial ephemeral handshake, as described in the Encrypted
-TLS Handshake proposal. If SNI, ALPN, and the ServerHello can be encrypted
-using an ephemeral key exchange that is authenticated later in the handshake,
-the adversary loses a great deal of information about the user's intended
-destination site. When large scale CDNs and multi-site load balancers are
-involved, the ultimate destination would be impossible to determine with this
-type of handshake in place. This will aid in defenses against traffic
-fingerprinting and traffic analysis, which we describe detail in the next
-section.
-% FIXME: Cite https://tools.ietf.org/html/draft-ray-tls-encrypted-handshake-00
+TLS Handshake proposal\cite{encrypted-handshake}. If SNI, ALPN, and the
+ServerHello can be encrypted using an ephemeral key exchange that is
+authenticated later in the handshake, the adversary loses a great deal of
+information about the user's intended destination site. When large scale CDNs
+and multi-site load balancers are involved, the ultimate destination would be
+impossible to determine with this type of handshake in place. This will aid in
+defenses against traffic fingerprinting and traffic analysis, which we
+describe detail in the next section.
 
 \section{Traffic Fingerprinting and Traffic Analysis Concerns}
 
@@ -235,19 +232,17 @@ accuracy and capabilities by increasing the size of the classification domain.
 There was some initial controversy in the research literature as to the exact
 degree to which the classification domain size, the base rate fallacy, and
 other machine learning issues applied to website traffic fingerprinting of Tor
-traffic, but after publicly requesting that these effects be studied in closer
-detail, recent results have confirmed and quantified the benefits conferred by
-Tor's unique link encryption.
+traffic, but after we publicly requested that these effects be studied in
+closer detail\cite{blog-wtf}, recent results have confirmed and quantified the
+benefits conferred by Tor's unique link encryption\cite{ccs-wtf}.
 
 Tor's link properties are by no means a complete defense, but they show that
 there is room to develop defenses that specifically aim to increase the size
 of the classification domain and associated base rate. In fact, it is our
-belief that minimal padding and clever use of request and response framing
+belief that minimal padding and clever use of request and response behavior
 will increase the false positive rate enough to frustrate these attacks. For
 this reason, we have been encouraging continued study of low-overhead defenses
-against traffic fingerprinting. 
-% FIXME: Cite blog post and Mjaurez's paper
-% FIXME: Cite design doc's website traffic fingerprinting section
+against traffic fingerprinting\cite{torbrowser-wtf}. 
 
 With the aid of an encrypted TLS handshake, we are hopeful that these defenses
 will also be applicable to non-Tor TLS sessions as well. In addition to
@@ -256,10 +251,28 @@ the application of these defenses to the HTTP TLS layer will serve to increase
 the difficulty of end-to-end correlation and general traffic analysis of Tor
 exit node traffic as well.
 
-\subsection{Traffic Analysis Issues with HTTP/2}
+\subsection{Traffic Analysis Improvements and Issues with HTTP/2}
 
-In our preliminary investigation of HTTP/2, we discovered that certain aspects
-of the protocol may aid certain types of traffic analysis attacks.
+When website traffic fingerprinting was first studied in Tor, we developed an
+experimental defense against it that attempted to use HTTP/1.1 pipelining to
+randomize pipeline depth and request ordering to reduce the information
+available to classifiers\cite{blog-pipelining}. Unfortunately, cursory
+experiments have revealed that this defense appears to provide questionable
+benefit, though exactly why has not yet been investigated. We suspect this may
+be due to the lack of support for large pipeline depths (or any reliable
+HTTP/1.1 pipelining at all) on many sites.
+
+We are hopeful that HTTP/2 will enable better request and response size and
+ordering randomization through the use of HTTP/2's client configurable frame
+size and stream multiplexing properties, in addition to frame padding.
+Leveraging these features is high on the list of low-overhead defense
+experiments that the Tor Project is interested in evaluating when we pick up
+the Firefox implementation of HTTP/2 as part of our rebase to Firefox 38-ESR
+in the coming months.
+
+However, in our preliminary investigation of HTTP/2, we also iscovered that
+certain aspects of the protocol may aid certain types of traffic analysis
+attacks.
 
 In particular, the PING and SETTINGS frames are acknowledged immediately by
 the client, which might give servers the ability to collect information about a
@@ -288,12 +301,11 @@ provided by HTTP/2 is likely to be inconsequential when combined with the
 minimum frame size the client can request (16 kilobytes).
 
 In combination with researchers at the University of Leuven, the Tor Project
-has also developed a protocol and prototype implementation for communicating
-statistical schedules for asynchronous padding from Tor clients to Tor relays.
-The research community is currently in the process of evaluating the efficacy
-of this protocol against traffic fingerprinting and other traffic analysis
-attacks.
-% FIXME: Cite padding idea and wfpadtools
+has also developed a protocol\cite{multihop-padding} and prototype
+implementation\cite{wfpadtools} for communicating statistical schedules for
+asynchronous padding from Tor clients to Tor relays.  The research community
+is currently in the process of evaluating the efficacy of this protocol
+against traffic fingerprinting and other traffic analysis attacks.
 
 Pending the results of this analysis, these padding commands could form the
 basis of new HTTP/3 frame commands for communicating more sophisticated (yet
@@ -319,9 +331,8 @@ Long term, our goal is to transition the entire Tor network to our own
 datagram protocol with custom congestion and flow control to better support
 both native datagram transport and end-to-end flow control. However,
 additional research is still needed to examine the anonymity implications
-associated with this transition. Our present estimate is that a full network
-transition to UDP is at least five years away.
-% FIXME: Site Murdoch's UDP study
+associated with this transition\cite{tor-udp}. Our present estimate is that a
+full network transition to UDP is at least five years away.
 
 We are also concerned that even after a full network transition to a datagram
 transport, it is likely that the congestion, flow, and reliability control of

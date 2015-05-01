@@ -1,60 +1,76 @@
 \begin{thebibliography}{10}
 
-\bibitem{web-send}
-Tyler Close, Rajiv Makhijani, Mark Seaborn, Kenton Varda, Johan Apelqvist,
-  Claes Nilsson, and Mike Hanson.
-\newblock {Web Introducer}.
-\newblock \url{http://web-send.org/introducer/}.
-
-\bibitem{target}
-Charles Duhigg.
-\newblock {How Companies Learn Your Secrets}.
-\newblock
-  \url{https://www.nytimes.com/2012/02/19/magazine/shopping-habits.html?pagewa%
-nted=9}.
-
-\bibitem{panopticlick}
-Peter Eckersley.
-\newblock How unique is your web browser?
-\newblock In {\em Proceedings of the 10th international conference on Privacy
-  enhancing technologies}, PETS'10, pages 1--18, Berlin, Heidelberg, 2010.
-  Springer-Verlag.
-
-\bibitem{DNT-adoption}
-Alex Fowler.
-\newblock {Mozilla Led Effort for DNT Finds Broad Support}.
-\newblock
-  \url{https://blog.mozilla.org/privacy/2012/02/23/mozilla-led-effort-for-dnt-%
-finds-broad-support/}.
-
-\bibitem{safecache}
-Collin Jackson and Dan Boneh.
-\newblock Protecting browser state from web privacy attacks.
-\newblock In {\em In Proceedings of the International World Wide Web
-  Conference}, pages 737--744, 2006.
-
-\bibitem{DNT-draft}
-J.~Mayer, A.~Narayanan, and S.~Stamm.
-\newblock {Do Not Track: A Universal Third-Party Web Tracking Opt Out}.
-\newblock \url{https://tools.ietf.org/html/draft-mayer-do-not-track-00}.
-
-\bibitem{fourthparty}
-Jonathan~R. Mayer and John~C. Mitchell.
-\newblock {Third-Party Web Tracking: Policy and Technology}.
-\newblock \url{https://www.stanford.edu/~jmayer/papers/trackingsurvey12.pdf}.
-
-\bibitem{Persona}
-Mozilla~Developer Network.
-\newblock {Persona}.
-\newblock \url{https://developer.mozilla.org/en-US/docs/persona}.
-
-\bibitem{torbrowser}
-Mike Perry.
+\bibitem{torbrowser-identifiers}
+Mike Perry, Erinn Clark, Steven Murdoch
 \newblock {The Design and Implementation of the Tor Browser}.
-\newblock \url{https://www.torproject.org/projects/torbrowser/design/}.
+\newblock {Section 4.5: Cross-Origin Identifier Unlinkability}.
+\newblock \url{https://www.torproject.org/projects/torbrowser/design/#identifier-linkability}.
 
-\bibitem{thirdparty}
-Dan Witte.
-\newblock \url{https://wiki.mozilla.org/Thirdparty}.
+\bibitem{torbrowser-longterm}
+Mike Perry, Erinn Clark, Steven Murdoch
+\newblock {The Design and Implementation of the Tor Browser}.
+\newblock {Section 4.7: Long-Term Unlinkability via "New Identity" button}.
+\newblock \url{https://www.torproject.org/projects/torbrowser/design/#new-identity}.
+
+\bibitem{torbrowser-fingerprinting}
+Mike Perry, Erinn Clark, Steven Murdoch
+\newblock {The Design and Implementation of the Tor Browser}.
+\newblock {Section 4.6: Cross-Origin Fingerprinting Unlinkability}.
+\newblock \url{https://www.torproject.org/projects/torbrowser/design/#fingerprinting-linkability}.
+
+\bibitem{http2-spec}
+M. Belshe, R. Peon, M. Thomson
+\newblock {Hypertext Transfer Protocol version 2}.
+\newblock \url{https://http2.github.io/http2-spec/}.
+
+\bibitem{lets-encrypt}
+Mozilla, Akamai, Cisco, EFF, Identrust, Automattic
+\newblock {Let's Encrypt Certificate Authority}.
+\newblock \url{https://letsencrypt.org/}.
+
+\bibitem{encrypted-handshake}
+M. Ray
+\newblock {Transport Layer Security (TLS) Encrypted Handshake Extension}.
+\newblock \url{https://tools.ietf.org/html/draft-ray-tls-encrypted-handshake-00}.
+
+\bibitem{blog-wtf}
+Mike Perry
+\newblock {A Critique of Website Traffic Fingerprinting Attacks}.
+\newblock \url{https://blog.torproject.org/blog/critique-website-traffic-fingerprinting-attacks}
+
+\bibitem{blog-pipelining}
+Mike Perry
+\newblock {Experimental Defense for Website Traffic Fingerprinting}.
+\newblock \url{https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting}
+
+\bibitem{torbrowser-wtf}
+Mike Perry, Erinn Clark, Steven Murdoch
+\newblock {The Design and Implementation of the Tor Browser}.
+\newblock {Section 4.8: Other Defenses}.
+\newblock \url{https://www.torproject.org/projects/torbrowser/design/#traffic-fingerprinting-defenses}
+
+\bibitem{multihop-padding}
+Mike Perry, Marc Juarez
+\newblock {Multihop Padding Primitives}
+\newblock \url{https://gitweb.torproject.org/user/mikeperry/torspec.git/plain/proposals/ideas/xxx-multihop-padding-primitives.txt?h=multihop-padding-primitives}
+
+\bibitem{wfpadtools}
+Marc Juarez
+\newblock {WFPadTools}
+\newblock \url{https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools/}
+
+\bibitem{tor-udp}
+Steven J. Murdoch
+\newblock {Comparison of Tor Datagram Designs}
+\newblock \url{https://research.torproject.org/techreports/datagram-comparison-2011-11-07.pdf}
+
+\bibitem{ccs-wtf}
+Marc Juarez and Sadia Afroz and Gunes Acar and Claudia Diaz and Rachel Greenstadt
+\newblock {A Critical Evaluation of Website Fingerprinting Attacks}
+\newblock {Proceedings of the 21th ACM conference on Computer and Communications Security (CCS 2014)}
+\newblock \url{https://www.eecs.berkeley.edu/~sa499/papers/ccs-webfp-final.pdf}
+}
+
+
 
 \end{thebibliography}
