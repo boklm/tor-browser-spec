@@ -101,12 +101,12 @@ point how complicated this isolation will be.
 We feel that it is very important that mechanisms for identifier usage,
 storage, and connection-related state keeping be cleanly abstracted and
 narrowly scoped within the HTTP protocol. However, we also recognize that to a
-large degree identifier usage and the resulting linkability is primarly an
+large degree identifier usage and the resulting linkability is primarily an
 implementation detail, and not specific to the protocol itself.
 
 Identifier linkability will become a problem if instances arise where the
 server is allowed to specify a setting or configuration property for a client
-that must presist beyond the duration of the session. In these cases, care
+that must persist beyond the duration of the session. In these cases, care
 must be taken to ensure that this data is cleared or isolated upon entry to
 private browsing mode, or when the user attempts to clear their private data.
 
@@ -149,7 +149,7 @@ User agent fingerprinting arises from four sources: end-user configuration
 details, device and hardware characteristics, operating system vendor and
 version differences, and browser vendor and version differences.
 
-The Tor Project is primarily concerned with minimzing the ability of websites
+The Tor Project is primarily concerned with minimizing the ability of websites
 to obtain or infer end user configuration details and device characteristics.
 We concern ourselves with operating system fingerprinting only to the point of
 removing ways of detecting a specific operating system version. We make no
@@ -171,7 +171,7 @@ alter our implementation's behavior accordingly.
 
 \subsection{Avoiding Future Fingerprinting Linkability}
 
-It is concievable that more fingerprinting vectors could arise in future,
+It is conceivable that more fingerprinting vectors could arise in future,
 especially if flow control and stream multiplexing decisions are delegated to
 the client, and depend on things like available system memory, available CPU
 cores, or other details. Care should be taken to avoid these situations,
@@ -188,12 +188,12 @@ the Let's Encrypt Project should eliminate the remaining barriers to requiring
 authenticated encryption, as opposed to deploying opportunistic mechanisms.
 
 We are also interested in efforts to encrypt the ClientHello and ServerHello
-messages in an initial forward-secure handshake, as described in the Encrytped
+messages in an initial forward-secure handshake, as described in the Encrypted
 TLS Handshake proposal. If SNI, ALPN, and the ServerHello can be encrypted
 using an ephemeral exchange that is authenticated later in the handshake,
 the adversary loses a great deal of information about the user's intended
 destination site. When large scale CDNs and multi-site load balancers are
-involved, the ulimate destination would be impossible to determine with this
+involved, the ultimate destination would be impossible to determine with this
 type of handshake in place. This will aid in defenses against traffic
 fingerprinting and traffic analysis, which we describe detail in the next
 section.
@@ -209,13 +209,13 @@ classification domain is limited by knowledge of the specific site being
 visited.
 
 Tor's fixed 512 byte packet size and large classification domain go a long way
-to imede this attack for minimal overhead. The 512 byte packet size helps to
+to impede this attack for minimal overhead. The 512 byte packet size helps to
 obscure some amount of length information, and Tor's link encryption conceals
 the destination website reduces classifier accuracy and capabilities, due
 largely to the Base Rate Fallacy. There was some initial controversy in the
 literature as to the exact degree to which this was the case, but after
 publicly requesting that these effects be studied in closer detail, recent
-results have confirmed and quantized the benefits conferred by Tor's unique
+results have confirmed and quantified the benefits conferred by Tor's unique
 link encryption.
 
 For this reason, we have been encouraging continued study of low-overhead
@@ -249,11 +249,11 @@ purpose (such as redirects or Javascript), but these mechanisms can either be
 disabled by the user, reflected in UI activity, or otherwise mitigated by Tor
 Browser
 
-In Tor Browser, we will likely close the connection after recieving some rate
-of unsolicitied PING or SETTINGS updates, and introduce delay or jitter before
+In Tor Browser, we will likely close the connection after receiving some rate
+of unsolicited PING or SETTINGS updates, and introduce delay or jitter before
 responding to these requests before that point. However, lack of explicit
 guidance in the specification about this issue raises concerns about what
-frequencies of these frames are likely to contitute attacks, or instead
+frequencies of these frames are likely to constitute attacks, or instead
 represent normal server behavior in the wild due to overly-aggressive HTTP/2
 implementations.
 
@@ -267,7 +267,7 @@ frame size.
 
 In combination with researchers at the University of Leuven, the Tor Project
 has also developed a protocol and prototype implementation for communicating
-statistical schedules for asynchonous padding from Tor clients to Tor relays.
+statistical schedules for asynchronous padding from Tor clients to Tor relays.
 The research community is currently in the process of evaluating the efficacy
 of this protocol against traffic fingerprinting and other traffic analysis
 attacks.
@@ -297,7 +297,7 @@ full network transition to UDP is at least five years away.
 % FIXME: Site Murdoch's UDP study
 
 While it will be technically possible to support the transit of UDP inside our
-existing TCP overlay network without signficant anonymity risks within a
+existing TCP overlay network without significant anonymity risks within a
 year's time or sooner, it is unlikely that this level of support will be
 sufficient to warrant the use of a finely-tuned UDP version of HTTP rather
 than a TCP variant.
@@ -308,7 +308,7 @@ a UDP version of HTTP/3 may still end up performing poorly over higher-latency
 overlay networks such as ours. We are especially interested in ensuring that
 overlay networks are taken in to account in the design of any UDP-based future
 versions of HTTP, and would also prefer to retain the ability to use future
-HTTP versions over TCP, should the UDP implementations prove suboptimal for
+HTTP versions over TCP, should the UDP implementations prove sub-optimal for
 our use case.
 
 
