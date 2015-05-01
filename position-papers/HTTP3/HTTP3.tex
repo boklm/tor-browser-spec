@@ -48,35 +48,38 @@ education to support online privacy, anonymity, and censorship circumvention.
 Our primary products are the Tor network software, and the Tor Browser, which
 is based on Firefox. 
 
-In this position paper, we describe the concerns of the Tor Project with
-respect to future HTTP standardization. These concerns are broken down into
-five areas: identifier linkability, connection usage linkability,
+In this position paper, we describe the concerns and interests of the Tor
+Project with respect to future HTTP standardization. These concerns and
+interests span five areas: identifier linkability, connection usage linkability,
 fingerprinting linkability, traffic confidentiality and integrity, traffic
 fingerprinting and traffic analysis, and Tor network compatibility.
 
-Each of these areas of concern is communicated in a separate section of this
-position paper. We have also performed a preliminary review of HTTP/2 with
-respect to these areas, and have noted our findings inline. We will be
+Each of these areas is communicated in a separate section of this position
+paper. We have also performed a preliminary review of HTTP/2 with respect to
+these areas, and have noted our comments in each section. We will be
 performing a more in-depth review of HTTP/2 for client fingerprinting and
-other tracking issues in the coming months. 
+other tracking issues in the coming months as we modify the Firefox
+implementation for deployment in Tor Browser.
 
 \section{Identifier Linkability}
 
 Identifier linkability is the ability to use any form of browser state, cache,
-data storage, or identifier to track (link) a user between two otherwise
-independent actions. For the purposes of this position paper, we are concerned
-with any browser state that persists beyond the duration of a single
-connection.
+data storage, or identifier to track (or link) a user between two otherwise
+independent actions. For the purposes of this position paper, we concern
+ourselves with any browser state that persists beyond the duration or scope of
+a single connection.
 
-The Tor Project has designed Tor Browser with two main properties for limiting
-identifier-based tracking: First Party Isolation, and Long Term Unlinkability.
+For background, the Tor Project has designed Tor Browser with two main
+properties for limiting identifier-based tracking: First Party Isolation, and
+Long Term Unlinkability.
+% FIXME: cite design doc
 
 First Party Isolation is the property that a user's actions at one
 top-level URL bar domain cannot be correlated or linked to their actions on a
 different top-level URL bar domain. We maintain this property through a number
 of patches and modifications to various aspects of browser functionality and
 state keeping.
-% FIXME: Cite
+% FIXME: Cite design doc
 
 Long Term Unlinkability is the property that the user may completely clear all
 website-visible data and other identifiers associated, such that their future
@@ -86,15 +89,17 @@ browser tracking data in a single click (called "New Identity"). Our long-term
 goal is to allow users to define their relationship with individual first
 parties, and alter that relationship by resetting or blocking the associated
 tracking data on a per-site basis.
+% FIXME: Cite design doc
 
 \subsection{Identifier Linkability in HTTP/2}
 
 The Tor Project is still in the process of evaluating the stateful nature of
-HTTP/2 connections. It is likely that we will be able to isolate the usage of
-HTTP/2 connection state in a similar way to how we currently isolate HTTP
-connection state, as well as close these connections and clear that state when
-the user chooses to use a New Identity. However, it is not clear yet at this
-point how complicated this isolation will be.
+HTTP/2 connections and their associated streams and settings. It is likely
+that we will be able to isolate the usage of HTTP/2 connection state in a
+similar way to how we currently isolate HTTP connection state, as well as
+close these connections and clear that state when the user chooses to use a
+New Identity. However, it is not clear yet at this point how complicated this
+isolation will be.
 
 \subsection{Avoiding Future Identifier Linkability}
 
@@ -128,6 +133,7 @@ complexities for ensuring that requests are isolated. Unfortunately, unlike
 identifier usage, connection usage linkability is encouraged by the
 HTTP/2 specification in Section 9.1 (in the form of specifying that clients
 SHOULD NOT open more than one connection to a given host and port).
+% FIXME: Cite HTTP2 S 9.1
 
 \subsection{Avoiding Future Connection Usage Linkability}
 
@@ -165,17 +171,18 @@ possibility.
 
 The Tor Project is still in the process of evaluating client
 fingerprintability in HTTP/2. The largest potential source of fingerprinting
-appears to be in the SETTINGS frame. If these values vary depending on end-user
-configuration, hardware capabilities, or operating system version, we may
-alter our implementation's behavior accordingly.
+appears to be in the SETTINGS frame. If clients choose setting values
+depending on end-user configuration, hardware capabilities, or operating
+system version, we may alter our implementation's behavior accordingly to
+remove this logic.
 
 \subsection{Avoiding Future Fingerprinting Linkability}
 
 It is conceivable that more fingerprinting vectors could arise in future,
-especially if flow control and stream multiplexing decisions are delegated to
-the client, and depend on things like available system memory, available CPU
-cores, or other details. Care should be taken to avoid these situations,
-though we also expect them to be unlikely.
+especially if more flow control and stream multiplexing decisions are
+delegated to the client, and depend on things like available system memory,
+available CPU cores, or other system details. Care should be taken to avoid
+these situations, but we also expect them to be unlikely.
 
 \section{Traffic Confidentiality and Integrity}
 
@@ -186,18 +193,18 @@ In particular, we are strong advocates for mandatory authenticated encryption
 of HTTP/3 connections.  The availability of entry-level authentication through
 the Let's Encrypt Project should eliminate the remaining barriers to requiring
 authenticated encryption, as opposed to deploying opportunistic mechanisms.
+% FIXME: Cite Let's Encrypt
 
 We are also interested in efforts to encrypt the ClientHello and ServerHello
-messages in an initial forward-secure handshake, as described in the Encrypted
-TLS Handshake proposal. If SNI, ALPN, and the ServerHello can be encrypted
-using an ephemeral exchange that is authenticated later in the handshake,
-the adversary loses a great deal of information about the user's intended
-destination site. When large scale CDNs and multi-site load balancers are
-involved, the ultimate destination would be impossible to determine with this
-type of handshake in place. This will aid in defenses against traffic
+messages using an initial forward-secure handshake, as described in the
+Encrypted TLS Handshake proposal. If SNI, ALPN, and the ServerHello can be
+encrypted using an ephemeral exchange that is authenticated later in the
+handshake, the adversary loses a great deal of information about the user's
+intended destination site. When large scale CDNs and multi-site load balancers
+are involved, the ultimate destination would be impossible to determine with
+this type of handshake in place. This will aid in defenses against traffic
 fingerprinting and traffic analysis, which we describe detail in the next
 section.
-
 % FIXME: Cite https://tools.ietf.org/html/draft-ray-tls-encrypted-handshake-00
 
 \section{Traffic Fingerprinting and Traffic Analysis}
@@ -208,15 +215,21 @@ effective when exact request and response lengths are visible, and when the
 classification domain is limited by knowledge of the specific site being
 visited.
 
-Tor's fixed 512 byte packet size and large classification domain go a long way
-to impede this attack for minimal overhead. The 512 byte packet size helps to
-obscure some amount of length information, and Tor's link encryption conceals
-the destination website reduces classifier accuracy and capabilities, due
-largely to the Base Rate Fallacy. There was some initial controversy in the
-literature as to the exact degree to which this was the case, but after
-publicly requesting that these effects be studied in closer detail, recent
-results have confirmed and quantified the benefits conferred by Tor's unique
-link encryption.
+In the case of Tor, this attack is most commonly considered with respect to
+the client's connection to their Guard node (the entry into the Tor network).
+There, Tor's fixed 512 byte packet size, link encryption, and multiplexing all
+go a long way to impede this attack for minimal overhead. The fixed 512 byte
+packet size helps to obscure some amount of request and response length
+information. Tor's link encryption also conceals the destination website,
+which reduces classifier accuracy and capabilities, due largely to the Base
+Rate Fallacy.
+
+There was some initial controversy in the literature as to the exact degree to
+which the Base Rate Fallacy and other properties applied to website traffic
+fingerprinting of Tor traffic, but after publicly requesting that these
+effects be studied in closer detail, recent results have confirmed and
+quantified the benefits conferred by Tor's unique link encryption.
+% FIXME: Cite blog post and Mjaurez's paper
 
 For this reason, we have been encouraging continued study of low-overhead
 defenses against traffic fingerprinting. We are optimistic that clever use of
@@ -224,19 +237,18 @@ request bundling and response chunking can be combined with minimal amounts of
 padding to significantly reduce the accuracy of this attack, even when the
 attack is combined with prior information that reduces the size of the
 classification domain.
+% FIXME: Cite design doc's website traffic fingerprinting section
 
-With the aid of an encrypted TLS handshake, we are also hopeful that these
-defenses will also be applicable to non-Tor TLS sessions as well. This will
-also serve to increase the difficulty of end-to-end correlation and general
-traffic analysis of Tor Exit node traffic.
-
-% FIXME: Cite Mjarez's paper and wfpadtools
+With the aid of an encrypted TLS handshake, we are hopeful that these defenses
+will also be applicable to non-Tor TLS sessions as well. The application of
+these defenses to HTTP's TLS layer will serve to increase the difficulty
+of end-to-end correlation and general traffic analysis of Tor Exit node
+traffic.
 
 \subsection{Traffic Analysis Issues with HTTP/2}
 
-In our preliminary investigation of HTTP2/, however, we discovered that
-certain aspects of the protocol may aid certain types of traffic analysis
-attacks.
+In our preliminary investigation of HTTP/2, we discovered that certain aspects
+of the protocol may aid certain types of traffic analysis attacks.
 
 In particular, the PING and SETTINGS frames are acknowledged immediately by
 the client which might give servers the option to collect information about a
@@ -271,12 +283,12 @@ statistical schedules for asynchronous padding from Tor clients to Tor relays.
 The research community is currently in the process of evaluating the efficacy
 of this protocol against traffic fingerprinting and other traffic analysis
 attacks.
+% FIXME: Cite padding idea and wfpadtools
 
 Pending the results of this analysis, these padding commands could form the
 basis of new HTTP/3 frame commands for communicating more sophisticated (yet
 still traffic-bounded) padding schedules to HTTP/3 servers.
 
-% FIXME: Cite.
 
 \section{Tor Network Compatibility}
 
