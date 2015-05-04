@@ -1623,11 +1623,10 @@ fingerprinting vectors. If WebGL is normalized through software rendering,
 system colors were standardized, and the browser shipped a fixed collection of
 fonts (see later points in this list), it might not be necessary to create a
 canvas permission. However, until then, to reduce the threat from this vector,
-we have patched Firefox to <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=6a169ef0166b268b1a27546a17b3d7470330917d">prompt
-before returning valid image data</ulink> to the Canvas APIs. If the user
-hasn't previously allowed the site in the URL bar to access Canvas image data,
-pure white image data is returned to the Javascript APIs.
+we have patched Firefox to <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=6a169ef0166b268b1a27546a17b3d7470330917d">prompt before returning valid image data</ulink> to the Canvas APIs,
+and for <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=7d51acca6383732480b49ccdb5506ad6fb92e651">access to isPointInPath and related functions</ulink>.
+If the user hasn't previously allowed the site in the URL bar to access Canvas
+image data, pure white image data is returned to the Javascript APIs.
 
      </para>
      <para>
@@ -1774,27 +1773,25 @@ zoom/viewport-based mechanisms</ulink> that might allow us to always report the
 same desktop resolution regardless of the actual size of the content window,
 and simply scale to make up the difference.  Until then, the user should also
 be informed that maximizing their windows can lead to fingerprintability under
-this scheme. 
+this scheme.
 
      </para>
      <para><command>Implementation Status:</command>
 
 We automatically resize new browser windows to a 200x100 pixel multiple using
-a window observer to <ulink
-url="https://gitweb.torproject.org/torbutton.git/tree/src/chrome/content/torbutton.js#n3361">resize
-new windows based on desktop resolution</ulink>. To minimize the effect of the
-long tail of large monitor sizes, we also cap the the window size at 1000
-pixels in each direction. Additionally, we patch
-Firefox to use the client content window size <ulink
+a window observer <ulink
+url="https://gitweb.torproject.org/torbutton.git/tree/src/chrome/content/torbutton.js#n3361">based
+on desktop resolution</ulink>. To minimize the effect of the long tail of large
+monitor sizes, we also cap the window size at 1000 pixels in each direction.
+Additionally, we patch Firefox to use the client content window size <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=bd3b1ed32a9c21fdc92fc35f2ec0a41badc378d5">for
 window.screen</ulink>, and to <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=a5648c8d80f396caf294d761cc4a9a76c0b33a9d">report
 a window.devicePixelRatio of 1.0</ulink>. Similarly, we <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=3c02858027634ffcfbd97047dfdf170c19ca29ec">patch
-DOM events to return content window relative points</ulink>. We also 
+DOM events to return content window relative points</ulink>.
 
-We also force
-popups to open in new tabs (via
+We also force popups to open in new tabs (via
 <command>browser.link.open_newwindow.restriction</command>), to avoid
 full-screen popups inferring information about the browser resolution. In
 addition, we prevent auto-maximizing on browser start, and inform users that
@@ -1972,7 +1969,7 @@ large number of people.
      </para>
      <para><command>Implementation Status:</command>
 
-Currently, the our mitigation against performance fingerprinting is to
+Currently, our mitigation against performance fingerprinting is to
 disable <ulink url="http://www.w3.org/TR/navigation-timing/">Navigation
 Timing</ulink> through the Firefox preference
 <command>dom.enable_performance</command>, and to disable the <ulink
@@ -2035,7 +2032,7 @@ Connection API</ulink>, and the <ulink
 url="https://wiki.mozilla.org/Sensor_API">Sensor API</ulink>. We disable these APIs through the Firefox preferences
 <command>dom.battery.enabled</command>,
 <command>dom.network.enabled</command>, and
-<command>device.sensors.enabled</command>. 
+<command>device.sensors.enabled</command>.
 
      </para>
     </listitem>
@@ -2204,10 +2201,11 @@ video click-to-play via NoScript (<command>noscript.forbidMedia</command>).
 
 This security level inherits the preferences from the Medium-Low level, and
 additionally disables the baseline JIT
-(<command>javascript.options.baselinejit.content</command>), disables graphite
-font rendering (<command>gfx.font_rendering.graphite.enabled</command>), and
-only allows Javascript to run if it is loaded over HTTPS and the URL bar is
-HTTPS (by setting <command>noscript.global</command> to false and
+(<command>javascript.options.baselinejit.content</command>), disables Graphite
+(<command>gfx.font_rendering.graphite.enabled</command>) and SVG OpenType font
+rendering (<command>gfx.font_rendering.opentype_svg.enabled</command>) and only
+allows Javascript to run if it is loaded over HTTPS and the URL bar is HTTPS
+(by setting <command>noscript.global</command> to false and
 <command>noscript.globalHttpsWhitelist</command> to true).
 
        </para>
@@ -2279,7 +2277,7 @@ pipelining may simply return error codes for successive requests, effectively
 forcing the browser into non-pipelined behavior. Firefox also has code to back
 off and reduce or eliminate the pipeline if this happens. These
 shortcomings and fallback behaviors are the primary reason that Google
-developed SPDY as opposed simply extending HTTP to improve pipelining. It
+developed SPDY as opposed to simply extending HTTP to improve pipelining. It
 turns out that we could actually deploy exit-side proxies that allow us to
 <ulink
 url="https://gitweb.torproject.org/torspec.git/tree/proposals/ideas/xxx-using-spdy.txt">use
@@ -2475,7 +2473,7 @@ patch</ulink>.
 The standard way of controlling timestamps in Gitian is to use libfaketime,
 which hooks time-related library calls to provide a fixed timestamp. However,
 due to our use of wine to run py2exe for python-based pluggable transports,
-pyc timestamps had to be address with an additional <ulink
+pyc timestamps had to be addressed with an additional <ulink
 url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/tree/gitian/build-helpers/pyc-timestamp.sh">helper
 script</ulink>. The timezone leaks were addressed by setting the
 <command>TZ</command> environment variable to UTC in our descriptors.
@@ -2523,22 +2521,20 @@ directly patching the aspects of the Firefox build process that included this
 information into the build. It also turns out that some libraries (in
 particular: libgmp) attempt to detect the current CPU to determine which
 optimizations to compile in. This CPU type is uniform on our KVM instances,
-but differs under LXC. We are also investigating currently <ulink
-url="https://trac.torproject.org/projects/tor/ticket/12239">unknown sources of
-unitialized memory</ulink> that only appear in LXC mode, as well as
+but differs under LXC. We are also investigating currently
 <ulink url="https://trac.torproject.org/projects/tor/ticket/12240">oddities related to
 time-based dependency tracking</ulink> that only appear in LXC containers.
 
    </para>
   </listitem>
-  </orderedlist>   
+  </orderedlist>
   </sect2>
 
   <sect2>
     <title>Package Signatures and Verification</title>
     <para>
 
-The build process produces a single sha256sums.txt file that contains a sorted
+The build process generates a single sha256sums.txt file that contains a sorted
 list of the SHA-256 hashes of every package produced for that build version. Each
 official builder uploads this file and a GPG signature of it to a directory
 on a Tor Project's web server. The build scripts have an optional matching
@@ -2583,7 +2579,7 @@ Verification</ulink> page.
 Due to the fact that bit-identical packages can be produced by anyone, the
 security of this build system extends beyond the security of the official
 build machines. In fact, it is still possible for build integrity to be
-achieved even if all official build machines are compromised. 
+achieved even if all official build machines are compromised.
 
     </para>
     <para>
@@ -2605,7 +2601,7 @@ verifier.
    <para>
 
 We make use of the Firefox updater in order to provide automatic updates to
-users. We make use of certificate pinning to ensure that update checks
+users. We make use of certificate pinning to ensure that update checks cannot
 be tampered with, and we sign the individual MAR update files with an offline
 signing key.
 
@@ -2613,11 +2609,11 @@ signing key.
    <para>
 
 The Firefox updater also has code to ensure that it can reliably access the
-update server to prevent availability attacks, and complains to the user of 48
+update server to prevent availability attacks, and complains to the user after 48
 hours go by without a successful response from the server. Additionally, we
 use Tor's SOCKS username and password isolation to ensure that every new
-request to the updater traverses a separate circuit, to avoid holdback attacks
-by exit nodes.
+request to the updater (provided the former got issued more than 10 minutes ago)
+traverses a separate circuit, to avoid holdback attacks by exit nodes.
 
    </para>
   </sect2>
