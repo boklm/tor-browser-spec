@@ -1581,6 +1581,55 @@ url="https://amiunique.org/">Am I Unique</ulink>.
      </listitem>
    </orderedlist>
   </sect3>
+
+   <sect3 id="fingerprinting-defenses-general">
+    <title>General Fingerprinting Defenses</title>
+    <para>
+Without looking at a particular fingerprinting vector there are basically two
+strategies to thwart fingerprinting attacks in general:
+<orderedlist>
+  <listitem>
+    Making users uniform: This would render fingerprinting moot as it only works
+    if there are detectable differences between targets.
+  </listitem>
+  <listitem>
+    Giving randomized values back: This would bury the real device
+    characteristics within noise. That way a fingerprinter cannot be sure to
+    identify a user upon (re-)visit of a website which is rendering
+    fingerprinting ineffective.
+  </listitem>
+</orderedlist>
+Although there is some research <ulink url="http://research.microsoft.com/pubs/209989/tr1.pdf">suggesting</ulink> the second approach
+we think the former is currently a better suited heuristic for Tor Browser
+for a couple of reasons:
+   <itemizedlist>
+     <listitem>
+       It might not be possible to randomize all fingerprintable characteristics.
+     </listitem>
+     <listitem>
+       It might not be easy to randomize values in a way that they are not
+       distinguishable from noise.
+     </listitem>
+     <listitem>
+       Randomizing involves performance costs. This is especially true if the
+       fingerprinting surface is large (like in a modern browser) and one needs
+       more elaborate randomizing strategies to make the result
+       indistinguishable from noise.
+     </listitem>
+     <listitem>
+       Randomizing itself might introduce a new fingerprinting vector as the
+       process of generating the values for the fingerprintable attributes
+       could be susceptible to timing side-channel attacks.
+     </listitem>
+  </itemizedlist>
+  We'll see in the next section that the idea of making users uniform does not
+  work either in the general way expressed above mainly due to usability issues.
+  However, we believe that it avoids a lot of the complications involved in
+  randomization even if just used as a guiding principle.
+    </para>
+  </sect3>
+
+
   <sect3 id="fingerprinting-defenses">
    <title>Fingerprinting Defenses in the Tor Browser</title>
    <para>
