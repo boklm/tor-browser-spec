@@ -1112,16 +1112,14 @@ $HOME environment variable to be the TBB extraction directory.
    <title>Cross-Origin Identifier Unlinkability</title>
    <para>
 
-The Tor Browser MUST prevent a user's activity on one site from being linked
-to their activity on another site. When this goal cannot yet be met with an
-existing web technology, that technology or functionality is disabled. Our
-<link linkend="privacy">design goal</link> is to ultimately eliminate the need to disable arbitrary
-technologies, and instead simply alter them in ways that allows them to
-function in a backwards-compatible way while avoiding linkability. Users
-should be able to use federated login of various kinds to explicitly inform
-sites who they are, but that information should not transparently allow a
-third party to record their activity from site to site without their prior
-consent.
+The Cross-Origin Identifier Unlinkability design requirement is satisfied
+through first party isolation of all browser identifier sources. First party
+isolation means that all identifier sources and browser state are scoped
+(isolated) using the the URL bar domain. This scoping is performed in
+combination with any additional third party scope. When first party isolation
+is used with explicit identifier storage that already has a constrained third
+party scope (such as cookies, DOM storage, and cache), this approach is
+referred to as "double-keying".
 
    </para>
    <para>
@@ -1152,6 +1150,19 @@ form history, login values, and so on within a context menu for each site.
 
 </caption>
    </figure>
+
+ <sect3>
+  <title>Identifier Unlinkability Defenses in the Tor Browser</title>
+   <para>
+
+Unfortunately, many aspects of browser state can serve as identifier storage,
+and no other browser vendor or standards body has invested the effort to
+enumerate or otherwise deal with these vectors for third party tracking. As
+such, we have had to enumerate and isolate these identifier sources on a
+piecemeal basis. Here is the list that we have discovered and dealt with to
+date:
+
+   </para>
    <orderedlist>
     <listitem>Cookies
      <para><command>Design Goal:</command>
@@ -1430,6 +1441,7 @@ Identity</command> invocations.
 For more details on identifier linkability bugs and enhancements, see the <ulink
 url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability&amp;status=!closed">tbb-linkability tag in our bugtracker</ulink>
   </para>
+  </sect3>
   </sect2>
   <sect2 id="fingerprinting-linkability">
    <title>Cross-Origin Fingerprinting Unlinkability</title>
