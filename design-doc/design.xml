@@ -1115,7 +1115,7 @@ $HOME environment variable to be the TBB extraction directory.
 The Cross-Origin Identifier Unlinkability design requirement is satisfied
 through first party isolation of all browser identifier sources. First party
 isolation means that all identifier sources and browser state are scoped
-(isolated) using the the URL bar domain. This scoping is performed in
+(isolated) using the URL bar domain. This scoping is performed in
 combination with any additional third party scope. When first party isolation
 is used with explicit identifier storage that already has a constrained third
 party scope (such as cookies, DOM storage, and cache), this approach is
@@ -1544,7 +1544,7 @@ specific version of a system can be inferred.
 While somewhat outside the scope of browser fingerprinting, for completeness
 it is important to mention that users themselves theoretically might be
 fingerprinted through their behavior while interacting with a website. This
-behavior includes as keystrokes, mouse movements, click speed, and writing
+behavior includes e.g. keystrokes, mouse movements, click speed, and writing
 style. Basic vectors such as keystroke and mouse usage fingerprinting can be
 mitigated by altering Javascript's notion of time. More advanced issues like
 writing style fingerprinting are the domain of <ulink
