@@ -1464,8 +1464,10 @@ severe, and how to study the efficacy of defenses properly.
     <title>Sources of Fingerprinting Issues</title>
     <para>
 
-All fingerprinting issues arise from one of four primary sources. In order
-from most severe to least severe, these sources are:
+All fingerprinting issues arise from one of four primary sources in the
+browser. Additionally, user behavior itself provides one more source of
+potential fingerprinting. Listed in order from most severe to least severe in
+terms of the amount of information they reveal, these sources are:
 
     </para>
     <orderedlist>
@@ -1487,13 +1489,15 @@ do so only on a per-site basis via site permissions, to avoid linkability.
      <listitem><command>Device and Hardware Characteristics</command>
       <para>
 
-Device and hardware characteristics can be determined in three ways: they can be
-reported explicitly by the browser, they can be inferred through API behavior,
-or they can be extracted through statistical measurements of system
-performance. We are most concerned with the cases where this information is
-either directly reported or can be determined via a single use of an API or
-feature, and prefer to place such APIs either behind site permissions, or
-disable them entirely.
+Device and hardware characteristics can be determined in three ways: they can
+be reported explicitly by the browser, they can be inferred through browser
+functionality, or they can be extracted through statistical measurements of
+system performance. We are most concerned with the cases where this
+information is either directly reported or can be determined via a single use
+of an API or feature, and prefer to place such APIs either behind site
+permissions, alter their functionality to prevent exposing the most variable
+aspects of these characteristics, or disable them entirely.
+
       </para>
       <para>
 
@@ -1519,6 +1523,20 @@ anonymity, it is not strictly essential that the operating system be
 completely concealed, though we recognize that it is useful to reduce this
 differentiation ability where possible, especially for cases where the
 specific version of a system can be inferred.
+
+      </para>
+     </listitem>
+     <listitem><command>User Behavior</command>
+      <para>
+
+While somewhat outside the scope of browser fingerprinting, for completeness
+it is important to mention that users themselves theoretically might be
+fingerprinted through their behavior while interacting with a website. This
+behavior includes as keystrokes, mouse movements, click speed, and writing
+style. Basic vectors such as keystroke and mouse usage fingerprinting can be
+mitigated by altering Javascript's notion of time. More advanced issues like
+writing style fingerprinting are the domain of <ulink
+url="https://github.com/psal/anonymouth">other tools</ulink>.
 
       </para>
      </listitem>
@@ -1633,7 +1651,7 @@ image data, pure white image data is returned to the Javascript APIs.
      <para>
      </para>
     </listitem>
-    <listitem>Open TCP Port Fingerprinting
+    <listitem>Open TCP Port and Local Network Fingerprinting
      <para>
 
 In Firefox, by using either WebSockets or XHR, it is possible for remote
