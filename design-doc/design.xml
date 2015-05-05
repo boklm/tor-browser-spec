@@ -1476,10 +1476,18 @@ severe, and how to study the efficacy of defenses properly.
     <title>Sources of Fingerprinting Issues</title>
     <para>
 
-All fingerprinting issues arise from one of four primary sources in the
-browser. Additionally, user behavior itself provides one more source of
-potential fingerprinting. Listed in order from most severe to least severe in
-terms of the amount of information they reveal, these sources are:
+All browser fingerprinting issues arise from one of four primary sources:
+end-user configuration details, device and hardware characteristics, operating
+system vendor and version differences, and browser vendor and version
+differences. Additionally, user behavior itself provides one more source of
+potential fingerprinting.
+
+    </para>
+    <para>
+
+In order to help prioritize and inform defenses, we now list these sources in
+order from most severe to least severe in terms of the amount of information
+they reveal, and describe them in more detail.
 
     </para>
     <orderedlist>
@@ -1574,7 +1582,7 @@ url="https://amiunique.org/">Am I Unique</ulink>.
    </orderedlist>
   </sect3>
   <sect3 id="fingerprinting-defenses">
-   <title>Fingerprinting defenses in the Tor Browser</title>
+   <title>Fingerprinting Defenses in the Tor Browser</title>
    <para>
 
 The following defenses are listed roughly in order of most severe
