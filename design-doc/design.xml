@@ -1259,12 +1259,12 @@ False Start</ulink> via the Firefox Pref
 <command>security.ssl.enable_false_start</command>.
     </para>
     </listitem>
-    <listitem>IP address, Tor circuit, and HTTP Keep-Alive linkability
+    <listitem>Tor circuit and HTTP connection linkability
      <para>
 
-IP addresses, Tor circuits, and HTTP connections from a third party in one URL
-bar origin MUST NOT be reused for that same third party in another URL bar
-origin.
+Tor circuits and HTTP connections from a third party in one URL bar origin
+MUST NOT be reused for that same third party in another URL bar origin.
+
      </para>
      <para>
 
@@ -1275,11 +1275,10 @@ component that <ulink
 linkend="https://gitweb.torproject.org/torbutton.git/tree/src/components/domain-isolator.js">sets
 the SOCKS username and password for each request</ulink>. The Tor client has
 logic to prevent connections with different SOCKS usernames and passwords from
-using the same Tor circuit, which provides us with IP address unlinkability.
-Firefox has existing logic to ensure that connections with SOCKS proxies do not
-re-use existing HTTP Keep-Alive connections unless the proxy settings match.
-We extended this logic to cover SOCKS username and password authentication,
-providing us with HTTP Keep-Alive unlinkability.
+using the same Tor circuit. Firefox has existing logic to ensure that connections with
+SOCKS proxies do not re-use existing HTTP Keep-Alive connections unless the
+proxy settings match.  We extended this logic to cover SOCKS username and
+password authentication, providing us with HTTP Keep-Alive unlinkability.
 
      </para>
     </listitem>
@@ -1324,7 +1323,9 @@ URIs created with URL.createObjectURL MUST be limited in scope to the first
 party URL bar domain that created them. We provide this isolation in Tor
 Browser via a <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=0d67ab406bdd3cf095802cb25c081641aa1f0bcc">direct
-patch to Firefox</ulink> and disable URL.createObjectURL in a worker context as a stopgap.
+patch to Firefox</ulink> and disable URL.createObjectURL in the WebWorker
+context as a stopgap, due to an edge case with enforcing this isolation in
+WebWorkers.
 
      </para>
     </listitem>
