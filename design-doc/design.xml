@@ -1585,20 +1585,25 @@ url="https://amiunique.org/">Am I Unique</ulink>.
     <title>General Fingerprinting Defenses</title>
     <para>
 
-When implemented after an API or feature has been standardized and widely
-deployed, defenses to fingerprinting issues tend to take one of the following
-forms: value spoofing, subsystem reimplementation, virtualization, site
-permissions, and feature removal. 
+To date, the Tor Browser team has concerned itself only with developing
+defenses for APIs that have already been standardized and deployed.  Once an
+API or feature has been standardized and widely deployed, defenses to the
+associated fingerprinting issues tend to have only a few options available to
+address the lack up-front privacy design. In our experience, these options
+tend to be limited to value spoofing, subsystem reimplementation,
+virtualization, site permissions, and feature removal. We will now describe
+these options and the fingerprinting sources they tend to work best with.
 
     </para>
   <orderedlist>
    <listitem><command>Value Spoofing</command>
      <para>
 
-Value spoofing can be used for simple cases where the browser directly provides some
-aspect of the user's configuration details, devices, hardware, or operating
-system directly to a website. It becomes less useful when the fingerprinting
-method is instead relying on API behavior.
+Value spoofing can be used for simple cases where the browser directly
+provides some aspect of the user's configuration details, devices, hardware,
+or operating system directly to a website. It becomes less useful when the
+fingerprinting method relies on behavior to infer aspects of the hardware or
+operating system, rather than obtain them directly.
 
      </para>
    </listitem>
@@ -1624,30 +1629,34 @@ conceal any user-customized aspects of the system.
 Virtualization is needed when simply reimplementing a feature in a different
 way is insufficient to fully conceal the underlying behavior. This is most
 common in instances of device and hardware fingerprinting, but since the
-notion of time can also be virtualized, it also can apply to any instance
-where an accurate measure of wall clock time is required for a fingerprinting
-vector to attain high accuracy.
+notion of time can also be virtualized, virtualization also can apply to any
+instance where an accurate measurement of wall clock time is required for a
+fingerprinting vector to attain high accuracy.
 
    </para>
   </listitem>
   <listitem><command>Site Permissions</command>
    <para>
 
-In the event that virtualization is too expensive in terms of performance or
-engineering effort, and the relative expected usage of a feature is rare, site
-permissions can be used to prevent the usage of a feature except in cases
-where the user actually wishes to use it. Unfortunately, this mechanism
-becomes less effective once a feature becomes widely overused and abused by
-many websites, as warning fatigue quickly sets in for most users.
+In the event that reimplementation or virtualization is too expensive in terms
+of performance or engineering effort, and the relative expected usage of a
+feature is rare, site permissions can be used to prevent the usage of a
+feature except in cases where the user actually wishes to use it.
+Unfortunately, this mechanism becomes less effective once a feature becomes
+widely overused and abused by many websites, as warning fatigue quickly sets
+in for most users.
 
    </para>
   </listitem>
   <listitem><command>Feature/Functionality Removal</command>
    <para>
 
-When extremely invasive features serve only a narrow domain or use case, or
-there are alternate ways of accomplishing the same task, features and/or
-certain aspects of their functionality may be simply removed.
+Due to the current bias in favor of invasive APIs that expose the maximum
+amount of platform information, some features and APIs are simply not
+salvageable in their current form. When such invasive features serve only a
+narrow domain or use case, or when there are alternate ways of accomplishing
+the same task, these features and/or certain aspects of their functionality
+may be simply removed.
 
    </para>
   </listitem>
@@ -1677,12 +1686,12 @@ for the following reasons:
     <listitem><command>Randomization is not a shortcut</command>
      <para>
 
-While it appears that many end-user configuration details that the browser
-currently exposes may be safely replaced by false information, randomization
-of these details must be just as exhaustive as an approach that seeks to make
-these behaviors uniform. In the face of either strategy, the adversary can
-still make use of those features which have not been altered to be either
-sufficiently uniform or sufficiently random.
+While many end-user configuration details that the browser currently exposes
+may be safely replaced by false information, randomization of these details
+must be just as exhaustive as an approach that seeks to make these behaviors
+uniform. In the face of either strategy, the adversary can still make use of
+those features which have not been altered to be either sufficiently uniform
+or sufficiently random.
 
      </para>
      <para>
@@ -1704,8 +1713,8 @@ possible behaviors.
       <para>
 
 The fact that randomization causes behaviors to differ slightly with every
-visit makes it appealing at first glance, but this same property makes it very
-difficult to objectively measure its effectiveness. By contrast, an
+site visit makes it appealing at first glance, but this same property makes it
+very difficult to objectively measure its effectiveness. By contrast, an
 implementation that strives for uniformity is very simple to measure. Despite
 their current flaws, a properly designed version of <ulink
 url="https://panopticlick.eff.org/">Panopticlick</ulink> or <ulink
@@ -1756,9 +1765,9 @@ increased computation while loading a page.
      <listitem><command>Increased vulnerability surface</command>
       <para>
 
-Randomizing itself might introduce a new fingerprinting vector as the process
-of generating the values for the fingerprintable attributes could be itself
-susceptible to side-channel attacks, analysis, or exploitation.
+Improper randomization might introduce a new fingerprinting vector, as the
+process of generating the values for the fingerprintable attributes could be
+itself susceptible to side-channel attacks, analysis, or exploitation.
 
       </para>
      </listitem>
