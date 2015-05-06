@@ -887,7 +887,7 @@ are typically linked for these cases.
 Proxy obedience is assured through the following:
    </para>
 <orderedlist> 
- <listitem>Firefox proxy settings, patches, and build flags
+ <listitem><command>Firefox proxy settings, patches, and build flags</command>
  <para>
 
 Our <ulink
@@ -941,7 +941,7 @@ as SMB URLs and other custom protocol handlers are all blocked.
  </para>
 </listitem>
 
- <listitem>Disabling plugins
+ <listitem><command>Disabling plugins</command>
 
  <para>Plugins have the ability to make arbitrary OS system calls and  <ulink
 url="http://decloak.net/">bypass proxy settings</ulink>. This includes
@@ -973,7 +973,7 @@ address space</ulink> until they are explicitly enabled.
 
  </para>
  </listitem>
- <listitem>External App Blocking and Drag Event Filtering
+ <listitem><command>External App Blocking and Drag Event Filtering</command>
   <para>
 
 External apps can be induced to load files that perform network activity.
@@ -997,7 +997,7 @@ Torbutton</ulink> before the OS downloads the URLs the events contained.
 
   </para>
  </listitem>
- <listitem>Disabling system extensions and clearing the addon whitelist
+ <listitem><command>Disabling system extensions and clearing the addon whitelist</command>
   <para>
 
 Firefox addons can perform arbitrary activity on your computer, including
@@ -1164,7 +1164,7 @@ date:
 
    </para>
    <orderedlist>
-    <listitem>Cookies
+    <listitem><command>Cookies</command>
      <para><command>Design Goal:</command>
 
 All cookies MUST be double-keyed to the url bar origin and third-party
@@ -1184,7 +1184,7 @@ unlinkability trumps that desire.
 
      </para>
     </listitem>
-    <listitem>Cache
+    <listitem><command>Cache</command>
      <para>
 
 In Firefox, there are actually two distinct caching mechanisms: One for
@@ -1207,7 +1207,7 @@ this cache per url bar domain</ulink>.
 
      </para>
     </listitem>
-    <listitem>HTTP Auth
+    <listitem><command>HTTP Authentication</command>
      <para>
 
 HTTP Authorization headers can be used to encode <ulink
@@ -1219,7 +1219,7 @@ to nsHTTPChannel</ulink>.
 
      </para>
     </listitem>
-    <listitem>DOM Storage
+    <listitem><command>DOM Storage</command>
      <para>
 
 DOM storage for third party domains MUST be isolated to the url bar origin,
@@ -1230,7 +1230,7 @@ to Firefox</ulink>.
 
      </para>
      </listitem>
-    <listitem>Flash cookies
+    <listitem><command>Flash cookies</command>
      <para><command>Design Goal:</command>
 
 Users should be able to click-to-play flash objects from trusted sites. To
@@ -1249,7 +1249,7 @@ file on Windows, so Flash remains difficult to enable.
 
      </para>
     </listitem>
-    <listitem>SSL+TLS session resumption
+    <listitem><command>SSL+TLS session resumption</command>
      <para><command>Design Goal:</command>
 
 TLS session resumption tickets and SSL Session IDs MUST be limited to the url
@@ -1270,7 +1270,7 @@ False Start</ulink> via the Firefox Pref
 <command>security.ssl.enable_false_start</command>.
     </para>
     </listitem>
-    <listitem>Tor circuit and HTTP connection linkability
+    <listitem><command>Tor circuit and HTTP connection linkability</command>
      <para>
 
 Tor circuits and HTTP connections from a third party in one URL bar origin
@@ -1293,7 +1293,7 @@ password authentication, providing us with HTTP Keep-Alive unlinkability.
 
      </para>
     </listitem>
-    <listitem>SharedWorkers
+    <listitem><command>SharedWorkers</command>
      <para>
 
 <ulink
@@ -1315,7 +1315,7 @@ For now, we disable SharedWorkers via the pref
 
      </para>
     </listitem>
-    <listitem>blob: URIs (URL.createObjectURL)
+    <listitem><command>blob: URIs (URL.createObjectURL)</command>
      <para>
 
 The <ulink
@@ -1340,7 +1340,7 @@ WebWorkers.
 
      </para>
     </listitem>
-    <listitem>SPDY
+    <listitem><command>SPDY</command>
      <para>
 
 Because SPDY can store identifiers, it is disabled through the
@@ -1348,7 +1348,7 @@ Firefox preference <command>network.http.spdy.enabled</command>.
 
      </para>
     </listitem>
-    <listitem>Automated cross-origin redirects MUST NOT store identifiers
+    <listitem><command>Automated cross-origin redirects</command>
     <para><command>Design Goal:</command>
 
 To prevent attacks aimed at subverting the Cross-Origin Identifier
@@ -1375,7 +1375,7 @@ open</ulink> to implement what we can.
 
     </para>
     </listitem>
-     <listitem>window.name
+     <listitem><command>window.name</command>
      <para>
 
 <ulink
@@ -1397,7 +1397,7 @@ https/http schemes, the property is cleared.
 
      </para>
     </listitem>
-    <listitem>Auto form-fill
+    <listitem><command>Auto form-fill</command>
      <para>
 
 We disable the password saving functionality in the browser as part of our
@@ -1411,7 +1411,7 @@ appear, setting this preference prevents automatic linkability from stored passw
 
      </para>
     </listitem>
-     <listitem>HSTS supercookies
+     <listitem><command>HSTS supercookies</command>
       <para>
 
 An extreme (but not impossible) attack to mount is the creation of <ulink
@@ -1784,7 +1784,7 @@ Status</command>.
 
    </para>
    <orderedlist>
-    <listitem>Plugins
+    <listitem><command>Plugins</command>
      <para>
 
 Plugins add to fingerprinting risk via two main vectors: their mere presence
@@ -1821,7 +1821,7 @@ leaking plugin installation information.
 
      </para>
     </listitem>
-    <listitem>HTML5 Canvas Image Extraction
+    <listitem><command>HTML5 Canvas Image Extraction</command>
      <para>
 
 After plugins and plugin-provided information, we believe that the <ulink
@@ -1854,7 +1854,7 @@ image data, pure white image data is returned to the Javascript APIs.
      <para>
      </para>
     </listitem>
-    <listitem>Open TCP Port and Local Network Fingerprinting
+    <listitem><command>Open TCP Port and Local Network Fingerprinting</command>
      <para>
 
 In Firefox, by using either WebSockets or XHR, it is possible for remote
@@ -1883,7 +1883,7 @@ mechanism.
      </para>
 
     </listitem>
-     <listitem>Invasive Authentication Mechanisms (NTLM and SPNEGO)
+     <listitem><command>Invasive Authentication Mechanisms (NTLM and SPNEGO)</command>
      <para>
 
 Both NTLM and SPNEGO authentication mechanisms can leak the hostname, and in
@@ -1897,7 +1897,7 @@ placed behind a site permission before their use. We simply disable them.
 
      </para>
     </listitem>
-   <listitem>USB Device ID Enumeration
+   <listitem><command>USB Device ID Enumeration</command>
      <para>
 
 The <ulink
@@ -1912,7 +1912,7 @@ We simply disable it via the pref <command>dom.gamepad.enabled</command>.
 
      </para>
     </listitem>
-    <listitem>Fonts
+    <listitem><command>Fonts</command>
      <para>
 
 According to the Panopticlick study, fonts provide the most linkability when
@@ -1967,7 +1967,7 @@ font (in any order), we use that font instead of any of the named local fonts.
 
      </para>
     </listitem>
-    <listitem>Monitor, Widget, and OS Desktop Resolution
+    <listitem><command>Monitor, Widget, and OS Desktop Resolution</command>
      <para>
 
 Both CSS and Javascript have access to a lot of information about the screen
@@ -2021,7 +2021,7 @@ maximized windows are detrimental to privacy in this mode.
 
      </para>
     </listitem>
-    <listitem>Display Media information
+    <listitem><command>Display Media information</command>
      <para>
 
 Beyond simple resolution information, a large amount of so-called "Media"
@@ -2057,7 +2057,7 @@ landscape-primary</ulink> for the screen orientation.
 
      </para>
     </listitem>
-    <listitem>WebGL
+    <listitem><command>WebGL</command>
      <para>
 
 WebGL is fingerprintable both through information that is exposed about the
@@ -2088,7 +2088,7 @@ such a library would avoid hardware-specific rendering differences.
 
      </para>
     </listitem>
-    <listitem>User Agent and HTTP Headers
+    <listitem><command>User Agent and HTTP Headers</command>
      <para><command>Design Goal:</command>
 
 All Tor Browser users MUST provide websites with an identical user agent and
@@ -2109,7 +2109,7 @@ url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
 
     </listitem>
-    <listitem>Locale Fingerprinting
+    <listitem><command>Locale Fingerprinting</command>
      <para>
 
 In Tor Browser, we provide non-English users the option of concealing their OS
@@ -2129,7 +2129,7 @@ and exception handling.
 
      </para>
     </listitem>
-    <listitem>Timezone and Clock Offset
+    <listitem><command>Timezone and Clock Offset</command>
      <para>
 
 While the latency in Tor connections varies anywhere from milliseconds to
@@ -2158,7 +2158,7 @@ all platforms.
 
      </para>
     </listitem>
-    <listitem>Javascript Performance Fingerprinting
+    <listitem><command>Javascript Performance Fingerprinting</command>
      <para>
 
 <ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">Javascript performance
@@ -2201,7 +2201,7 @@ Video Statistics</ulink> API extensions via the preference
 
      </para>
     </listitem>
-    <listitem>Keystroke Fingerprinting
+    <listitem><command>Keystroke Fingerprinting</command>
      <para>
 
 Keystroke fingerprinting is the act of measuring key strike time and key
@@ -2218,7 +2218,7 @@ fingerprinting: timestamp quantization and jitter.
 We have no implementation as of yet.
      </para>
     </listitem>
-    <listitem>Operating System Type Fingerprinting
+    <listitem><command>Operating System Type Fingerprinting</command>
      <para>
 
 As we mentioned in the introduction of this section, OS type fingerprinting is
@@ -2649,7 +2649,7 @@ address the following additional sources of non-determinism:
    </para>
 
    <orderedlist>
-   <listitem>Filesystem and archive reordering
+   <listitem><command>Filesystem and archive reordering</command>
     <para>
 
 The most prevalent source of non-determinism in the components of Tor Browser
@@ -2677,7 +2677,7 @@ to aid in reproducible archive creation.
     </para>
    </listitem>
 
-   <listitem>Uninitialized memory in toolchain/archivers
+   <listitem><command>Uninitialized memory in toolchain/archivers</command>
     <para>
 
 We ran into difficulties with both binutils and the DMG archive script using
@@ -2689,7 +2689,7 @@ patch</ulink>.
 
     </para>
    </listitem>
-   <listitem>Fine-grained timestamps and timezone leaks
+   <listitem><command>Fine-grained timestamps and timezone leaks</command>
     <para>
 
 The standard way of controlling timestamps in Gitian is to use libfaketime,
@@ -2702,7 +2702,7 @@ script</ulink>. The timezone leaks were addressed by setting the
 
     </para>
    </listitem>
-   <listitem>Deliberately generated entropy
+   <listitem><command>Deliberately generated entropy</command>
     <para>
 
 In two circumstances, deliberately generated entropy was introduced in various
@@ -2730,7 +2730,7 @@ course, but we handle those another way (as mentioned above).
 
     </para>
   </listitem>
-  <listitem>LXC-specific leaks
+  <listitem><command>LXC-specific leaks</command>
    <para>
 
 Gitian provides an option to use LXC containers instead of full qemu-kvm
@@ -3158,7 +3158,7 @@ occurring.
 <sect1 id="deprecate">
  <title>Deprecation Wishlist</title>
  <orderedlist>
-  <listitem>The Referer Header
+  <listitem><command>The Referer Header</command>
   <para>
 
 We haven't disabled or restricted the Referer ourselves because of the
@@ -3198,7 +3198,7 @@ attribute.
 
   </para>
   </listitem>
-  <listitem>window.name
+  <listitem><command>window.name</command>
    <para>
 <ulink
 url="https://developer.mozilla.org/En/DOM/Window.name">window.name</ulink> is
@@ -3215,7 +3215,7 @@ cross-origin navigation, but doing so may break federated login for some sites.
 
    </para>
   </listitem>
-  <listitem>Javascript link rewriting
+  <listitem><command>Javascript link rewriting</command>
    <para>
 
 In general, it should not be possible for onclick handlers to alter the
