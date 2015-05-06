@@ -23,7 +23,7 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>April 30th, 2015</pubdate>
+   <pubdate>May 5th, 2015</pubdate>
  </articleinfo>
 
 <sect1>
@@ -241,9 +241,9 @@ to prefer one browser over another.
 
 For the purposes of the unlinkability requirements of this section as well as
 the descriptions in the <link linkend="Implementation">implementation
-section</link>, a <command>url bar origin</command> means at least the
+section</link>, a <command>URL bar origin</command> means at least the
 second-level DNS name.  For example, for mail.google.com, the origin would be
-google.com. Implementations MAY, at their option, restrict the url bar origin
+google.com. Implementations MAY, at their option, restrict the URL bar origin
 to be the entire fully qualified domain name.
 
    </para>
@@ -253,8 +253,8 @@ to be the entire fully qualified domain name.
 Identifier Unlinkability</command></link> 
   <para>
 
-User activity on one url bar origin MUST NOT be linkable to their activity in
-any other url bar origin by any third party automatically or without user
+User activity on one URL bar origin MUST NOT be linkable to their activity in
+any other URL bar origin by any third party automatically or without user
 interaction or approval. This requirement specifically applies to linkability
 from stored browser identifiers, authentication tokens, and shared state. The
 requirement does not apply to linkable information the user manually submits
@@ -268,8 +268,8 @@ login in a substantial way.
 Fingerprinting Unlinkability</command></link> 
   <para>
 
-User activity on one url bar origin MUST NOT be linkable to their activity in
-any other url bar origin by any third party. This property specifically applies to
+User activity on one URL bar origin MUST NOT be linkable to their activity in
+any other URL bar origin by any third party. This property specifically applies to
 linkability from fingerprinting browser behavior.
 
   </para>
@@ -345,7 +345,7 @@ Therefore, if plugins are to be enabled in private browsing modes, they must
 be restricted from running automatically on every page (via click-to-play
 placeholders), and/or be sandboxed to restrict the types of system calls they
 can execute. If the user agent allows the user to craft an exemption to allow
-a plugin to be used automatically, it must only apply to the top level url bar
+a plugin to be used automatically, it must only apply to the top level URL bar
 domain, and not to all sites, to reduce cross-origin fingerprinting
 linkability.
 
@@ -367,10 +367,10 @@ system-wide and/or operating system provided addons or plugins.
 Instead of global browser privacy options, privacy decisions should be made
 <ulink
 url="https://wiki.mozilla.org/Privacy/Features/Site-based_data_management_UI">per
-url bar origin</ulink> to eliminate the possibility of linkability
+URL bar origin</ulink> to eliminate the possibility of linkability
 between domains. For example, when a plugin object (or a Javascript access of
 window.plugins) is present in a page, the user should be given the choice of
-allowing that plugin object for that url bar origin only. The same
+allowing that plugin object for that URL bar origin only. The same
 goes for exemptions to third party cookie policy, geolocation, and any other
 privacy permissions.
      </para>
@@ -397,7 +397,7 @@ third parties, rather than a list of specific URLs or hosts.
      <para>
 Filter-based addons can also introduce strange breakage and cause usability
 nightmares, and will also fail to do their job if an adversary simply
-registers a new domain or creates a new url path. Worse still, the unique
+registers a new domain or creates a new URL path. Worse still, the unique
 filter sets that each user creates or installs will provide a wealth of
 fingerprinting targets.
       </para>
@@ -534,7 +534,7 @@ In some cases, the adversary may opt for a heavy-handed approach, such as
 seizing the computers of all Tor users in an area (especially after narrowing
 the field by the above two pieces of information). History records and cache
 data are the primary goals here. Secondary goals may include confirming
-on-disk identifiers (such as hostname and disk-logged spoofed MAC adddress
+on-disk identifiers (such as hostname and disk-logged spoofed MAC address
 history) obtained by other means.
 
      </para>
@@ -699,7 +699,7 @@ AdBlock and other privacy filters can be used to fingerprint request patterns
 
 Javascript can reveal a lot of fingerprinting information. It provides DOM
 objects such as window.screen and window.navigator to extract information
-about the useragent. 
+about the user agent. 
 
 Also, Javascript can be used to query the user's timezone via the
 <function>Date()</function> object, <ulink
@@ -931,7 +931,7 @@ activity in the source tree that did not use the browser proxy settings.
 
 We have verified that these settings and patches properly proxy HTTPS, OCSP,
 HTTP, FTP, gopher (now defunct), DNS, SafeBrowsing Queries, all JavaScript
-activity, including HTML5 audio and video objects, addon updates, wifi
+activity, including HTML5 audio and video objects, addon updates, WiFi
 geolocation queries, searchbox queries, XPCOM addon HTTPS/HTTP activity,
 WebSockets, and live bookmark updates. We have also verified that IPv6
 connections are not attempted, through the proxy or otherwise (Tor does not
@@ -1126,10 +1126,10 @@ referred to as "double-keying".
 
 The benefit of this approach comes not only in the form of reduced
 linkability, but also in terms of simplified privacy UI. If all stored browser
-state and permissions become associated with the url bar origin, the six or
+state and permissions become associated with the URL bar origin, the six or
 seven different pieces of privacy UI governing these identifiers and
 permissions can become just one piece of UI. For instance, a window that lists
-the url bar origin for which browser state exists, possibly with a
+the URL bar origin for which browser state exists, possibly with a
 context-menu option to drill down into specific types of state or permissions.
 An example of this simplification can be seen in Figure 1.
 
@@ -1144,7 +1144,7 @@ An example of this simplification can be seen in Figure 1.
 
 This example UI is a mock-up of how isolating identifiers to the URL bar
 origin can simplify the privacy UI for all data - not just cookies. Once
-browser identifiers and site permissions operate on a url bar basis, the same
+browser identifiers and site permissions operate on a URL bar basis, the same
 privacy window can represent browsing history, DOM Storage, HTTP Auth, search
 form history, login values, and so on within a context menu for each site.
 
@@ -1167,11 +1167,11 @@ date:
     <listitem><command>Cookies</command>
      <para><command>Design Goal:</command>
 
-All cookies MUST be double-keyed to the url bar origin and third-party
+All cookies MUST be double-keyed to the URL bar origin and third-party
 origin. There exists a <ulink
 url="https://bugzilla.mozilla.org/show_bug.cgi?id=565965">Mozilla bug</ulink>
 that contains a prototype patch, but it lacks UI, and does not apply to modern
-Firefoxes.
+Firefox versions.
 
      </para>
      <para><command>Implementation Status:</command>
@@ -1203,7 +1203,7 @@ property prepended, which will list the FQDN that was used to source it.
 Additionally, because the image cache is a separate entity from the content
 cache, we had to patch Firefox to also <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=d8b98a75fb200268c40886d876adc19e00b933bf">isolate
-this cache per url bar domain</ulink>.
+this cache per URL bar domain</ulink>.
 
      </para>
     </listitem>
@@ -1222,7 +1222,7 @@ to nsHTTPChannel</ulink>.
     <listitem><command>DOM Storage</command>
      <para>
 
-DOM storage for third party domains MUST be isolated to the url bar origin,
+DOM storage for third party domains MUST be isolated to the URL bar origin,
 to prevent linkability between sites. This functionality is provided through a
 <ulink
 url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=97490c4a90ca1c43374486d9ec0c5593d5fe5720">patch
@@ -1252,7 +1252,7 @@ file on Windows, so Flash remains difficult to enable.
     <listitem><command>SSL+TLS session resumption</command>
      <para><command>Design Goal:</command>
 
-TLS session resumption tickets and SSL Session IDs MUST be limited to the url
+TLS session resumption tickets and SSL Session IDs MUST be limited to the URL
 bar origin.
 
      </para>
@@ -1355,8 +1355,8 @@ To prevent attacks aimed at subverting the Cross-Origin Identifier
 Unlinkability <link linkend="privacy">privacy requirement</link>, the browser
 MUST NOT store any identifiers (cookies, cache, DOM storage, HTTP auth, etc)
 for cross-origin redirect intermediaries that do not prompt for user input.
-For example, if a user clicks on a bit.ly url that redirects to a
-doubleclick.net url that finally redirects to a cnn.com url, only cookies from
+For example, if a user clicks on a bit.ly URL that redirects to a
+doubleclick.net URL that finally redirects to a cnn.com URL, only cookies from
 cnn.com should be retained after the redirect chain completes.
 
     </para>
@@ -1393,7 +1393,7 @@ that utilize this property to function, we reset the window.name property of
 tabs in Torbutton every time we encounter a blank Referer. This behavior
 allows window.name to persist for the duration of a click-driven navigation
 session, but as soon as the user enters a new URL or navigates between
-https/http schemes, the property is cleared.
+HTTPS/HTTP schemes, the property is cleared.
 
      </para>
     </listitem>
@@ -1425,7 +1425,7 @@ cookies based on stored HSTS state.
 
 There appears to be three options for us: 1. Disable HSTS entirely, and rely
 instead on HTTPS-Everywhere to crawl and ship rules for HSTS sites. 2.
-Restrict the number of HSTS-enabled third parties allowed per url bar origin.
+Restrict the number of HSTS-enabled third parties allowed per URL bar origin.
 3. Prevent third parties from storing HSTS rules. We have not yet decided upon
 the best approach.
 
@@ -1607,7 +1607,7 @@ method is instead relying on API behavior.
 
 In cases where simple spoofing is not enough to properly conceal underlying
 device characteristics or operating system details, the underlying
-susbsystem that provides the functionality for a feature or API may need
+subsystem that provides the functionality for a feature or API may need
 to be completely reimplemented. This is most common in cases where
 customizable or version-specific aspects of the user's operating system are
 visible through the browser's featureset or APIs, usually because the browser
@@ -1625,7 +1625,7 @@ Virtualization is needed when simply reimplementing a feature in a different
 way is insufficient to fully conceal the underlying behavior. This is most
 common in instances of device and hardware fingerprinting, but since the
 notion of time can also be virtualized, it also can apply to any instance
-where an accurate measure of wallclock time is required for a fingerprinting
+where an accurate measure of wall clock time is required for a fingerprinting
 vector to attain high accuracy.
 
    </para>
@@ -1635,7 +1635,7 @@ vector to attain high accuracy.
 
 In the event that virtualization is too expensive in terms of performance or
 engineering effort, and the relative expected usage of a feature is rare, site
-permissions can be used to prevent the usage of a feature execpt in cases
+permissions can be used to prevent the usage of a feature except in cases
 where the user actually wishes to use it. Unfortunately, this mechanism
 becomes less effective once a feature becomes widely overused and abused by
 many websites, as warning fatigue quickly sets in for most users.
@@ -1645,7 +1645,7 @@ many websites, as warning fatigue quickly sets in for most users.
   <listitem><command>Feature/Functionality Removal</command>
    <para>
 
-When extremely invasive features serve only a narrow domain or usecase, or
+When extremely invasive features serve only a narrow domain or use case, or
 there are alternate ways of accomplishing the same task, features and/or
 certain aspects of their functionality may be simply removed.
 
@@ -1721,7 +1721,7 @@ sense of security. When a fingerprinting attempt makes naive use of randomized
 information, a fingerprint will appear unstable, but may not actually be
 sufficiently randomized to prevent a dedicated adversary.  Sophisticated
 fingerprinting mechanisms may either ignore randomized information, or
-incorportate knowledge of the distribution and range of randomized values into
+incorporate knowledge of the distribution and range of randomized values into
 the creation of a more stable fingerprint (by either removing the randomness,
 modeling it, or averaging it).
 
@@ -1916,7 +1916,7 @@ We simply disable it via the pref <command>dom.gamepad.enabled</command>.
      <para>
 
 According to the Panopticlick study, fonts provide the most linkability when
-they are provided as an enumerable list in filesystem order, via either the
+they are provided as an enumerable list in file system order, via either the
 Flash or Java plugins. However, it is still possible to use CSS and/or
 Javascript to query for the existence of specific fonts. With a large enough
 pre-built list to query, a large amount of fingerprintable information may
@@ -1936,7 +1936,7 @@ and <ulink url="https://fedorahosted.org/lohit/">Lohit fonts</ulink>. The Droid
 font set is fairly complete by itself, but Nanum and Lohit have smaller
 versions of many South Asian languages. When combined in a way that chooses the
 smallest font implementations for each locale, these three font sets provide
-poverage for the all languages used on Wikipedia with more than
+coverage for the all languages used on Wikipedia with more than
 10,000 articles, and several others as well, in approximately 3MB of compressed
 overhead. The <ulink url="https://www.google.com/get/noto/">Noto font
 set</ulink> is another font set that aims for complete coverage, but is
@@ -2461,7 +2461,7 @@ encrypted website activity.
 We want to deploy a mechanism that reduces the accuracy of <ulink
 url="https://en.wikipedia.org/wiki/Feature_selection">useful features</ulink> available
 for classification. This mechanism would either impact the true and false
-positive accuracy rates, <emphasis>or</emphasis> reduce the number of webpages
+positive accuracy rates, <emphasis>or</emphasis> reduce the number of web pages
 that could be classified at a given accuracy rate.
 
      </para>
@@ -2655,7 +2655,7 @@ address the following additional sources of non-determinism:
 The most prevalent source of non-determinism in the components of Tor Browser
 by far was various ways that archives (such as zip, tar, jar/ja, DMG, and
 Firefox manifest lists) could be reordered. Many file archivers walk the
-filesystem in inode structure order by default, which will result in ordering
+file system in inode structure order by default, which will result in ordering
 differences between two different archive invocations, especially on machines
 of different disk and hardware configurations.
 
@@ -3166,7 +3166,7 @@ non-trivial number of sites that rely on the Referer header to "authenticate"
 image requests and deep-link navigation on their sites. Furthermore, there
 seems to be no real privacy benefit to taking this action by itself in a
 vacuum, because many sites have begun encoding Referer URL information into
-GET parameters when they need it to cross http to https scheme transitions.
+GET parameters when they need it to cross HTTP to HTTPS scheme transitions.
 Google's +1 buttons are the best example of this activity.
 
   </para>
