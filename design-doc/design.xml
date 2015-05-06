@@ -1589,8 +1589,8 @@ To date, the Tor Browser team has concerned itself only with developing
 defenses for APIs that have already been standardized and deployed. Once an
 API or feature has been standardized and widely deployed, defenses to the
 associated fingerprinting issues tend to have only a few options available to
-compensate for the lack of up-front privacy design. In our experience, these
-options are usually limited to value spoofing, subsystem reimplementation,
+compensate for the lack of up-front privacy design. In our experience, so far
+these options have been limited to value spoofing, subsystem reimplementation,
 virtualization, site permissions, and feature removal. We will now describe
 these options and the fingerprinting sources they tend to work best with.
 
