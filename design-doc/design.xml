@@ -1897,7 +1897,9 @@ these requests are still sent by Firefox to our SOCKS proxy (ie we set
 <command>network.proxy.no_proxies_on</command> to the empty string). The local
 Tor client then rejects them, since it is configured to proxy for internal IP
 addresses by default. Access to the local network is forbidden via the same
-mechanism.
+mechanism. We also disable the WebRTC API as mentioned previously, since even
+if it were usable over Tor, it still currently provides the local IP address
+and associated network information to websites.
 
      </para>
 
@@ -1916,7 +1918,7 @@ placed behind a site permission before their use. We simply disable them.
 
      </para>
     </listitem>
-   <listitem><command>USB Device ID Enumeration</command>
+   <listitem><command>USB Device ID Enumeration via the GamePad API</command>
      <para>
 
 The <ulink
@@ -1924,10 +1926,19 @@ url="https://developer.mozilla.org/en-US/docs/Web/Guide/API/Gamepad">GamePad
 API</ulink> provides web pages with the <ulink
 url="https://dvcs.w3.org/hg/gamepad/raw-file/default/gamepad.html#widl-Gamepad-id">USB
 device id, product id, and driver name</ulink> of all connected game
-controllers, as well as detailed information about their capabilities. This API
-should be behind a site permission in Private Browsing Modes, or should present a generic 
-controller type (perhaps a two button controller that can be mapped to the keyboard) in all cases.
-We simply disable it via the pref <command>dom.gamepad.enabled</command>.
+controllers, as well as detailed information about their capabilities.
+    </para>
+    <para>
+
+It's our opinion that this API needs to be completely redesigned to provide an
+abstract notion of a game controller rather than offloading all of the
+complexity associated with handling specific game controller models to web
+content authors. For systems without a game controller, a standard controller
+can be virtualized through the keyboard, which will serve to both improve
+usability by normalizing user interaction with different games, as well as
+eliminate fingerprinting vectors. Barring that, this API should be behind a
+site permission in Private Browsing Modes. For now though, we simply disable
+it via the pref <command>dom.gamepad.enabled</command>.
 
      </para>
     </listitem>
