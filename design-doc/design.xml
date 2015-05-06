@@ -1586,11 +1586,11 @@ url="https://amiunique.org/">Am I Unique</ulink>.
     <para>
 
 To date, the Tor Browser team has concerned itself only with developing
-defenses for APIs that have already been standardized and deployed.  Once an
+defenses for APIs that have already been standardized and deployed. Once an
 API or feature has been standardized and widely deployed, defenses to the
 associated fingerprinting issues tend to have only a few options available to
-address the lack up-front privacy design. In our experience, these options
-tend to be limited to value spoofing, subsystem reimplementation,
+compensate for the lack up-front privacy design. In our experience, these
+options tend to be limited to value spoofing, subsystem reimplementation,
 virtualization, site permissions, and feature removal. We will now describe
 these options and the fingerprinting sources they tend to work best with.
 
@@ -1641,14 +1641,14 @@ fingerprinting vector to attain high accuracy.
 In the event that reimplementation or virtualization is too expensive in terms
 of performance or engineering effort, and the relative expected usage of a
 feature is rare, site permissions can be used to prevent the usage of a
-feature except in cases where the user actually wishes to use it.
-Unfortunately, this mechanism becomes less effective once a feature becomes
-widely overused and abused by many websites, as warning fatigue quickly sets
-in for most users.
+feature for cross-site tracking. Unfortunately, site permissions become less
+effective once a feature is already widely overused and abused by many
+websites, since warning fatigue typically sets in for most users after just a
+few permission requests.
 
    </para>
   </listitem>
-  <listitem><command>Feature/Functionality Removal</command>
+  <listitem><command>Feature or Functionality Removal</command>
    <para>
 
 Due to the current bias in favor of invasive APIs that expose the maximum
@@ -1666,9 +1666,9 @@ may be simply removed.
    <title>Randomization or Uniformity?</title>
     <para>
 
-When applying a form of defense to a specific fingerprinting vector or source, 
+When applying a form of defense to a specific fingerprinting vector or source,
 there are two general strategies available. Either the implementation for all
-users of a single browser implementation can be made to behave as uniformly as
+users of a single browser version can be made to behave as uniformly as
 possible, or the user agent can attempt to randomize its behavior, so that
 each interaction between a user and a site provides a different fingerprint.
 
@@ -1689,9 +1689,9 @@ for the following reasons:
 While many end-user configuration details that the browser currently exposes
 may be safely replaced by false information, randomization of these details
 must be just as exhaustive as an approach that seeks to make these behaviors
-uniform. In the face of either strategy, the adversary can still make use of
-those features which have not been altered to be either sufficiently uniform
-or sufficiently random.
+uniform. When confronting either strategy, the adversary can still make use of
+any details which have not been altered to be either sufficiently uniform or
+sufficiently random.
 
      </para>
      <para>
@@ -1700,12 +1700,12 @@ Furthermore, the randomization approach seems to break down when it is applied
 to deeper issues where underlying system functionality is directly exposed. In
 particular, it is not clear how to randomize the capabilities of hardware
 attached to a computer in such a way that it either convincingly behaves like
-other hardware, or where the exact properties of the hardware that vary from
-user to user are sufficiently randomized. Similarly, truly concealing operating
-system version differences through randomization may require reimplementation
-of the underlying operating system functionality to ensure that every version
-that your randomization is trying to blend in with is covered by the range of
-possible behaviors.
+other hardware, or such that the exact properties of the hardware that vary
+from user to user are sufficiently randomized. Similarly, truly concealing
+operating system version differences through randomization may require
+multiple reimplementations of the underlying operating system functionality to
+ensure that every operating system version is covered by the range of possible
+behaviors.
 
      </para>
      </listitem>
@@ -1732,7 +1732,7 @@ sufficiently randomized to prevent a dedicated adversary.  Sophisticated
 fingerprinting mechanisms may either ignore randomized information, or
 incorporate knowledge of the distribution and range of randomized values into
 the creation of a more stable fingerprint (by either removing the randomness,
-modeling it, or averaging it).
+modeling it, or averaging it out).
 
       </para>
      </listitem>
@@ -1741,10 +1741,10 @@ modeling it, or averaging it).
 
 When randomization is introduced to features that affect site behavior, it can
 be very distracting for this behavior to change between visits of a given
-site. For simple cases such as when this information affects layout behavior, 
-this will lead to visual nuisances. However, when this information affects
-reported functionality or hardware characteristics, sometimes a site will
-function one way on one visit, and another way on a subsequent visit.
+site. For the simplest cases, this will lead to minor visual nuisances.
+However, when this information affects reported functionality or hardware
+characteristics, sometimes a site will function one way on one visit, and
+another way on a subsequent visit.
 
       </para>
      </listitem>
