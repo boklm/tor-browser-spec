@@ -1118,7 +1118,7 @@ isolation means that all identifier sources and browser state are scoped
 (isolated) using the URL bar domain. This scoping is performed in
 combination with any additional third party scope. When first party isolation
 is used with explicit identifier storage that already has a constrained third
-party scope (such as cookies, DOM storage, and cache), this approach is
+party scope (such as cookies and DOM storage), this approach is
 referred to as "double-keying".
 
    </para>
