@@ -1570,7 +1570,7 @@ is only possible to minimize the differences among different installations of
 the same browser vendor and version. We make no effort to mimic any other
 major browser vendor, and in fact most of our fingerprinting defenses serve to
 differentiate Tor Browser users from normal Firefox users. Because of this,
-any study that lumps browser vendor and version differences in to its analysis
+any study that lumps browser vendor and version differences into its analysis
 of the fingerprintability of a population is largely useless for evaluating
 either attacks or defenses. Unfortunately, this includes popular large-scale
 studies such as <ulink
@@ -1589,8 +1589,8 @@ To date, the Tor Browser team has concerned itself only with developing
 defenses for APIs that have already been standardized and deployed. Once an
 API or feature has been standardized and widely deployed, defenses to the
 associated fingerprinting issues tend to have only a few options available to
-compensate for the lack up-front privacy design. In our experience, these
-options tend to be limited to value spoofing, subsystem reimplementation,
+compensate for the lack of up-front privacy design. In our experience, these
+options are usually limited to value spoofing, subsystem reimplementation,
 virtualization, site permissions, and feature removal. We will now describe
 these options and the fingerprinting sources they tend to work best with.
 
