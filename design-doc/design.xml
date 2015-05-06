@@ -1585,98 +1585,187 @@ url="https://amiunique.org/">Am I Unique</ulink>.
     <title>General Fingerprinting Defenses</title>
     <para>
 
-XXX: Stategies vs approaches? Approaches will include things like
-virtualization, spoofing, reimplementation, permissions, and disabling features..
+When implemented after an API or feature has been standardized and widely
+deployed, defenses to fingerprinting issues tend to take one of the following
+forms: value spoofing, subsystem reimplementation, virtualization, site
+permissions, and feature removal. 
 
-Without looking at a particular fingerprinting vector there are basically two
-strategies to thwart fingerprinting attacks in general:
+    </para>
+  <orderedlist>
+   <listitem><command>Value Spoofing</command>
+     <para>
 
-<orderedlist>
-  <listitem>
-    Making users uniform: This would render fingerprinting moot as it only works
-    if there are detectable differences between targets.
+Value spoofing can be used for simple cases where the browser directly provides some
+aspect of the user's configuration details, devices, hardware, or operating
+system directly to a website. It becomes less useful when the fingerprinting
+method is instead relying on API behavior.
+
+     </para>
+   </listitem>
+   <listitem><command>Subsystem Reimplementation</command>
+   <para>
+
+In cases where simple spoofing is not enough to properly conceal underlying
+device characteristics or operating system details, the underlying
+susbsystem that provides the functionality for a feature or API may need
+to be completely reimplemented. This is most common in cases where
+customizable or version-specific aspects of the user's operating system are
+visible through the browser's featureset or APIs, usually because the browser
+directly exposes OS-provided implementations of underlying features. In these
+cases, such OS-provided implementations must be replaced by a generic
+implementation, or at least an implementation wrapper that makes effort to
+conceal any user-customized aspects of the system.
+
+   </para>
   </listitem>
-  <listitem>
-    Giving randomized values back: This would bury the real device
-    characteristics within noise. That way a fingerprinter cannot be sure to
-    identify a user upon (re-)visit of a website which is rendering
-    fingerprinting ineffective.
+  <listitem><command>Virtualization</command>
+   <para>
+
+Virtualization is needed when simply reimplementing a feature in a different
+way is insufficient to fully conceal the underlying behavior. This is most
+common in instances of device and hardware fingerprinting, but since the
+notion of time can also be virtualized, it also can apply to any instance
+where an accurate measure of wallclock time is required for a fingerprinting
+vector to attain high accuracy.
+
+   </para>
   </listitem>
-  <listitem>Virtualization..</listitem>
-  <listitem>Disabling features</listitem>
-</orderedlist>
+  <listitem><command>Site Permissions</command>
+   <para>
 
-Although there is some research <ulink
-url="http://research.microsoft.com/pubs/209989/tr1.pdf">suggesting</ulink> the
-second approach we think the former is currently a better suited heuristic for
-Tor Browser for a couple of reasons:
+In the event that virtualization is too expensive in terms of performance or
+engineering effort, and the relative expected usage of a feature is rare, site
+permissions can be used to prevent the usage of a feature execpt in cases
+where the user actually wishes to use it. Unfortunately, this mechanism
+becomes less effective once a feature becomes widely overused and abused by
+many websites, as warning fatigue quickly sets in for most users.
 
-   <itemizedlist>
-     <listitem>
+   </para>
+  </listitem>
+  <listitem><command>Feature/Functionality Removal</command>
+   <para>
 
-It might not be possible to randomize all fingerprintable characteristics.
-While it seems plausible that many end-user configuration details that the
-browser currently exposes may be replaced by false information, this approach
-seems to break down when it is applied to deeper issues. In particular, it is
-not clear how to randomize the capabilities of hardware attached to a computer
-in such a way that it convincingly behaves like other hardware, while still
-providing a consistent experience to the user from site to site. Similarly,
-concealing operating system version differences through randomization will
-require an implementation of the underlying support code for every version
-your randomization is trying to mimick. 
+When extremely invasive features serve only a narrow domain or usecase, or
+there are alternate ways of accomplishing the same task, features and/or
+certain aspects of their functionality may be simply removed.
 
-In both cases, randomizatin requires virtualization of many underlying
-implementations, where as uniformity only requires virtualization of one
-implementation.
+   </para>
+  </listitem>
+  </orderedlist>
+  </sect3>
+  <sect3>
+   <title>Randomization or Uniformity?</title>
+    <para>
 
-XXX Virtualization
+When applying a form of defense to a specific fingerprinting vector or source, 
+there are two general strategies available. Either the implementation for all
+users of a single browser implementation can be made to behave as uniformly as
+possible, or the user agent can attempt to randomize its behavior, so that
+each interaction between a user and a site provides a different fingerprint.
 
+    </para>
+    <para>
+
+Although <ulink url="http://research.microsoft.com/pubs/209989/tr1.pdf">some
+research suggests</ulink> that randomization can be effective, so far striving
+for uniformity has generally proved to be a better strategy for Tor Browser
+for the following reasons:
+
+    </para>
+
+   <orderedlist>
+    <listitem><command>Randomization is not a shortcut</command>
+     <para>
+
+While it appears that many end-user configuration details that the browser
+currently exposes may be safely replaced by false information, randomization
+of these details must be just as exhaustive as an approach that seeks to make
+these behaviors uniform. In the face of either strategy, the adversary can
+still make use of those features which have not been altered to be either
+sufficiently uniform or sufficiently random.
+
+     </para>
+     <para>
+
+Furthermore, the randomization approach seems to break down when it is applied
+to deeper issues where underlying system functionality is directly exposed. In
+particular, it is not clear how to randomize the capabilities of hardware
+attached to a computer in such a way that it either convincingly behaves like
+other hardware, or where the exact properties of the hardware that vary from
+user to user are sufficiently randomized. Similarly, truly concealing operating
+system version differences through randomization may require reimplementation
+of the underlying operating system functionality to ensure that every version
+that your randomization is trying to blend in with is covered by the range of
+possible behaviors.
+
+     </para>
      </listitem>
-     <listitem>
-Usability.
+     <listitem><command>Evaluation and measurement difficulties</command>
+      <para>
+
+The fact that randomization causes behaviors to differ slightly with every
+visit makes it appealing at first glance, but this same property makes it very
+difficult to objectively measure its effectiveness. By contrast, an
+implementation that strives for uniformity is very simple to measure. Despite
+their current flaws, a properly designed version of <ulink
+url="https://panopticlick.eff.org/">Panopticlick</ulink> or <ulink
+url="https://amiunique.org/">Am I Unique</ulink> could report the entropy and
+uniqueness rates for all users of a single user agent version, without the
+need for complicated statistics about the variance of the measured behaviors.
+
+      </para>
+      <para>
+
+Randomization (especially incomplete randomization) may also provide a false
+sense of security. When a fingerprinting attempt makes naive use of randomized
+information, a fingerprint will appear unstable, but may not actually be
+sufficiently randomized to prevent a dedicated adversary.  Sophisticated
+fingerprinting mechanisms may either ignore randomized information, or
+incorportate knowledge of the distribution and range of randomized values into
+the creation of a more stable fingerprint (by either removing the randomness,
+modeling it, or averaging it).
+
+      </para>
      </listitem>
-     <listitem>
+     <listitem><command>Usability issues</command>
+      <para>
 
-It might not be easy to randomize values in a way that they are not
-distinguishable from noise. In particular, naive randomization 
+When randomization is introduced to features that affect site behavior, it can
+be very distracting for this behavior to change between visits of a given
+site. For simple cases such as when this information affects layout behavior, 
+this will lead to visual nuisances. However, when this information affects
+reported functionality or hardware characteristics, sometimes a site will
+function one way on one visit, and another way on a subsequent visit.
 
+      </para>
      </listitem>
-     <listitem>
+     <listitem><command>Performance costs</command>
 
-Hard to measure success.
-
-     </listitem>
-     <listitem>
-
-Completeness. Randomization may provide a false sense of security - any items
-that are not randomized, or for which the randomization can be averaged away
-will still be desirable targets.
-
-     </listitem>
-     <listitem>
+      <para>
 
 Randomizing involves performance costs. This is especially true if the
 fingerprinting surface is large (like in a modern browser) and one needs more
 elaborate randomizing strategies (including randomized virtualization) to
-ensure that the randomization fully conceals the true behavior.
+ensure that the randomization fully conceals the true behavior. Many calls to
+a cryptographically secure random number generator during the course of a page
+load will both serve to exhaust available entropy pools, as well as lead to
+increased computation while loading a page.
 
+      </para>
      </listitem>
-     <listitem>
-       Randomizing itself might introduce a new fingerprinting vector as the
-       process of generating the values for the fingerprintable attributes
-       could be susceptible to timing side-channel attacks.
+     <listitem><command>Increased vulnerability surface</command>
+      <para>
+
+Randomizing itself might introduce a new fingerprinting vector as the process
+of generating the values for the fingerprintable attributes could be itself
+susceptible to side-channel attacks, analysis, or exploitation.
+
+      </para>
      </listitem>
-  </itemizedlist>
-  We'll see in the next section that the idea of making users uniform does not
-  work either in the general way expressed above mainly due to usability issues.
-  However, we believe that it avoids a lot of the complications involved in
-  randomization even if just used as a guiding principle.
-    </para>
+  </orderedlist>
   </sect3>
-
-
   <sect3 id="fingerprinting-defenses">
-   <title>Fingerprinting Defenses in the Tor Browser</title>
+   <title>Specific Fingerprinting Defenses in the Tor Browser</title>
    <para>
 
 The following defenses are listed roughly in order of most severe
