@@ -1449,26 +1449,34 @@ url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability&am
    <para>
 
 Browser fingerprinting is the act of inspecting browser behaviors and features in
-an attempt to differentiate and track individual users. Fingerprinting attacks
-are typically broken up into passive and active vectors. Passive
-fingerprinting makes use of any information the browser provides automatically
-to a website without any specific action on the part of the website. Active
-fingerprinting makes use of any information that can be extracted from the
-browser by some specific website action, usually involving Javascript.
-Some definitions of browser fingerprinting also include supercookies and
-cookie-like identifier storage, but we deal with those issues separately in
-the <link linkend="identifier-linkability">preceding section on identifier
-linkability</link>.
+an attempt to differentiate and track individual users.
+  </para>
+  <para>
+
+Fingerprinting attacks are typically broken up into passive and active
+vectors. Passive fingerprinting makes use of any information the browser
+provides automatically to a website without any specific action on the part of
+the website. Active fingerprinting makes use of any information that can be
+extracted from the browser by some specific website action, usually involving
+Javascript.  Some definitions of browser fingerprinting also include
+supercookies and cookie-like identifier storage, but we deal with those issues
+separately in the <link linkend="identifier-linkability">preceding section on
+identifier linkability</link>.
+    </para>
+    <para>
+For the most part, however, we do not differentiate between passive or active
+fingerprinting sources, since many active fingerprinting mechanisms are very
+rapid, and can be obfuscated or disguised as legitimate functionality.
 
    </para>
     <para>
 
-For the most part, however, we do not differentiate between passive or active
-fingerprinting sources, since many active fingerprinting mechanisms are very
-rapid, and can be obfuscated or disguised as legitimate functionality.
 Instead, we believe fingerprinting can only be rationally addressed if we
 understand where the problem comes from, what sources of issues are the most
-severe, and how to study the efficacy of defenses properly.
+severe, what types of defenses are suitable for which sources, and have a
+consistent strategy for designing defenses that maximizes our ability to study
+defense efficacy. The following subsections address these issues from a high
+level, and we then conclude with a list of our current specific defenses.
 
     </para>
 
@@ -1500,9 +1508,10 @@ identify a user. We believe it is essential to avoid exposing platform
 configuration details to website content at all costs. We also discourage
 excessive fine-grained customization of Tor Browser by minimizing and
 aggregating user-facing privacy and security options, as well as by
-discouraging the use of additional addons. When it is necessary to expose
-configuration details in the course of providing functionality, we strive to
-do so only on a per-site basis via site permissions, to avoid linkability.
+discouraging the use of additional plugins and addons. When it is necessary to
+expose configuration details in the course of providing functionality, we
+strive to do so only on a per-site basis via site permissions, to avoid
+linkability.
 
      </para>
     </listitem>
@@ -1514,9 +1523,9 @@ be reported explicitly by the browser, they can be inferred through browser
 functionality, or they can be extracted through statistical measurements of
 system performance. We are most concerned with the cases where this
 information is either directly reported or can be determined via a single use
-of an API or feature, and prefer to place such APIs either behind site
-permissions, alter their functionality to prevent exposing the most variable
-aspects of these characteristics, or disable them entirely.
+of an API or feature, and prefer to either alter functionality to prevent
+exposing the most variable aspects of these characteristics, place such
+features behind site permissions, or disable them entirely.
 
       </para>
       <para>
@@ -1556,7 +1565,7 @@ behavior includes e.g. keystrokes, mouse movements, click speed, and writing
 style. Basic vectors such as keystroke and mouse usage fingerprinting can be
 mitigated by altering Javascript's notion of time. More advanced issues like
 writing style fingerprinting are the domain of <ulink
-url="https://github.com/psal/anonymouth">other tools</ulink>.
+url="https://github.com/psal/anonymouth/blob/master/README.md">other tools</ulink>.
 
       </para>
      </listitem>
@@ -1590,9 +1599,10 @@ defenses for APIs that have already been standardized and deployed. Once an
 API or feature has been standardized and widely deployed, defenses to the
 associated fingerprinting issues tend to have only a few options available to
 compensate for the lack of up-front privacy design. In our experience, so far
-these options have been limited to value spoofing, subsystem reimplementation,
-virtualization, site permissions, and feature removal. We will now describe
-these options and the fingerprinting sources they tend to work best with.
+these options have been limited to value spoofing, subsystem modification or
+reimplementation, virtualization, site permissions, and feature removal. We
+will now describe these options and the fingerprinting sources they tend to
+work best with.
 
     </para>
   <orderedlist>
@@ -1607,18 +1617,18 @@ operating system, rather than obtain them directly.
 
      </para>
    </listitem>
-   <listitem><command>Subsystem Reimplementation</command>
+   <listitem><command>Subsystem Modification or Reimplementation</command>
    <para>
 
 In cases where simple spoofing is not enough to properly conceal underlying
-device characteristics or operating system details, the underlying
-subsystem that provides the functionality for a feature or API may need
-to be completely reimplemented. This is most common in cases where
-customizable or version-specific aspects of the user's operating system are
-visible through the browser's featureset or APIs, usually because the browser
-directly exposes OS-provided implementations of underlying features. In these
-cases, such OS-provided implementations must be replaced by a generic
-implementation, or at least an implementation wrapper that makes effort to
+device characteristics or operating system details, the underlying subsystem
+that provides the functionality for a feature or API may need to be modified
+or completely reimplemented. This is most common in cases where customizable
+or version-specific aspects of the user's operating system are visible through
+the browser's featureset or APIs, usually because the browser directly exposes
+OS-provided implementations of underlying features. In these cases, such
+OS-provided implementations must be replaced by a generic implementation, or
+at least modified by an implementation wrapper layer that makes effort to
 conceal any user-customized aspects of the system.
 
    </para>
@@ -1663,13 +1673,13 @@ may be simply removed.
   </orderedlist>
   </sect3>
   <sect3>
-   <title>Randomization or Uniformity?</title>
+   <title>Strategies for Defense: Randomization versus Uniformity</title>
     <para>
 
 When applying a form of defense to a specific fingerprinting vector or source,
-there are two general strategies available. Either the implementation for all
+there are two general strategies available: either the implementation for all
 users of a single browser version can be made to behave as uniformly as
-possible, or the user agent can attempt to randomize its behavior, so that
+possible, or the user agent can attempt to randomize its behavior so that
 each interaction between a user and a site provides a different fingerprint.
 
     </para>
@@ -1683,6 +1693,33 @@ for the following reasons:
     </para>
 
    <orderedlist>
+     <listitem><command>Evaluation and measurement difficulties</command>
+      <para>
+
+The fact that randomization causes behaviors to differ slightly with every
+site visit makes it appealing at first glance, but this same property makes it
+very difficult to objectively measure its effectiveness. By contrast, an
+implementation that strives for uniformity is very simple to evaluate. Despite
+their current flaws, a properly designed version of <ulink
+url="https://panopticlick.eff.org/">Panopticlick</ulink> or <ulink
+url="https://amiunique.org/">Am I Unique</ulink> could report the entropy and
+uniqueness rates for all users of a single user agent version, without the
+need for complicated statistics about the variance of the measured behaviors.
+
+      </para>
+      <para>
+
+Randomization (especially incomplete randomization) may also provide a false
+sense of security. When a fingerprinting attempt makes naive use of randomized
+information, a fingerprint will appear unstable, but may not actually be
+sufficiently randomized to impede a dedicated adversary.  Sophisticated
+fingerprinting mechanisms may either ignore randomized information, or
+incorporate knowledge of the distribution and range of randomized values into
+the creation of a more stable fingerprint (by either removing the randomness,
+modeling it, or averaging it out).
+
+      </para>
+     </listitem>
     <listitem><command>Randomization is not a shortcut</command>
      <para>
 
@@ -1708,33 +1745,6 @@ ensure that every operating system version is covered by the range of possible
 behaviors.
 
      </para>
-     </listitem>
-     <listitem><command>Evaluation and measurement difficulties</command>
-      <para>
-
-The fact that randomization causes behaviors to differ slightly with every
-site visit makes it appealing at first glance, but this same property makes it
-very difficult to objectively measure its effectiveness. By contrast, an
-implementation that strives for uniformity is very simple to measure. Despite
-their current flaws, a properly designed version of <ulink
-url="https://panopticlick.eff.org/">Panopticlick</ulink> or <ulink
-url="https://amiunique.org/">Am I Unique</ulink> could report the entropy and
-uniqueness rates for all users of a single user agent version, without the
-need for complicated statistics about the variance of the measured behaviors.
-
-      </para>
-      <para>
-
-Randomization (especially incomplete randomization) may also provide a false
-sense of security. When a fingerprinting attempt makes naive use of randomized
-information, a fingerprint will appear unstable, but may not actually be
-sufficiently randomized to prevent a dedicated adversary.  Sophisticated
-fingerprinting mechanisms may either ignore randomized information, or
-incorporate knowledge of the distribution and range of randomized values into
-the creation of a more stable fingerprint (by either removing the randomness,
-modeling it, or averaging it out).
-
-      </para>
      </listitem>
      <listitem><command>Usability issues</command>
       <para>
