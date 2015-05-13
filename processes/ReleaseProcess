@@ -83,6 +83,18 @@
 #. Sign individual bundle files:
    # XXX: Document
 
+
+# XXX: Temporary step to place the sha256sums-presigned-build.txt into place
+# and redirect
+   cd $TORBROWSER_VERSION
+   echo "RewriteEngine On" > .htaccess
+   for i in sha256sums*
+   do
+     mv $i sha256sums-unsigned-build.${i:11}
+     echo "RewriteRule ^$i\$ sha256sums-unsigned-build.${i:11}" >> .htaccess
+   done
+   cd ..
+
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
@@ -94,7 +106,7 @@
    git pull origin
    eval $( ./get-tb-version release ) # or alpha / beta
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
-   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~mikeperry/builds/$TORBROWSER_VERSION
+   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~gk/builds/$TORBROWSER_VERSION
    rm $TORBROWSER_VERSION/index.html*
    mv $TORBROWSER_VERSION /srv/dist-master.torproject.org/htdocs/torbrowser/
    chmod 775 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
@@ -135,6 +147,10 @@
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 
 #. Update website's torbrowser versions file to remove old versions
+#  NOTE: You probably want to wait some hours (12-24?) after pushing the
+#  update responses before doing this, so that people have a chance to see
+#  the Firefox notification first before their browser starts weirdly blinking
+#  at them.
    cd webwml
    torsocks git pull origin
    # Now it's time to remove the obsolete version(s)
