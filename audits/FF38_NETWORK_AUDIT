@@ -222,10 +222,12 @@ Misc XPCOM:
    + ./dom/apps/tests/marketplace/marketplace_privileged_app.webapp
    + ./dom/apps/PermissionsTable.jsm
    - ./browser/extensions/shumway/chrome/RtmpUtils.jsm
-     - XXX: shumway.rtmp.enabled governs usage of createSocket
-       - ./browser/extensions/shumway/chrome/viewerWrapper.js
-       - ./browser/extensions/shumway/chrome/content.js
-       - ./browser/extensions/shumway/content/shumway.player.js can also use
+     + XXX: Shumway currently only enabled in nightly builds, but keep an eye
+       on this..
+     + XXX: shumway.rtmp.enabled governs usage of createSocket
+       + ./browser/extensions/shumway/chrome/viewerWrapper.js
+       + ./browser/extensions/shumway/chrome/content.js
+       + ./browser/extensions/shumway/content/shumway.player.js can also use
          mozTCPSocket
    + ./layout/build/nsLayoutModule.cpp
  - @mozilla.org/network/*socket* (grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket)
@@ -241,25 +243,52 @@ Misc XPCOM:
    + ./netwerk/build/nsNetCID.h
    - Debugger stuff
      - XXX: Has several prefs:
+       - devtools.webide.enabled
        - devtools.debugger.enabled?
        - devtools.debugger.remote-enabled
        - devtools.debugger.force-local
        - devtools.remote.tls-handshake-timeout
      - ./toolkit/devtools/server/main.js
      - ./toolkit/devtools/client/connection-manager.js
-     - ./toolkit/devtools/server/main.js
      - ./toolkit/devtools/client/dbg-client.jsm
      - ./toolkit/devtools/security/socket.js
    - ./toolkit/modules/Sntp.jsm
      - B2G ntp
    - ./toolkit/xre/nsAppRunner.cpp
-   - createTransport()
+   + createTransport()
+     - ./netwerk/base/Dashboard.cpp
+       -XXX: What the hell is this?
+     + Found earlier:
+       + ./toolkit/devtools/security/socket.js:
+       + ./toolkit/modules/Sntp.jsm:
+       + ./toolkit/modules/secondscreen/RokuApp.jsm
      + ./netwerk/protocol/http/nsHttpConnectionMgr.cpp
      + ./netwerk/protocol/ftp/nsFtpConnectionThread.cpp
      + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp
 
 - Misc XPCOM Contract-ID/CID defines:
   - NS_*SOCKET*_C should get them all (grep -R "NS_" | grep SOCKET | grep "_C")
+    + WebRTC and mtransport (disabled)
+    - gfx/layers/LayerScope.cpp
+      - XXX
+    + netwerk/protocol/websocket/WebSocketChannel.cpp:
+    + netwerk/protocol/http/nsHttpHandler.cpp:
+    + netwerk/protocol/http/nsHttpConnectionMgr.cpp:
+    + netwerk/protocol/http/TunnelUtils.cpp:
+    + netwerk/protocol/ftp/nsFtpConnectionThread.cpp:
+    + netwerk/protocol/ftp/nsFtpControlConnection.cpp
+    + netwerk/base/nsIOService.cpp:
+    + dom/media/bridge/MediaModule.cpp
+      + Compiled out by webrtc
+    + dom/workers/ServiceWorkerEvents.cpp:
+    + dom/bluetooth2/bluedroid/BluetoothDaemonInterface.cpp
+      + b2g only
+    + security/manager/ssl/src/SSLServerCertVerification.cpp:
+    + security/manager/ssl/src/nsNSSCallbacks.cpp:
+    + security/manager/ssl/src/nsNSSModule.cpp:
+    + security/manager/ssl/src/nsTLSSocketProvider.cpp:
+    + security/manager/ssl/src/SharedSSLState.cpp:
+
 
 + Gstreamer
   + ./dom/media/gstreamer/GStreamerDecoder.cpp
