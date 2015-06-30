@@ -296,3 +296,18 @@ Misc XPCOM:
     + Only exception seems to be if an RtspMediaResource could be used,
       but this appears to be FxOS-only.
       + XXX: Note for FxOS tor support. This may be an issue.
+
+Android Java calls:
+  + Uses HttpURLConnection:
+    + mobile/android/base/CrashReporter.java
+    + mobile/android/base/SuggestClient.java
+    + mobile/android/base/distribution/Distribution.java
+  + Uses org.apache.http.client.*
+    + mobile/android/base/favicons/LoadFaviconTask.java
+  + Uses ch.boye.httpclientandroidlib.impl.client.*:
+    + mobile/android/base/sync/net/BaseResource.java
+    + mobile/android/base/CrashReporter.java
+    + mobile/android/base/SuggestClient.java
+    + mobile/android/base/distribution/Distribution.java
+    + mobile/android/search/java/org/mozilla/search/providers/SearchEngineManager.java
+    + mobile/android/stumbler/java/org/mozilla/mozstumbler/service/utils/AbstractCommunicator.java
