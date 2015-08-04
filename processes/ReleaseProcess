@@ -49,8 +49,11 @@
    for i in gk linus mikeperry boklm
    do
      if [ -d ${TORBROWSER_BUILDDIR}/$i ]; then
-       if [ -f ${TORBROWSER_BUILDDIR}/${i}/sha256sums.txt.asc ]; then
-         cp ${TORBROWSER_BUILDDIR}/$i/sha256sums.txt.asc ${TORBROWSER_BUILDDIR}/sha256sums.txt-${i}.asc
+       if [ -f ${TORBROWSER_BUILDDIR}/${i}/sha256sums-unsigned-build.txt.asc ]; then
+         cp ${TORBROWSER_BUILDDIR}/$i/sha256sums-unsigned-build.txt.asc ${TORBROWSER_BUILDDIR}/sha256sums-unsigned-build.txt-${i}.asc
+       fi
+       if [ -f ${TORBROWSER_BUILDDIR}/${i}/sha256sums-unsigned-build.incrementals.txt.asc ]; then
+         cp ${TORBROWSER_BUILDDIR}/$i/sha256sums-unsigned-build.incrementals.txt.asc ${TORBROWSER_BUILDDIR}/sha256sums-unsigned-build.incrementals.txt-${i}.asc
        fi
        rm -rf ${TORBROWSER_BUILDDIR}/$i
      fi
@@ -83,18 +86,6 @@
 #. Sign individual bundle files:
    # XXX: Document
 
-
-# XXX: Temporary step to place the sha256sums-presigned-build.txt into place
-# and redirect
-   cd $TORBROWSER_VERSION
-   echo "RewriteEngine On" > .htaccess
-   for i in sha256sums*
-   do
-     mv $i sha256sums-unsigned-build.${i:11}
-     echo "RewriteRule ^$i\$ sha256sums-unsigned-build.${i:11}" >> .htaccess
-   done
-   cd ..
-
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
@@ -107,6 +98,8 @@
    eval $( ./get-tb-version release ) # or alpha / beta
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
    wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~gk/builds/$TORBROWSER_VERSION
+   # Verify everything was downloaded correctly
+   for i in $TORBROWSER_VERSION/*.asc; do echo $i ; gpg -q $i || break; done
    rm $TORBROWSER_VERSION/index.html*
    mv $TORBROWSER_VERSION /srv/dist-master.torproject.org/htdocs/torbrowser/
    chmod 775 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
