@@ -89,9 +89,9 @@
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
-   torsocks rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/
-   torsocks ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
-   torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
+   rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/
+   ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
+   ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 #. Local to staticiforme:
    cd ~/tbb-builds/tor-browser-bundle/gitian
    git pull origin
@@ -133,12 +133,13 @@
    # responses!
    make update_responses # (or update_responses-alpha, update_responses-beta)
    cd ../tools/update-responses
-   # XXX: nothing sets $TORBROWSER_UPDATE_CHANNEL here..
-   chmod 664 htdocs/$TORBROWSER_UPDATE_CHANNEL/*
-   chmod 664 htdocs/$TORBROWSER_UPDATE_CHANNEL/.htaccess
-   chmod 775 htdocs/$TORBROWSER_UPDATE_CHANNEL/
+   export TORBROWSER_UPDATE_CHANNEL=release # or alpha / beta
+   chmod 664 htdocs/${TORBROWSER_UPDATE_CHANNEL}/*
+   chmod 664 htdocs/${TORBROWSER_UPDATE_CHANNEL}/.htaccess
+   chmod 775 htdocs/${TORBROWSER_UPDATE_CHANNEL}/
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/update_2/${TORBROWSER_UPDATE_CHANNEL}/*"
    torsocks rsync -avP htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
+   torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/dist-master.torproject.org/htdocs/torbrowser/update_2/${TORBROWSER_UPDATE_CHANNEL}/*"
    # Finally, remove old version as we point the update channel at the new version.
    # XXX: CAREFUL! $OLD_TOR_BROWSER_VERSION must be set!
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
