@@ -9,7 +9,7 @@ Preparations:
 3) If not already done prepare the gpg.conf used for that device
    (See: https://help.riseup.net/en/security/message-security/openpgp/best-practices
    for help)
-4) `exp rt nGNUPGHOME=/path/to/offline/storage/.gnupg`
+4) `export GNUPGHOME=/path/to/offline/storage/.gnupg`
 
 Key Creation Incantations and Instructions
 ------------------------------------------
@@ -20,7 +20,7 @@ Key Creation Incantations and Instructions
 4) Choose "(E) Toggle the encrypt capability"
 5) Choose "(Q) Finished"
 6) Choose 4096 bit
-7) Choose "0 = key does not expire"
+7) Type "5y"
 8) Choose "Tor Browser Developers" as real name
 9) Choose "torbrowser@torproject.org" as email address
 10) Choose "signing key" as comment
@@ -28,7 +28,7 @@ Key Creation Incantations and Instructions
 12) `gpg --edit-key YOURMASTERKEYID`
 13) At the gpg> prompt enter: addkey
 14) Choose "(4) RSA (sign only)"
-15) Repeat step 6, 7, 13 and 14 as often as needed
+15) Repeat step 6, 7 (with "2y" for subkeys), 13 and 14 as often as needed
 16) At the gpg> prompt enter: save
 16) Check whether the keys look good, e.g. with
    `hkt export-pubkeys YOURMASTERKEYID | hokey lint`
