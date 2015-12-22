@@ -110,6 +110,10 @@
    for i in *.asc; do echo $i ; gpg -q $i || break; done
    static-update-component dist.torproject.org
 
+#. Make sure we really built from the proper Mozilla build tag by consulting
+   # the respective ESR release branch (for a good overview for ESR38 see
+   # https://hg.mozilla.org/releases/mozilla-esr38/graph/).
+
 #. Update website's torbrowser versions file in the website git
    cd webwml
    torsocks git pull origin
