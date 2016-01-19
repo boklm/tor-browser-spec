@@ -4,7 +4,7 @@ Tor Browser Signing Key
 Preparations:
 -------------
 
-1) Go offline (ideally use TAILS)
+1) Go offline (ideally use Tails)
 2) Mount your encrypted offline storage device
 3) If not already done prepare the gpg.conf used for that device
    (See: https://help.riseup.net/en/security/message-security/openpgp/best-practices
@@ -44,7 +44,7 @@ MAR Signing Key
 Preparations
 ------------
 
-1) Go offline (ideally use TAILS)
+1) Go offline (ideally use Tails)
 2) Mount your encrypted offline storage device
 3) `cd /path/to/offline/storage`
 4) make sure you have libnss3-tools installed (for certutil)
@@ -54,12 +54,12 @@ Key Creation Incantations and Instructions
 ------------------------------------------
 
 1) `mkdir nssdb`
-2) `certutils -d nssdb -N`
+2) `certutil -d nssdb -N`
 3) Choose a strong passphrase to protect the keys
-4) `certutil -d .nss -S -x -g 4096 -Z SHA512 -n marsigner -s "CN=Tor Browser MAR signing key" -t,,`
+4) `certutil -d nssdb -S -x -g 4096 -Z SHA512 -n marsigner -s "CN=Tor Browser MAR signing key" -t,,`
 5) If there should be additional keys in the database repeat step 4. Note, you
    need a different CN and ideally a different nickname ("marsigner" in the
    example above).
-6) `certutil -d .nss -L -r -n marsigner -o marsigner.der`
+6) `certutil -d nssdb -L -r -n marsigner -o marsigner.der`
 7) If you want to export more than one certificate repeat step 6 adjusting the
    certificate nickname and the name of the output file
