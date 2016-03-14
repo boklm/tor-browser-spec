@@ -63,3 +63,18 @@ Key Creation Incantations and Instructions
 6) `certutil -d nssdb -L -r -n marsigner -o marsigner.der`
 7) If you want to export more than one certificate repeat step 6 adjusting the
    certificate nickname and the name of the output file
+
+
+Mac Signing Key
+===============
+
+Based on:
+https://stackoverflow.com/questions/9245149/jenkins-on-os-x-xcodebuild-gives-code-sign-error
+
+
+cd Library/Keychains
+security create-keychain tbb-signing-alpha.keychain
+security default-keychain -s tbb-signing-alpha.keychain
+security unlock-keychain
+certtool r CertificateSigningRequest.certSigningRequest
+

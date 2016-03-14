@@ -91,6 +91,8 @@
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
    rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/
    ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
+   ssh staticiforme.torproject.org "chown -R :torwww /srv/dist-master.torproject.org/htdocs/torbrowser/"
+   ssh staticiforme.torproject.org "cd /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION ; for i in *.asc; do echo $i ; gpg -q $i || break; done"
    ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 #. Local to staticiforme:
    cd ~/tbb-builds/tor-browser-bundle/gitian
