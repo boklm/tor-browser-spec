@@ -119,6 +119,7 @@
    torsocks git pull origin
    # Update `version-win32-stable` as well if we include a new stable tor
    # version. See: #14152.
+   # Update the release data (via releasedate-torbrowserbundle*). See: #8968.
    # In the RecommendedTBBVersions file, only add the new version. Don't
    # remove the old one yet. That comes later.
    vim ./include/versions.wmi ./projects/torbrowser/RecommendedTBBVersions
