@@ -132,8 +132,14 @@
    # Don't forget to link to Mozilla's security advisories if this is a security
    # update, or Nadim will yell at you.
 
+#. Check whether the MAR files got properly signed
+   # Point SIGNMAR to your signmar binary
+   # Point LD_LIBRARY_PATH to your mar-tools directory
+   cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
+   ../../tools/marsigning_check.sh
+   cd ..
+
 #. Update and upload new update responses for the updater
-   cd tor-browser-bundle/gitian
    # IMPORTANT: Copy the signed MAR files back before creating the update
    # responses!
    make update_responses # (or update_responses-alpha, update_responses-beta)
