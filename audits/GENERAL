@@ -1,0 +1,34 @@
+Motivation
+----------
+
+Preparing the switch to a new Firefox ESR begins usually as soon as it lands on
+Mozilla's beta or release channel. This means for us we have 12 to 18 weeks to
+prepare a Tor Browser release based on it. This includes adapting our Gitian
+setup, rebasing and testing our old patches, auditing the network code,
+reviewing new features and modifying them to fit our needs, testing them in at
+least one alpha release etc.
+
+While there are things that are tricky to do without additional overhead before
+a new ESR got out, reviewing new features, prioritizing them and filing tickets
+is not necessarily one of those.
+
+Feature review process
+----------------------
+
+To illustrate the workflow of the feature review process let's assume we just
+got Tor Browser based on Firefox ESR 38 out of the door. Mozilla released
+Firefox 40 meanwhile. One of the Tor Browser team members is catching up on the
+Firefox for developers documentation for version 39 and 40 and is filing bugs
+with the "ff45-esr" tag. Reviewing the developer documentation and filing
+respective bugs is happening successively after Firefox 41-44 get out as well.
+This procedure is covering the most important and most difficult to patch things
+and should therefore be enough for the first pass. As a bonus point we might
+even get hints about possible problems with code already in the ESR 38 series
+this way which would allow us acting quicker in fixing those issues in our
+stable series.
+
+When we finally start preparations for the switch to ESR 45 we basically have
+all the ff45-esr tickets filed, and ideally prioritized, which are resulting
+out of Firefox 39-44 reviews. The only remaining tasks for the feature review
+are: taking care of ESR 45 and double-checking the undocumented bugs and the
+ones with milestone Firefox39-45.
