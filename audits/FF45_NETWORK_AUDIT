@@ -1,0 +1,412 @@
+Lowest level resolver calls:
+ + PR_GetHostByName
+   + ./netwerk/protocol/rtsp/rtsp/RTSPConnectionHandler.h
+     - MOZ_RTSP -> Only on android. XXX: Verify disabled
+   + ./netwerk/protocol/rtsp/rtsp/ARTSPConnection.cpp
+     - MOZ_RTSP -> Only on android. XXX: Verify disabled
+   + ./security/nss/lib/certhigh/ocsp.c:
+     - Patched (XXX: Verify application)
+   + ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     + pkix_pl_Socket_CreateByName()
+       - Patched (XXX: Verify application)
+     + pkix_pl_Socket_CreateByHostAndPort()
+       - Patched (XXX: Verify application)
+   + ./security/nss/cmd/
+     + NSS cli commands only
+   + ./nsprpub/pr/src/misc/prnetdb.c
+     + Fallback for PR_GetAddrInfoByName
+   + ./nsprpub/pr/src/cplus/rcnetdb.cpp
+     + RCHostLookup::ByName()
+       + Still Not used
+   - ./toolkit/profile/nsProfileLock.cpp
+     - nsProfileLock::LockWithSymlink() looks up 127.0.0.1..
+     - XXX: We should patch this.
+ + PR_GetIPNodeByName
+   + Used by tests only
+ + PR_StringToNetAddr
+   + Passes AI_NUMERICHOST to getaddrinfo. No resolution.
+
+ + PR_GetAddrInfoByName
+   + ./security/nss/cmd/ usage (NSS cli commands only)
+   - ./netwerk/dns/mdns/libmdns/*
+     - XXX: New. Possibly android only?
+   + ./netwerk/dns/GetAddrInfo.cpp
+     + ./netwerk/dns/nsHostResolver.cpp
+       - nsHostResolver::ResolveHost() is entrypoint
+         + nsHostResolver::ThreadFunc() will resolve without SOCKS
+         + Only used by nsDNSService2
+         - XXX: Watch out for the new parent/child interfaces..
+
+MDNS: (./netwerk/dns/mdns/libmdns/) XXX
+ - @mozilla.org/toolkit/components/mdnsresponder/dns-sd;1
+ - DNSSERVICEDISCOVERY_CONTRACT_ID
+   - ./dom/presentation/provider/MulticastDNSDeviceProvider.cpp
+   - XXX: Presentation API?
+     https://developer.mozilla.org/en-US/docs/Web/API/Presentation_API
+ - DNSSERVICEINFO_CONTRACT_ID
+   - ./dom/presentation/provider/MulticastDNSDeviceProvider.cpp
+ - @mozilla.org/toolkit/components/mdnsresponder/dns-info;1
+
+Direct paths to DNS resolution:
+ + nsHostResolver::ResolveHost
+   + Only used by nsDNSService
+ + nsDNSService::Resolve
+   - Patched for safety (XXX: Verify application)
+ + nsDNSService::AsyncResolve
+   - Patched for safety (XXX: Verify application)
+ - ChildDNSService::AsyncResolve and ChildDNSService::Resolve
+   - Possibly only active if MOZILLA_XPCOMRT_API is defined.. But it seems to
+     be.
+   - ./netwerk/dns/ChildDNSService.cpp
+     - XXX: Should patch AsyncResolve and Resolve here, as we do in
+       nsDNSService.
+ - XXX: New parent/child interfaces DNSRequestParent and DNSRequestChild
+   + ./netwerk/ipc/NeckoParent.cpp
+     + Calls into DNS service via DNSRequestParent::DoAsyncResolve()
+   + ./netwerk/ipc/NeckoChild.cpp
+
+Misc UDP (SOCK_DGRAM, PR_DESC_SOCKET_UDP):
+ + PR_DESC_SOCKET_UDP
+   + ./nsprpub/pr/src/cplus/rcio.h
+     + RCIO (not used)
+     + RCFileIO (not used)
+     + RCNetStreamIO (not used)
+   + ./nsprpub/pr/src/io/prsocket.c
+     + PR_GetUDPMethods
+   + ./nsprpub/pr/src/md/os2/os2io.c
+   + ./nsprpub/pr/src/misc/prinit.c
+     + PR_GetInheritedFD
+   + ./nsprpub/pr/src/pthreads/ptio.c
+     + Reviewed below
+ + SOCK_DGRAM
+   - Android: XXX: Are these patched in Orfox?
+     - ./other-licenses/android/res_send.c
+     - ./other-licenses/android/res_init.c
+     - ./other-licenses/android/getaddrinfo.c
+   + ./hal/gonk/UeventPoller.cpp
+     + netlink stuff
+   + ./ipc/chromium/src/third_party/libevent/evdns.c
+     + evdns is unused
+   + ./ipc/chromium/src/third_party/libevent/evutil.c
+     + interface checking functions. Unused.
+   + ./media/webrtc/*
+     + Can be disabled still
+   + ./media/mtransport/third_party/nICEr/src/stun/addrs.c
+     + boils down to NrIceCtx::StartGathering
+       + Used only for PeerConnection, which we disable
+   + SCTP is only enabled with WEBRTC (see configure.in, netwerk/moz.build, and ./dom/base/moz.build)
+     + ./netwerk/sctp/src/netinet/sctputil.c
+     + ./netwerk/sctp/src/netinet/sctp_userspace.c
+     + ./netwerk/sctp/src/netinet/sctp_pcb.c
+     + ./netwerk/sctp/src/ifaddrs_android.cpp
+     + ./netwerk/sctp/src/user_recv_thread.c
+   + ./netwerk/wifi/nsWifiScannerFreeBSD.cpp
+     + GeoIP stuff. Is disabled.
+   + ./nsprpub/pr/src/io/prsocket.c
+     + PR_NewUDPSocket
+     + PR_OpenUDPSocket
+     + PR_Socket
+   + ./nsprpub/pr/src/pthreads/ptio.c
+ + PR_NewUDPSocket
+ + PR_OpenUDPSocket
+   + ./media/mtransport/nr_socket_prsock.cpp
+     + Disabled with WebRTC
+   + ./netwerk/base/src/nsUDPSocket.cpp
+     + Unused except for nsUDPSocketProvider
+   + RTSP is only on Android (see configure.in, pref: media.rtsp.enabled):
+     + ./netwerk/protocol/rtsp/rtsp/ARTPSession.cpp
+     + ./netwerk/protocol/rtsp/rtsp/ARTPConnection.cpp
+     + ./netwerk/protocol/rtsp/rtsp/ARTPWriter.cpp
+     + ./netwerk/protocol/rtsp/rtsp/UDPPusher.cpp
+   - ./netwerk/base/src/Tickler.cpp
+     - XXX: Sends a UDP packet to the gateway. Possibly governed by
+       network.predictor.enabled, but called from many places.
+     - XXX: A direct patch to nsHttpHandler::TickleWifi() or
+       the tickler itself may be a good idea
+   + ./netwerk/socket/nsUDPSocketProvider.cpp
+     + NewSocket(). Unused.
+   + ./netwerk/base/src/ProxyAutoConfig.cpp
+     + We don't use PAC.
+ + PR_ImportUDPSocket
+   + Only called if NSPR_INHERIT_FDS in environment
+   + Also only inherits existing UDP sockets
+
+Misc TCP (SOCK_STREAM, PR_DESC_SOCKET_TCP):
+ + PR_DESC_SOCKET_TCP
+   + ./netwerk/base/ClosingService.cpp
+     + Shutdown cleanup only
+   + ./netwerk/base/nsSocketTransportService2.cpp
+   + ./nsprpub/pr/src/cplus/rcio.h
+     + RCFileIO (not used)
+     + RCNetStreamIO (not used)
+   + ./nsprpub/pr/src/io/pripv6.c
+     + Underlying wrapper for PR_Socket
+   + ./nsprpub/pr/src/md/os2/os2io.c
+     + OS/2 only
+   + ./nsprpub/pr/src/io/prsocket.c
+   + ./nsprpub/pr/src/misc/prinit.c
+   + ./nsprpub/pr/src/pthreads/ptio.c
+ + SOCK_STREAM
+   + ./dom/bluetooth/bluez/BluetoothUnixSocketConnector.cpp
+     + bluetooth sockets only for B2G
+   + ./dom/system/gonk/VolumeManager.cpp
+     + local only
+   + Android stuff: disabled. XXX: Verify on OrFox
+     + ./other-licenses/android/res_send.c
+     + ./other-licenses/android/getaddrinfo.c
+   + ./mozglue/build/Nuwa.cpp
+   + ./netwerk/sctp/
+     + Disabled with WebRTC
+   + ./netwerk/dns/GetAddrInfo.cpp
+     + Only available through dns service and mdns
+   + ./ipc/chromium/src/third_party/libevent/event.c
+   + ./ipc/chromium/src/third_party/libevent/evutil.c
+   + ./ipc/chromium/src/third_party/libevent/listener.c
+   + ./ipc/chromium/src/third_party/libevent/bufferevent_sock.c
+   + ./ipc/chromium/src/third_party/libevent/signal.c
+   + ./ipc/chromium/src/third_party/libevent/http.c
+   + ./ipc/chromium/src/third_party/libevent/event_iocp.c
+   + ./ipc/keystore/KeyStore.cpp
+     + AF_LOCAL only
+   + ./ipc/nfc/Nfc.cpp
+     + local/loopback only
+   + ./ipc/ril/Ril.cpp
+     + local/loopback only
+   + ./ipc/netd/Netd.cpp
+     + local only
+   + ./ipc/chromium/src/chrome/common/ipc_channel_posix.cc
+     + AF_UNIX/local only
+   + ./nsprpub/pr/src/misc/prnetdb.c
+   + ./media/webrtc/* - disabled
+   + ./mozglue/build/Nuwa.cpp
+     + Unix sockets only
+   + RTSP and SCTP are disabled if WebRTC is compiled out
+     + ./netwerk/protocol/rtsp/rtsp/ARTSPConnection.cpp
+     + ./netwerk/sctp/src/netinet/sctp_pcb.c
+     + ./netwerk/sctp/src/user_socket.c
+     + ./netwerk/sctp/datachannel/DataChannel.cpp
+   + ./nsprpub/pr/src/md/windows/ntio.c
+   + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + ./nsprpub/pr/src/io/prsocket.c
+   + ./nsprpub/pr/src/misc/prnetdb.c
+   + ./nsprpub/pr/src/pthreads/ptio.c
+   + ./toolkit/crashreporter/google-breakpad/src/client/linux/crash_generation/crash_generation_client.cc
+     + AF_UNIX socket..
+ + PR_NewTCPSocket
+   + ./security/nss/lib/certhigh/ocsp.c
+     + ocsp_ConnectToHost. Patched for Defense in Depth
+     - XXX: Verify patch after rebase.
+   + ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     + pkix_pl_Socket_CreateClient
+       + pkix_pl_Socket_CreateByHostAndPort and pkix_pl_Socket_CreateByName
+         and pkix_pl_Socket_Create
+         + PKIX_PL_LdapDefaultClient_Create is unused. Other two noted above.
+         + Patched in pkix_pl_Socket_Create anyway.
+         - XXX: Verify patch
+   + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + ./nsprpub/pr/src/io/prpolevt.c
+   + ./media/mtransport/nr_socket_prsock.cpp
+     + WebRTC only
+
+ + PR_OpenTCPSocket
+   + ./netwerk/base/src/nsSocketTransport2.cpp
+   + ./netwerk/base/src/nsServerSocket.cpp
+   + ./netwerk/protocol/rtsp/rtsp/ARTSPConnection.cpp
+   + ./netwerk/socket/nsSOCKSIOLayer.cpp
+   + ./netwerk/socket/nsSOCKSSocketProvider.cpp
+   + ./netwerk/base/src/nsSocketTransportService2.cpp
+   + ./security/manager/ssl/src/nsNSSIOLayer.cpp
+     + nsSSLIOLayerNewSocket
+       + ./security/manager/ssl/src/nsTLSSocketProvider.cpp
+         + nsTLSSocketProvider::NewSocket
+       + ./security/manager/ssl/src/nsSSLSocketProvider.cpp
+         + nsSSLSocketProvider::NewSocket (nsISocketProvider)
+       + nsISocketProvider.newSocket
+         + used with proxy settings (and only in nsSocketTransport::BuildSocket)
+ + PR_ImportTCPSocket
+
+Misc PR_Socket:
+ + ./nsprpub/pr/src/io/prmapopt.c
+ + ./nsprpub/pr/src/cplus/rcnetio.cpp
+   + RCNetStreamIO::RCNetStreamIO
+
+
+Misc Wrappers:
+ - UDPSocketChild:
+   + ./dom/push/PushServiceWebSocket.jsm
+     - XXX: Should be disabled by ServiceWorkers, but we should also
+       disable the dom.push.* prefs, as well, to remind us if/when
+       we enable service workers.
+   + ./netwerk/ipc/NeckoChild.cpp
+     + E10S stuff. Not relevant in ESR45.
+   + ./netwerk/ipc/NeckoParent.cpp
+     + E10S stuff. Not relevant in ESR45.
+   + /ipc/glue/Background*
+     + E10S gunk. Not relevant in ESR45.
+   - ./toolkit/modules/secondscreen/SimpleServiceDiscovery.jsm
+     - XXX: Bad news. seems included.
+   - UDPSocket
+     - ./dom/simplepush/PushService.jsm
+       - Should be FxOS only and disabled.
+     - ./dom/media/bridge/MediaModule.cpp
+       - Dependent on WebRTC. Should be disabled
+     - ./dom/webidl/UDPMessageEvent.webidl
+       - XXX: dom.udpsocket.enabled verify.
+     + ./dom/webidl/UDPSocket.webidl
+       + dom.udpsocket.enabled
+     - ./devtools/shared/discovery/discovery.js
+       - XXX: Did we disable this? I vaguely remember a ticket about the debugger..
+ - TCPSocket
+   - ./dom/base/Navigator.cpp
+     - XXX: Controlled by pref dom.mozTCPSocket.enabled
+   + ./dom/network/TCPSocket.h and friends
+     + also dom.mozTCPSocket.enabled.
+   + ./netwerk/protocol/rtsp/rtsp/*
+     + Disabled
+   - ./browser/extensions/shumway/content/shumway.player.js
+     - XXX: Boo. Shumway tells people to flip the mozTCPSocket pref?
+   + webrtc and mtransport again, but disabled.
+
+
+Misc XPCOM:
+ + *SocketProvider
+   + newSocket
+     + ./netwerk/base/src/nsSocketTransport2.cpp:
+       + used with proxy settings
+   + addToSocket
+ + @mozilla.org/*/udp-socket (grep -R udp-socket .)
+   + dom/push/PushService.jsm:
+     + WTF. _listenForUDPWakeup!!!
+       + Controlled by pref services.push.udp.wakeupEnabled
+       + And also services.push.enabled
+       + Currently false
+         - XXX: Verify false on android and in the future!
+   + ./dom/push/PushServiceWebSocket.jsm
+   + dom/network/UDPSocket.cpp:
+     + dom.udpsocket.enabled prefs this off
+       - XXX: Watch this in the future!
+   + dom/apps/PermissionsTable.jsm
+   + dom/webidl/SocketCommon.webidl
+   + dom/webidl/UDPSocket.webidl
+   + layout/build/nsLayoutModule.cpp
+   + ./netwerk/build/nsNetCID.h
+   - toolkit/devtools/discovery/discovery.js
+     - XXX: Wtf is this thing? Vaguely remember disabling it?
+     - Part of "WebIDE", but seemingly not enabled until FF39?
+   - toolkit/modules/secondscreen/SimpleServiceDiscovery.jsm
+     - XXX: wtf is this thing?
+ + @mozilla.org/*/tcp-socket-* (grep for tcp-socket)
+   + ./netwerk/protocol/rtsp/ (disabled)
+   - ./dom/network/TCPSocket.js
+      - XXX: possibly exposed via navigator.mozTCPSocket.. dom.mozTCPSocket.enabled pref control.. Android/FxOS only?
+      - https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mozTCPSocket
+   + ./dom/network/TCPSocket.manifest
+   + ./dom/apps/tests/marketplace/marketplace_privileged_app.webapp
+   + ./dom/apps/PermissionsTable.jsm
+   - ./browser/extensions/shumway/chrome/RtmpUtils.jsm
+     - XXX: Shumway currently only enabled in nightly builds, but keep an eye
+       on this..
+     - XXX: shumway.rtmp.enabled governs usage of createSocket
+       + ./browser/extensions/shumway/chrome/viewerWrapper.js
+       + ./browser/extensions/shumway/chrome/content.js
+       + ./browser/extensions/shumway/content/shumway.player.js can also use
+         mozTCPSocket
+   + ./layout/build/nsLayoutModule.cpp
+
+ - @mozilla.org/network/*socket* (grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket)
+   - ./dom/presentation/provider/TCPPresentationServer.js
+   - ./dom/ipc/preload.js
+   - ./netwerk/protocol/websocket/WebSocketChannel.cpp
+   - ./devtools/shared/security/socket.js
+   - ./mobile/android/chrome/content/WebappRT.js
+   - ./browser/extensions/loop/chrome/content/modules/MozLoopPushHandler.jsm
+   - ./toolkit/modules/Sntp.jsm
+   - ./toolkit/modules/secondscreen/RokuApp.jsm
+   - ./toolkit/xre/nsAppRunner.cpp
+
+   + ./addon-sdk/source/lib/sdk/io/stream.js
+     + Addon APIs
+   + ./dom/ipc/preload.js
+   + ./dom/network/TCPServerSocket.js
+   - ./mobile/android/chrome/content/WebappRT.js
+      - Debugger?
+      - XXX: Pretty sure this is only for 'webapps', but it sets some scary
+        prefs that might impact other browser operation if an app is
+        installed?
+   + ./netwerk/build/nsNetCID.h
+   - Debugger stuff
+     - XXX: Has several prefs:
+       - devtools.webide.enabled
+       - devtools.debugger.enabled?
+       - devtools.debugger.remote-enabled
+       - devtools.debugger.force-local
+       - devtools.remote.tls-handshake-timeout
+     - ./toolkit/devtools/server/main.js
+     - ./toolkit/devtools/client/connection-manager.js
+     - ./toolkit/devtools/client/dbg-client.jsm
+     - ./toolkit/devtools/security/socket.js
+   - ./toolkit/modules/Sntp.jsm
+     - B2G ntp
+   - ./toolkit/xre/nsAppRunner.cpp
+   + createTransport()
+     - ./netwerk/base/Dashboard.cpp
+       -XXX: What the hell is this?
+     + Found earlier:
+       + ./toolkit/devtools/security/socket.js:
+       + ./toolkit/modules/Sntp.jsm:
+       + ./toolkit/modules/secondscreen/RokuApp.jsm
+     + ./netwerk/protocol/http/nsHttpConnectionMgr.cpp
+     + ./netwerk/protocol/ftp/nsFtpConnectionThread.cpp
+     + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp
+
+- Misc XPCOM Contract-ID/CID defines:
+  - NS_*SOCKET*_C should get them all (grep -R "NS_" | grep SOCKET | grep "_C")
+    + WebRTC and mtransport (disabled)
+    - gfx/layers/LayerScope.cpp
+      - XXX
+
+    + NS_SOCKETTRANSPORTSERVICE_*
+      + Proxied if TCP
+      + Udp limited to mtransport and webrtc
+    + NS_UDPSOCKET_*
+
+    + netwerk/protocol/websocket/WebSocketChannel.cpp:
+    + netwerk/protocol/http/nsHttpHandler.cpp:
+    + netwerk/protocol/http/nsHttpConnectionMgr.cpp:
+    + netwerk/protocol/http/TunnelUtils.cpp:
+    + netwerk/protocol/ftp/nsFtpConnectionThread.cpp:
+    + netwerk/protocol/ftp/nsFtpControlConnection.cpp
+    + netwerk/base/nsIOService.cpp:
+    + dom/media/bridge/MediaModule.cpp
+      + Compiled out by webrtc
+    + dom/workers/ServiceWorkerEvents.cpp:
+    + dom/bluetooth2/bluedroid/BluetoothDaemonInterface.cpp
+      + b2g only
+    + security/manager/ssl/src/SSLServerCertVerification.cpp:
+    + security/manager/ssl/src/nsNSSCallbacks.cpp:
+    + security/manager/ssl/src/nsNSSModule.cpp:
+    + security/manager/ssl/src/nsTLSSocketProvider.cpp:
+    + security/manager/ssl/src/SharedSSLState.cpp:
+
+
++ Gstreamer
+  + ./dom/media/gstreamer/GStreamerDecoder.cpp
+    + Uses ChannelMediaResource underneath, and ultimately an nsIChannel
+    + Only exception seems to be if an RtspMediaResource could be used,
+      but this appears to be FxOS-only.
+      + XXX: Note for FxOS tor support. This may be an issue.
+
+Android Java calls:
+  + Uses HttpURLConnection:
+    + mobile/android/base/CrashReporter.java
+    + mobile/android/base/SuggestClient.java
+    + mobile/android/base/distribution/Distribution.java
+  + Uses org.apache.http.client.*
+    + mobile/android/base/favicons/LoadFaviconTask.java
+  + Uses ch.boye.httpclientandroidlib.impl.client.*:
+    + mobile/android/base/sync/net/BaseResource.java
+    + mobile/android/base/CrashReporter.java
+    + mobile/android/base/SuggestClient.java
+    + mobile/android/base/distribution/Distribution.java
+    + mobile/android/search/java/org/mozilla/search/providers/SearchEngineManager.java
+    + mobile/android/stumbler/java/org/mozilla/mozstumbler/service/utils/AbstractCommunicator.java
