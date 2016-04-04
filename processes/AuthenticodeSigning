@@ -1,0 +1,110 @@
+Signing Tor Browser bundles for Windows on a Linux machine
+==========================================================
+
+These instructions are for our current token donated to us by Digicert. It is an
+Aladdin eToken pro 72k.
+
+Software needed:
+----------------
+
+1) osslsigncode
+
+ - any stable version > 1.7.1 will do; using the Git mirror at
+   http://git.code.sf.net/p/osslsigncode/osslsigncode/ commit
+   e72a1937d1a13e87074e4584f012f13e03fc1d64 is working fine
+
+2) SafeNetAuthenticationClient (eToken middleware)
+
+ - version 9.0.43 (for Ubuntu 12.04+ and Debian Wheezy+); the SHA-256 sum of
+   SafeNetAuthenticationClient-SAC_9_0_43_Linux.zip is
+   50545F3FF8BC561634363E683500DCF817CB9A8B379177886F043D14C774A36E or the one
+   of the ISO file included in the archive:
+   31577e4590ea8c5dc0787fe1501d052dd7b4c0d7a4c4cfa25f6885f50415ee6c
+ - the core part is enough to get the signing going
+
+Installation
+------------
+
+1) Requirements
+
+- for the middleware: sudo apt-get install libccid pcscd openssl libpcsclite1
+- for the cert extraction/signing: sudo apt-get install opensc \
+                                                        libengine-pkcs11-openssl
+
+2) SafeNetAuthenticationClient
+
+- sudo dpkg -i SafenetAuthenticationClient-core-9.0.43-0_amd64.deb
+
+Signing and timestamping
+------------------------
+
+1) Getting the certificate
+
+- pkcs11-tool --module /usr/lib/libeTPkcs11.so --type cert --read-object \
+              --id c27eac1b263465cdd73630d94b0b92e674f01501 > tpo_cert.der
+- convert it to PEM: openssl x509 -in tpo_cert.der -inform der -outform pem \
+                     -out tpo_cert.crt
+
+2) Getting the intermediate certificate
+
+- torsocks wget https://www.digicert.com/CACerts/DigiCertEVCodeSigningCA-SHA2.crt
+- convert it to PEM: openssl x509 -in DigiCertEVCodeSigningCA-SHA2.crt \
+                     -inform der -outform pem -out middle_cert.crt
+- append it to tpo_cert.crt: cat middle_cert.crt >> tpo_cert.crt
+
+3) Signing the exectuable(s):
+
+- path/to/osslsigncode -pkcs11engine /usr/lib/engines/engine_pkcs11.so \
+                       -pkcs11module /usr/lib/libeTPkcs11.so           \
+                       -certs tpo_cert.crt                             \
+                       -key c27eac1b263465cdd73630d94b0b92e674f01501   \
+                       torbrowser-install-XXX.exe tb-XXX-signed.exe
+
+- pass the passphrase to osslsigncode in case you want to script the whole
+process by using `-pass $pass` as an additional commandline parameter
+
+4) Timestamping the executable(s):
+
+- path/to/osslsigncode add -t http://timestamp.digicert.com \
+                           -p socks://127.0.0.1:9050 \
+                           torbrowser-install-XXX.exe tb-XXX-timestamped.exe
+
+Note: the current tip of osslsigncode's master branch does not allow the
+decoupling of signing and timestamping. In order to do so one needs to apply
+the following patch:
+
+From 28b384e77fa0d4dd38751a0c72ab5976d2e38f75 Mon Sep 17 00:00:00 2001
+From: Georg Koppen <gk@torproject.org>
+Date: Fri, 5 Feb 2016 09:23:10 +0000
+Subject: [PATCH] Allow timestamping with the 'add' command
+
+
+diff --git a/osslsigncode.c b/osslsigncode.c
+index 32e37c8..2978c02 100644
+--- a/osslsigncode.c
++++ b/osslsigncode.c
+@@ -2556,16 +2556,16 @@ int main(int argc, char **argv)
+ 			if (--argc < 1) usage(argv0);
+ 			url = *(++argv);
+ #ifdef ENABLE_CURL
+-		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-t")) {
++		} else if ((cmd == CMD_SIGN || cmd == CMD_ADD) && !strcmp(*argv, "-t")) {
+ 			if (--argc < 1) usage(argv0);
+ 			turl[nturl++] = *(++argv);
+-		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-ts")) {
++		} else if ((cmd == CMD_SIGN || cmd == CMD_ADD) && !strcmp(*argv, "-ts")) {
+ 			if (--argc < 1) usage(argv0);
+ 			tsurl[ntsurl++] = *(++argv);
+-		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-p")) {
++		} else if ((cmd == CMD_SIGN || cmd == CMD_ADD) && !strcmp(*argv, "-p")) {
+ 			if (--argc < 1) usage(argv0);
+ 			proxy = *(++argv);
+-		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-noverifypeer")) {
++		} else if ((cmd == CMD_SIGN || cmd == CMD_ADD) && !strcmp(*argv, "-noverifypeer")) {
+ 			noverifypeer = 1;
+ #endif
+ 		} else if ((cmd == CMD_SIGN || cmd == CMD_ADD) && !strcmp(*argv, "-addUnauthenticatedBlob")) {
+--
+2.7.0
+
+
