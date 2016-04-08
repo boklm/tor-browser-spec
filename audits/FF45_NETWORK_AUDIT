@@ -315,6 +315,8 @@ Misc XPCOM:
 
  - @mozilla.org/network/*socket* (grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket)
    - ./dom/presentation/provider/TCPPresentationServer.js
+     - XXX: Server-side listening socket? MDN docs indicate the Presentation
+       stuff is not live yet
    - ./dom/ipc/preload.js
    - ./netwerk/protocol/websocket/WebSocketChannel.cpp
    - ./devtools/shared/security/socket.js
