@@ -314,30 +314,35 @@ Misc XPCOM:
    + ./layout/build/nsLayoutModule.cpp
 
  - @mozilla.org/network/*socket* (grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket)
-   - ./dom/presentation/provider/TCPPresentationServer.js
-     - XXX: Server-side listening socket? MDN docs indicate the Presentation
-       stuff is not live yet
-   - ./dom/ipc/preload.js
-   - ./netwerk/protocol/websocket/WebSocketChannel.cpp
-   - ./devtools/shared/security/socket.js
-   - ./mobile/android/chrome/content/WebappRT.js
-   - ./browser/extensions/loop/chrome/content/modules/MozLoopPushHandler.jsm
-   - ./toolkit/modules/Sntp.jsm
-   - ./toolkit/modules/secondscreen/RokuApp.jsm
-   - ./toolkit/xre/nsAppRunner.cpp
-
-   + ./addon-sdk/source/lib/sdk/io/stream.js
-     + Addon APIs
-   + ./dom/ipc/preload.js
-   + ./dom/network/TCPServerSocket.js
-   - ./mobile/android/chrome/content/WebappRT.js
-      - Debugger?
-      - XXX: Pretty sure this is only for 'webapps', but it sets some scary
-        prefs that might impact other browser operation if an app is
-        installed?
+   + ./dom/network/TCPSocket.cpp
+     + Already checked
    + ./netwerk/build/nsNetCID.h
+   + ./dom/presentation/provider/TCPPresentationServer.js
+     + XXX: Server-side listening socket? MDN docs indicate the Presentation
+       stuff is not live yet
+       + https://developer.mozilla.org/en-US/docs/Web/API/Presentation
+     + dom.presentation.enabled is currently false
+   - ./dom/network/TCPServerSocket.cpp
+     - ServerSocket:
+       - Presentation server (disabled)
+       - Android stuff: XXX: 
+         - ./dom/media/android/AndroidMediaResourceServer.cpp
+         - ./build/mobile/sutagent/android/
+       - ./gfx/layers/LayerScope.cpp
+         - is this e10s multiprocess stuff?
+   + ./dom/push/PushServiceWebSocket.jsm
+   + ./dom/ipc/preload.js
+   + ./netwerk/protocol/websocket/WebSocketChannel.cpp
+   + ./netwerk/protocol/websocket/WebSocketChannelParent.cpp
+   + ./services/sync/tps/extensions/mozmill/resource/stdlib/httpd.js
+   + ./browser/extensions/loop/chrome/content/modules/MozLoopPushHandler.jsm
+   + ./toolkit/modules/Sntp.jsm
+     + FxOS only
+   + ./toolkit/modules/secondscreen/RokuApp.jsm
+     + Disabled already
+   + ./toolkit/xre/nsAppRunner.cpp
    - Debugger stuff
-     - XXX: Has several prefs:
+     - XXX: Has several prefs: Verify we set these
        - devtools.webide.enabled
        - devtools.debugger.enabled?
        - devtools.debugger.remote-enabled
@@ -347,12 +352,16 @@ Misc XPCOM:
      - ./toolkit/devtools/client/connection-manager.js
      - ./toolkit/devtools/client/dbg-client.jsm
      - ./toolkit/devtools/security/socket.js
-   - ./toolkit/modules/Sntp.jsm
-     - B2G ntp
-   - ./toolkit/xre/nsAppRunner.cpp
+     - ./devtools/shared/security/auth.js
+     - ./mobile/android/chrome/content/WebappRT.js
+      - Debugger?
+      - XXX: Pretty sure this is only for 'webapps', but it sets some scary
+        prefs that might impact other browser operation if an app is
+        installed?
    + createTransport()
-     - ./netwerk/base/Dashboard.cpp
-       -XXX: What the hell is this?
+     + ./netwerk/base/Dashboard.cpp
+       + The only problematic function seems to be requestConnection, used
+         only by tests.
      + Found earlier:
        + ./toolkit/devtools/security/socket.js:
        + ./toolkit/modules/Sntp.jsm:
@@ -363,32 +372,31 @@ Misc XPCOM:
 
 - Misc XPCOM Contract-ID/CID defines:
   - NS_*SOCKET*_C should get them all (grep -R "NS_" | grep SOCKET | grep "_C")
-    + WebRTC and mtransport (disabled)
+    + WebRTC and mtransport (disabled)a
+    + dom/bluetooth/bluedroid/BluetoothDaemonInterface.cpp (B2G)
+    + dom/presentation/PresentationSessionTransport.cpp
+      + pref dom.presentation.*
+    + dom/media/bridge/MediaModule.cpp
+      + Compiled out by webrtc
+    + netwerk/base/nsIOService.cpp
+    + netwerk/standalone/nsNetModuleStandalone.cpp
+    + netwerk/sctp/datachannel/DataChannel.cpp
+      + Disabled with Webrtc
+    + security/manager/ssl/SSLServerCertVerification.cpp
+    + security/manager/ssl/SharedSSLState.cpp:
+    + Webrtc stuff (disabled)
+    + mtransport stuff (disabled)
     - gfx/layers/LayerScope.cpp
-      - XXX
-
-    + NS_SOCKETTRANSPORTSERVICE_*
-      + Proxied if TCP
-      + Udp limited to mtransport and webrtc
-    + NS_UDPSOCKET_*
-
+      - XXX: e10s?
     + netwerk/protocol/websocket/WebSocketChannel.cpp:
     + netwerk/protocol/http/nsHttpHandler.cpp:
     + netwerk/protocol/http/nsHttpConnectionMgr.cpp:
     + netwerk/protocol/http/TunnelUtils.cpp:
     + netwerk/protocol/ftp/nsFtpConnectionThread.cpp:
     + netwerk/protocol/ftp/nsFtpControlConnection.cpp
-    + netwerk/base/nsIOService.cpp:
-    + dom/media/bridge/MediaModule.cpp
-      + Compiled out by webrtc
-    + dom/workers/ServiceWorkerEvents.cpp:
-    + dom/bluetooth2/bluedroid/BluetoothDaemonInterface.cpp
-      + b2g only
-    + security/manager/ssl/src/SSLServerCertVerification.cpp:
     + security/manager/ssl/src/nsNSSCallbacks.cpp:
     + security/manager/ssl/src/nsNSSModule.cpp:
     + security/manager/ssl/src/nsTLSSocketProvider.cpp:
-    + security/manager/ssl/src/SharedSSLState.cpp:
 
 
 + Gstreamer
@@ -396,7 +404,7 @@ Misc XPCOM:
     + Uses ChannelMediaResource underneath, and ultimately an nsIChannel
     + Only exception seems to be if an RtspMediaResource could be used,
       but this appears to be FxOS-only.
-      + XXX: Note for FxOS tor support. This may be an issue.
+    - XXX: No, rtsp is now enabled for android!
 
 Android Java calls:
   + Uses HttpURLConnection:
