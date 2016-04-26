@@ -158,6 +158,9 @@
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
    torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 
+#. Write an email to tor-announce in case this release is concerned with getting
+#  a stable version out. Using the contents of the blog entry should do it.
+
 #. Update website's torbrowser versions file to remove old versions
 #  NOTE: You probably want to wait some hours (12-24?) after pushing the
 #  update responses before doing this, so that people have a chance to see
