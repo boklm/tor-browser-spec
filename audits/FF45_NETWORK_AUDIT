@@ -408,15 +408,42 @@ Misc XPCOM:
 
 Android Java calls:
   + Uses HttpURLConnection:
-    + mobile/android/base/CrashReporter.java
-    + mobile/android/base/SuggestClient.java
-    + mobile/android/base/distribution/Distribution.java
-  + Uses org.apache.http.client.*
-    + mobile/android/base/favicons/LoadFaviconTask.java
-  + Uses ch.boye.httpclientandroidlib.impl.client.*:
-    + mobile/android/base/sync/net/BaseResource.java
-    + mobile/android/base/CrashReporter.java
-    + mobile/android/base/SuggestClient.java
-    + mobile/android/base/distribution/Distribution.java
+    + mobile/android/base/java/org/mozilla/gecko/CrashReporter.java
+    + mobile/android/base/java/org/mozilla/gecko/SuggestClient.java
+    + mobile/android/base/java/org/mozilla/gecko/distribution/Distribution.java
     + mobile/android/search/java/org/mozilla/search/providers/SearchEngineManager.java
     + mobile/android/stumbler/java/org/mozilla/mozstumbler/service/utils/AbstractCommunicator.java
+    + mobile/android/tests/browser/robocop/src/org/mozilla/gecko/tests/BaseRobocopTest.java
+    + mobile/android/tests/browser/robocop/src/org/mozilla/gecko/tests/testDistribution.java
+    + mobile/android/thirdparty/com/keepsafe/switchboard/SwitchBoard.java
+    + mobile/android/thirdparty/com/squareup/picasso/UrlConnectionDownloader.java
+  + Uses ch.boye.httpclientandroidlib.impl.client.*:
+    + mobile/android/base/java/org/mozilla/gecko/dlc/DownloadContentHelper.java
+    + mobile/android/base/java/org/mozilla/gecko/favicons/LoadFaviconTask.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/FxAccountClient10.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/oauth/FxAccountAbstractClient.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/reading/ReadingListClient.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/DeleteChannel.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/GetChannelStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/GetRequestStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/PutRequestStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/AbstractBearerTokenAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/AuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResource.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResourceDelegate.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BasicAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/HMACAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/HawkAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/ResourceDelegate.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageCollectionRequest.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageRequest.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/setup/auth/AuthenticateAccountStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/tokenserver/TokenServerClient.java
+    + mobile/android/tests/background/junit4/src/org/mozilla/android/sync/test/helpers/MockResourceDelegate.java
+    + mobile/android/tests/background/junit4/src/org/mozilla/gecko/sync/net/test/TestHawkAuthHeaderProvider.java
+    + mobile/android/tests/background/junit4/src/org/mozilla/gecko/sync/net/test/TestLiveHawkAuth.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/client/protocol/ResponseAuthCache.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/impl/client/cache/CachingHttpClientBuilder.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/impl/client/cache/CachingHttpClients.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/impl/execchain/ProtocolExec.java
+    + mobile/android/thirdparty/com/adjust/sdk/AdjustFactory.java
