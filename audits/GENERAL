@@ -31,4 +31,9 @@ When we finally start preparations for the switch to ESR 45 we basically have
 all the ff45-esr tickets filed, and ideally prioritized, which are resulting
 out of Firefox 39-44 reviews. The only remaining tasks for the feature review
 are: taking care of ESR 45 and double-checking the undocumented bugs and the
-ones with milestone Firefox39-45.
+ones with milestone Firefox39-45. Additionally, it is worth comparing the
+preference changes by diffing `all.js` and `firefox.js` to make sure all
+features we want to be disabled are still disabled and things we want to have
+enabled are so in fact. Checking the diff between those preference files might
+as well help finding issues we overlooked while doing the feature review
+outlined above.
