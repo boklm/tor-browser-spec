@@ -69,6 +69,14 @@
    #XXX: Currently manual
    # For stable releases put tails-dev@boum.org into Cc
 
+#. Code Sign the OS X dmg files:
+   # XXX: Document
+
+#. Regenerate OS X MAR files from code signed dmg files
+   # The code signed dmg files should be in the $TORBROWSER_VERSION directory
+   # Install a recent p7zip version (see ../tools/dmg2mar for instructions)
+   make dmg2mars # or dmg2mars-alpha
+
 #. Sign the MAR update files
    # First, copy the torbrowser tree to removable storage:
    rsync -avP $TORBROWSER_BUILDDIR/../../../ /media/storage/TBB/
