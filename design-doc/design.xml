@@ -23,7 +23,13 @@
      <address><email>sjmurdoch#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>May 6th, 2015</pubdate>
+   <author>
+    <firstname>Georg</firstname><surname>Koppen</surname>
+    <affiliation>
+     <address><email>gk#torproject org</email></address>
+    </affiliation>
+   </author>
+   <pubdate>March 10th, 2017</pubdate>
  </articleinfo>
 
 <sect1>
@@ -35,7 +41,7 @@ This document describes the <link linkend="adversary">adversary model</link>,
 linkend="Implementation">implementation</link> <!-- and <link
 linkend="Packaging">packaging</link> and <link linkend="Testing">testing
 procedures</link> --> of the Tor Browser. It is current as of Tor Browser
-4.5.
+6.5.1.
 
   </para>
   <para>
@@ -69,7 +75,7 @@ additionally augmented through the <ulink
 url="https://gitweb.torproject.org/torbutton.git/tree/">Torbutton
 extension</ulink>, though we are in the process of moving this functionality
 into direct Firefox patches. We also <ulink
-url="https://gitweb.torproject.org/tor-browser.git/tree/browser/app/profile/000-tor-browser.js?h=tor-browser-31.6.0esr-4.5-1">change
+url="https://gitweb.torproject.org/tor-browser.git/tree/browser/app/profile/000-tor-browser.js?h=tor-browser-45.8.0esr-6.5-2">change
 a number of Firefox preferences</ulink> from their defaults.
 
    </para>
@@ -85,7 +91,7 @@ Instantbird, and XULRunner.
 
 To help protect against potential Tor Exit Node eavesdroppers, we include
 <ulink url="https://www.eff.org/https-everywhere">HTTPS-Everywhere</ulink>. To
-provide users with optional defense-in-depth against Javascript and other
+provide users with optional defense-in-depth against JavaScript and other
 potential exploit vectors, we also include <ulink
 url="http://noscript.net/">NoScript</ulink>. We also modify <ulink
 url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/tree/Bundle-Data/linux/Data/Browser/profile.default/preferences/extension-overrides.js">several
@@ -98,11 +104,11 @@ To provide censorship circumvention in areas where the public Tor network is
 blocked either by IP, or by protocol fingerprint, we include several <ulink
 url="https://trac.torproject.org/projects/tor/wiki/doc/AChildsGardenOfPluggableTransports">Pluggable
 Transports</ulink> in the distribution. As of this writing, we include <ulink
-url="https://gitweb.torproject.org/pluggable-transports/obfs4.git">Obfs4proxy</ulink>,
+url="https://gitweb.torproject.org/pluggable-transports/obfs4.git">Obfs3proxy,
+Obfs4proxy, Scramblesuit</ulink>,
 <ulink
 url="https://trac.torproject.org/projects/tor/wiki/doc/meek">meek</ulink>,
-<ulink url="https://fteproxy.org/">FTE</ulink>, and <ulink
-url="https://crypto.stanford.edu/flashproxy/">FlashProxy</ulink>.
+and <ulink url="https://fteproxy.org/">FTE</ulink>.
 
    </para>
 
@@ -116,7 +122,7 @@ url="https://crypto.stanford.edu/flashproxy/">FlashProxy</ulink>.
     - state issues
   - Privacy Requirements [Mostly blog post]
     - Avoid Cross-Domain Linkability
-      - Indentifiers  
+      - Identifiers
       - Fingerprinting
     - 100% self-contained
       - Does not share state with other modes/browsers
@@ -132,7 +138,7 @@ url="https://crypto.stanford.edu/flashproxy/">FlashProxy</ulink>.
 
 The Tor Browser Design Requirements are meant to describe the properties of a
 Private Browsing Mode that defends against both network and local forensic
-adversaries. 
+adversaries.
 
   </para>
   <para>
@@ -142,7 +148,7 @@ linkend="security">Security Requirements</link>, and <link
 linkend="privacy">Privacy Requirements</link>. Security Requirements are the
 minimum properties in order for a browser to be able to support Tor and
 similar privacy proxies safely. Privacy requirements are the set of properties
-that cause us to prefer one browser over another. 
+that cause us to prefer one browser over another.
 
   </para>
   <para>
@@ -173,7 +179,7 @@ in order for Tor to support the use of a particular browser.
 
    </para>
 
-<orderedlist> 
+<orderedlist>
  <listitem><link linkend="proxy-obedience"><command>Proxy
 Obedience</command></link>
  <para>The browser
@@ -233,7 +239,7 @@ The privacy requirements are primarily concerned with reducing linkability:
 the ability for a user's activity on one site to be linked with their activity
 on another site without their knowledge or explicit consent. With respect to
 browser support, privacy requirements are the set of properties that cause us
-to prefer one browser over another. 
+to prefer one browser over another.
 
    </para>
 
@@ -248,9 +254,9 @@ to be the entire fully qualified domain name.
 
    </para>
 
-<orderedlist> 
+<orderedlist>
  <listitem><link linkend="identifier-linkability"><command>Cross-Origin
-Identifier Unlinkability</command></link> 
+Identifier Unlinkability</command></link>
   <para>
 
 User activity on one URL bar origin MUST NOT be linkable to their activity in
@@ -265,7 +271,7 @@ login in a substantial way.
   </para>
  </listitem>
  <listitem><link linkend="fingerprinting-linkability"><command>Cross-Origin
-Fingerprinting Unlinkability</command></link> 
+Fingerprinting Unlinkability</command></link>
   <para>
 
 User activity on one URL bar origin MUST NOT be linkable to their activity in
@@ -315,7 +321,7 @@ url="https://blog.torproject.org/blog/toggle-or-not-toggle-end-torbutton">failur
 of Torbutton</ulink>: Even if users managed to install everything properly,
 the toggle model was too hard for the average user to understand, especially
 in the face of accumulating tabs from multiple states crossed with the current
-Tor-state of the browser. 
+Tor-state of the browser.
 
       </para>
      </listitem>
@@ -368,7 +374,7 @@ Instead of global browser privacy options, privacy decisions should be made
 <ulink
 url="https://wiki.mozilla.org/Privacy/Features/Site-based_data_management_UI">per
 URL bar origin</ulink> to eliminate the possibility of linkability
-between domains. For example, when a plugin object (or a Javascript access of
+between domains. For example, when a plugin object (or a JavaScript access of
 window.plugins) is present in a page, the user should be given the choice of
 allowing that plugin object for that URL bar origin only. The same
 goes for exemptions to third party cookie policy, geolocation, and any other
@@ -376,7 +382,7 @@ privacy permissions.
      </para>
      <para>
 If the user has indicated they wish to record local history storage, these
-permissions can be written to disk. Otherwise, they should remain memory-only. 
+permissions can be written to disk. Otherwise, they should remain memory-only.
      </para>
      </listitem>
      <listitem><command>No filters</command>
@@ -395,11 +401,35 @@ should be focused on general solutions that prevent tracking by all
 third parties, rather than a list of specific URLs or hosts.
      </para>
      <para>
-Filter-based addons can also introduce strange breakage and cause usability
-nightmares, and will also fail to do their job if an adversary simply
-registers a new domain or creates a new URL path. Worse still, the unique
-filter sets that each user creates or installs will provide a wealth of
-fingerprinting targets.
+Implementing filter-based blocking directly into the browser, such as done with
+<ulink
+url="http://ieee-security.org/TC/SPW2015/W2SP/papers/W2SP_2015_submission_32.pdf">
+Firefox' Tracking Protection</ulink>, does not alleviate the concerns mentioned
+in the previous paragraph. There is still just a list concerned with specific
+URLs and hosts which, in this case, are
+<ulink url="https://services.disconnect.me/disconnect-plaintext.json">
+assembled</ulink> by <ulink url="https://disconnect.me/trackerprotection">
+Disconnect</ulink> and <ulink url="https://github.com/mozilla-services/shavar-list-exceptions">adapted</ulink> by Mozilla.
+     </para>
+     <para>
+Trying to resort to <ulink
+url="https://jonathanmayer.org/papers_data/bau13.pdf">filter methods based on
+machine learning</ulink> does not solve the problem either: they don't provide
+a general solution to the tracking problem as they are working probabilistically.
+Even with a precision rate at 99% and a false positive rate at 0.1% trackers
+would be missed and sites would be wrongly blocked.
+     </para>
+     <para>
+Filter-based solutions in general can also introduce strange breakage and cause
+usability nightmares. Coping with those easily leads to just <ulink
+url="https://github.com/mozilla-services/shavar-list-exceptions">whitelisting
+</ulink>
+the affected domains defeating the purpose of the filter in the first place.
+Filters will also fail to do their job if an adversary simply
+registers a new domain or <ulink
+url="http://ieee-security.org/TC/SPW2015/W2SP/papers/W2SP_2015_submission_24.pdf">
+creates a new URL path</ulink>. Worse still, the unique filter sets that each
+user creates or installs will provide a wealth of fingerprinting targets.
       </para>
       <para>
 
@@ -485,7 +515,7 @@ Tor Browser. Let's start with the goals.
 <!-- These aren't really commands.. But it's the closest I could find in an
 acceptable style.. Don't really want to make my own stylesheet -->
      <listitem><command>Bypassing proxy settings</command>
-     <para>The adversary's primary goal is direct compromise and bypass of 
+     <para>The adversary's primary goal is direct compromise and bypass of
 Tor, causing the user to directly connect to an IP of the adversary's
 choosing.</para>
      </listitem>
@@ -493,7 +523,7 @@ choosing.</para>
      <para>If direct proxy bypass is not possible, the adversary will likely
 happily settle for the ability to correlate something a user did via Tor with
 their non-Tor activity. This can be done with cookies, cache identifiers,
-Javascript events, and even CSS. Sometimes the fact that a user uses Tor may
+JavaScript events, and even CSS. Sometimes the fact that a user uses Tor may
 be enough for some authorities.</para>
      </listitem>
      <listitem><command>History disclosure</command>
@@ -518,7 +548,7 @@ attempt to perform this correlation without the user's explicit consent.
 
 Fingerprinting (more generally: "anonymity set reduction") is used to attempt
 to gather identifying information on a particular individual without the use
-of tracking identifiers. If the dissident or whistleblower's timezone is
+of tracking identifiers. If the dissident's or whistleblower's timezone is
 available, and they are using a rare build of Firefox for an obscure operating
 system, and they have a specific display resolution only used on one type of
 laptop, this can be very useful information for tracking them down, or at
@@ -561,7 +591,7 @@ wild.
 The adversary can also run websites, or more likely, they can contract out
 ad space from a number of different ad servers and inject content that way. For
 some users, the adversary may be the ad servers themselves. It is not
-inconceivable that ad servers may try to subvert or reduce a user's anonymity 
+inconceivable that ad servers may try to subvert or reduce a user's anonymity
 through Tor for marketing purposes.
      </para>
      </listitem>
@@ -575,7 +605,7 @@ activity.
 
 Additionally, at this position the adversary can block Tor, or attempt to
 recognize the traffic patterns of specific web pages at the entrance to the Tor
-network. 
+network.
 
      </para>
      </listitem>
@@ -595,10 +625,10 @@ general suspicion.
     <title>Adversary Capabilities - Attacks</title>
     <para>
 
-The adversary can perform the following attacks from a number of different 
+The adversary can perform the following attacks from a number of different
 positions to accomplish various aspects of their goals. It should be noted
 that many of these attacks (especially those involving IP address leakage) are
-often performed by accident by websites that simply have Javascript, dynamic 
+often performed by accident by websites that simply have JavaScript, dynamic
 CSS elements, and plugins. Others are performed by ad servers seeking to
 correlate users' activity across different IP addresses, and still others are
 performed by malicious agents on the Tor network and at national firewalls.
@@ -638,10 +668,10 @@ attributes</command>
 <para>
 
 There is an absurd amount of information available to websites via attributes
-of the browser. This information can be used to reduce anonymity set, or even
-uniquely fingerprint individual users. Attacks of this nature are typically
-aimed at tracking users across sites without their consent, in an attempt to
-subvert our <link linkend="fingerprinting-linkability">Cross-Origin
+of the browser. This information can be used to reduce the anonymity set, or
+even uniquely fingerprint individual users. Attacks of this nature are
+typically aimed at tracking users across sites without their consent, in an
+attempt to subvert our <link linkend="fingerprinting-linkability">Cross-Origin
 Fingerprinting Unlinkability</link> and <link
 linkend="new-identity">Long-Term Unlinkability</link> design requirements.
 
@@ -649,16 +679,15 @@ linkend="new-identity">Long-Term Unlinkability</link> design requirements.
 
 <para>
 
-Fingerprinting is an intimidating
-problem to attempt to tackle, especially without a metric to determine or at
-least intuitively understand and estimate which features will most contribute
-to linkability between visits.
+Fingerprinting is an intimidating problem to attempt to tackle, especially
+without a metric to determine or at least intuitively understand and estimate
+which features will most contribute to linkability between visits.
 
 </para>
 
 <para>
 
-The <ulink url="https://panopticlick.eff.org/about.php">Panopticlick study
+The <ulink url="https://panopticlick.eff.org/about">Panopticlick study
 done</ulink> by the EFF uses the <ulink
 url="https://en.wikipedia.org/wiki/Entropy_%28information_theory%29">Shannon
 entropy</ulink> - the number of identifying bits of information encoded in
@@ -694,23 +723,28 @@ AdBlock and other privacy filters can be used to fingerprint request patterns
      </para>
      </listitem>
 
-     <listitem><command>Inserting Javascript</command>
+     <listitem><command>Inserting JavaScript</command>
      <para>
 
-Javascript can reveal a lot of fingerprinting information. It provides DOM
+JavaScript can reveal a lot of fingerprinting information. It provides DOM
 objects such as window.screen and window.navigator to extract information
-about the user agent. 
+about the user agent.
 
-Also, Javascript can be used to query the user's timezone via the
+Also, JavaScript can be used to query the user's timezone via the
 <function>Date()</function> object, <ulink
 url="https://www.khronos.org/registry/webgl/specs/1.0/#5.13">WebGL</ulink> can
 reveal information about the video card in use, and high precision timing
 information can be used to <ulink
 url="http://w2spconf.com/2011/papers/jspriv.pdf">fingerprint the CPU and
-interpreter speed</ulink>. In the future, new JavaScript features such as
-<ulink url="http://w3c-test.org/webperf/specs/ResourceTiming/">Resource
-Timing</ulink> may leak an unknown amount of network timing related
-information.
+interpreter speed</ulink>. JavaScript features such as
+<ulink url="https://www.w3.org/TR/resource-timing/">Resource Timing</ulink>
+may leak an unknown amount of network timing related information. And, moreover,
+JavaScript is able to
+<ulink url="https://seclab.cs.ucsb.edu/media/uploads/papers/sp2013_cookieless.pdf">
+extract</ulink>
+<ulink url="https://www.cosic.esat.kuleuven.be/fpdetective/">available</ulink>
+<ulink url="https://hal.inria.fr/hal-01285470v2/document">fonts</ulink> on a
+device with high precision.
 
      </para>
      </listitem>
@@ -727,7 +761,7 @@ store unique identifiers that are more difficult to clear than standard
 cookies.  <ulink url="http://epic.org/privacy/cookies/flash.html">Flash-based
 cookies</ulink> fall into this category, but there are likely numerous other
 examples. Beyond fingerprinting, plugins are also abysmal at obeying the proxy
-settings of the browser. 
+settings of the browser.
 
 
      </para>
@@ -738,7 +772,7 @@ settings of the browser.
 <ulink url="https://developer.mozilla.org/En/CSS/Media_queries">CSS media
 queries</ulink> can be inserted to gather information about the desktop size,
 widget size, display type, DPI, user agent type, and other information that
-was formerly available only to Javascript.
+was formerly available only to JavaScript.
 
      </para>
      </listitem>
@@ -751,21 +785,22 @@ Website traffic fingerprinting is an attempt by the adversary to recognize the
 encrypted traffic patterns of specific websites. In the case of Tor, this
 attack would take place between the user and the Guard node, or at the Guard
 node itself.
-     </para> 
+     </para>
 
 	 <para> The most comprehensive study of the statistical properties of this
 attack against Tor was done by <ulink
 url="http://lorre.uni.lu/~andriy/papers/acmccs-wpes11-fingerprinting.pdf">Panchenko
 et al</ulink>. Unfortunately, the publication bias in academia has encouraged
-the production of a number of follow-on attack papers claiming "improved"
-success rates, in some cases even claiming to completely invalidate any
-attempt at defense. These "improvements" are actually enabled primarily by
-taking a number of shortcuts (such as classifying only very small numbers of
-web pages, neglecting to publish ROC curves or at least false positive rates,
-and/or omitting the effects of dataset size on their results). Despite these
-subsequent "improvements", we are skeptical of the efficacy of this attack in
-a real world scenario, <emphasis>especially</emphasis> in the face of any
-defenses.
+the production of
+<ulink url="https://blog.torproject.org/blog/critique-website-traffic-fingerprinting-attacks">a
+number of follow-on attack papers claiming "improved" success rates</ulink>, in
+some cases even claiming to completely invalidate any attempt at defense. These
+"improvements" are actually enabled primarily by taking a number of shortcuts
+(such as classifying only very small numbers of web pages, neglecting to publish
+ROC curves or at least false positive rates, and/or omitting the effects of
+dataset size on their results). Despite these subsequent "improvements", we are
+skeptical of the efficacy of this attack in a real world scenario,
+<emphasis>especially</emphasis> in the face of any defenses.
 
      </para>
      <para>
@@ -790,8 +825,8 @@ function of the complexity of the categories</ulink> you need to classify.
 In the case of this attack, the key factors that increase the classification
 complexity (and thus hinder a real world adversary who attempts this attack)
 are large numbers of dynamically generated pages, partially cached content,
-and also the non-web activity of entire Tor network. This yields an effective
-number of "web pages" many orders of magnitude larger than even <ulink
+and also the non-web activity of the entire Tor network. This yields an
+effective number of "web pages" many orders of magnitude larger than even <ulink
 url="http://lorre.uni.lu/~andriy/papers/acmccs-wpes11-fingerprinting.pdf">Panchenko's
 "Open World" scenario</ulink>, which suffered continuous near-constant decline
 in the true positive rate as the "Open World" size grew (see figure 4). This
@@ -838,7 +873,7 @@ can perform similar actions.
 
 For the purposes of the browser itself, we limit the scope of this adversary
 to one that has passive forensic access to the disk after browsing activity
-has taken place. This adversary motivates our 
+has taken place. This adversary motivates our
 <link linkend="disk-avoidance">Disk Avoidance</link> defenses.
 
     </para>
@@ -847,7 +882,7 @@ has taken place. This adversary motivates our
 An adversary with arbitrary code execution typically has more power, though.
 It can be quite hard to really significantly limit the capabilities of such an
 adversary. <ulink
-url="http://tails.boum.org/contribute/design/">The Tails system</ulink> can
+url="https://tails.boum.org/contribute/design/">The Tails system</ulink> can
 provide some defense against this adversary through the use of readonly media
 and frequent reboots, but even this can be circumvented on machines without
 Secure Boot through the use of BIOS rootkits.
@@ -886,12 +921,12 @@ are typically linked for these cases.
 
 Proxy obedience is assured through the following:
    </para>
-<orderedlist> 
+<orderedlist>
  <listitem><command>Firefox proxy settings, patches, and build flags</command>
  <para>
 
 Our <ulink
-url="https://gitweb.torproject.org/tor-browser.git/tree/browser/app/profile/000-tor-browser.js?h=tor-browser-31.6.0esr-4.5-1">Firefox
+url="https://gitweb.torproject.org/tor-browser.git/tree/browser/app/profile/000-tor-browser.js?h=tor-browser-45.8.0esr-6.5-2">Firefox
 preferences file</ulink> sets the Firefox proxy settings to use Tor directly
 as a SOCKS proxy. It sets <command>network.proxy.socks_remote_dns</command>,
 <command>network.proxy.socks_version</command>,
@@ -910,18 +945,57 @@ as set the pref <command>media.peerconnection.enabled</command> to false.
 
 We also patch Firefox in order to provide several defense-in-depth mechanisms
 for proxy safety. Notably, we <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=8c6604d2b776f0d8e33ed9130c5f5b8cf744bac8">patch
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=177e78923b3252a7442160486ec48252a6adb77a">patch
 the DNS service</ulink> to prevent any browser or addon DNS resolution, and we
-also <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=c96c854c0eca21fed1362d1ddd164b657d351795">patch
+also <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=6e17cef8f3cf61fdabf99e40d5e09a730142d6cd">
+remove the DNS lookup for the profile lock signature</ulink>. Furhermore, we
+<ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=8197f6ffe58ba167e3bca4230c5721ebcfae55de">patch
 OCSP and PKIX code</ulink> to prevent any use of the non-proxied command-line
 tool utility functions from being functional while linked in to the browser.
 In both cases, we could find no direct paths to these routines in the browser,
 but it seemed better safe than sorry.
 
  </para>
+
  <para>
 
+For further defense-in-depth we disabled WebIDE because it can bypass proxy
+settings for remote debugging, and also because it downloads extensions we
+have not reviewed. We
+are doing this by setting
+<command>devtools.webide.autoinstallADBHelper</command>,
+<command>devtools.webide.autoinstallFxdtAdapters</command>,
+<command>devtools.webide.enabled</command>, and
+<command>devtools.appmanager.enabled</command> to <command>false</command>.
+Moreover, we removed the Roku Screen Sharing and screencaster code with a
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=	ad4abdb2e724fec060063f460604b829c66ea08a">
+Firefox patch</ulink> as these features can bypass proxy settings as well.
+ </para>
+
+ <para>
+Shumway is removed, too, for possible proxy bypass risks. We did this by
+backporting a <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=d020a4992d8d25baf7dfb5c8b308d80b47a8d312">
+number</ulink> <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=98bf6c81b22cb5e4651a5fc060182f27b26c8ee5">
+of</ulink> <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=14b723f28a6b1dd78093691013d1bf7d49dc4413">Mozilla patches</ulink>.
+Further down on our road to proxy safety we <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=a9e1d8eac28abb364bbfd3adabeae287751a6a8e">
+disabled the network tickler</ulink> as it has the capability to send UDP
+traffic.
+ </para>
+
+ <para>
+
+Finally, we <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=8e52265653ab223dc5af679f9f0c073b44371fa4">
+disabled mDNS support</ulink>, since mDNS uses UDP packets. We also disable
+Mozilla's TCPSocket by setting
+<command>dom.mozTCPSocket.enabled</command> to <command>false</command>. We
+<ulink url="https://trac.torproject.org/projects/tor/ticket/18866">intend to
+rip out</ulink> the TCPSocket code in the future to have an even more solid
+guarantee that it won't be used by accident.
+
+ </para>
+
+ <para>
 During every Extended Support Release transition, we perform <ulink
 url="https://gitweb.torproject.org/tor-browser-spec.git/tree/audits">in-depth
 code audits</ulink> to verify that there were no system calls or XPCOM
@@ -933,18 +1007,17 @@ We have verified that these settings and patches properly proxy HTTPS, OCSP,
 HTTP, FTP, gopher (now defunct), DNS, SafeBrowsing Queries, all JavaScript
 activity, including HTML5 audio and video objects, addon updates, WiFi
 geolocation queries, searchbox queries, XPCOM addon HTTPS/HTTP activity,
-WebSockets, and live bookmark updates. We have also verified that IPv6
-connections are not attempted, through the proxy or otherwise (Tor does not
-yet support IPv6). We have also verified that external protocol helpers, such
-as SMB URLs and other custom protocol handlers are all blocked.
-
+WebSockets, and live bookmark updates. We have also verified that external
+protocol helpers, such as SMB URLs and other custom protocol handlers are all
+blocked.
  </para>
 </listitem>
 
  <listitem><command>Disabling plugins</command>
 
- <para>Plugins have the ability to make arbitrary OS system calls and  <ulink
-url="http://decloak.net/">bypass proxy settings</ulink>. This includes
+<para>
+Plugins, like Flash, have the ability to make arbitrary OS system calls and
+<ulink url="http://decloak.net/">bypass proxy settings</ulink>. This includes
 the ability to make UDP sockets and send arbitrary data independent of the
 browser proxy settings.
  </para>
@@ -965,11 +1038,30 @@ restricted from automatic load through Firefox's click-to-play preference
 In addition, to reduce any unproxied activity by arbitrary plugins at load
 time, and to reduce the fingerprintability of the installed plugin list, we
 also patch the Firefox source code to <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=465cb8295db58a6450dc14a593d29372cbebc71d">
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=09883246904ce4dede9f3c4d4bb8d644aefe9d1d">
 prevent the load of any plugins except for Flash and Gnash</ulink>. Even for
-Flash and Gnash, we also patch Firefox to <ulink url=
-"https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=e5531b1baa3c96dee7d8d4274791ff393bafd241">prevent loading them into the
-address space</ulink> until they are explicitly enabled.
+Flash and Gnash, we also patch Firefox to <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=9a0d506e3655f2fdec97ee4217f354941e39b5b3">
+prevent loading them into the address space</ulink> until they are explicitly
+enabled.
+ </para>
+ <para>
+With <ulink url="https://wiki.mozilla.org/GeckoMediaPlugins">Gecko Media
+Plugins</ulink> (GMPs) a second type of plugins is available. They are mainly
+third party codecs and <ulink url="https://www.w3.org/TR/encrypted-media/">EME</ulink>
+content decryption modules. We currently disable these plugins as they either
+can't be built reproducibly or are binary blobs which we are not allowed to
+audit (or both). For the EME case we use the <command>--disable-eme</command>
+configure switch and set
+<command>browser.eme.ui.enabled</command>,
+<command>media.gmp-eme-adobe.enabled</command>,
+<command>media.eme.enabled</command>, and
+<command>media.eme.apiVisible</command> to <command>false</command> to indicate
+to the user that this feature is disabled. For GMPs in general we make sure that
+the external server is not even pinged for updates/downloads in the first place
+by setting <command>media.gmp-manager.url.override</command> to
+<command>data:text/plain,</command> and avoid any UI with <command>
+media.gmp-provider.enabled</command> set to <command>false</command>.
 
  </para>
  </listitem>
@@ -1006,7 +1098,10 @@ bypassing Tor. It is for this reason we disable the addon whitelist
 before installing addons regardless of the source. We also exclude
 system-level addons from the browser through the use of
 <command>extensions.enabledScopes</command> and
-<command>extensions.autoDisableScopes</command>.
+<command>extensions.autoDisableScopes</command>. Furthermore, we set
+<command>extensions.systemAddon.update.url</command> and <command>
+extensions.hotfix.id</command> to an empty string in order
+to avoid the risk of getting extensions installed by Mozilla into Tor Browser.
 
   </para>
  </listitem>
@@ -1018,7 +1113,7 @@ system-level addons from the browser through the use of
 
 Tor Browser State is separated from existing browser state through use of a
 custom Firefox profile, and by setting the $HOME environment variable to the
-root of the bundle's directory.  The browser also does not load any
+root of the bundle's directory. The browser also does not load any
 system-wide extensions (through the use of
 <command>extensions.enabledScopes</command> and
 <command>extensions.autoDisableScopes</command>). Furthermore, plugins are
@@ -1034,8 +1129,8 @@ directory.
     <blockquote>
 
 The User Agent MUST (at user option) prevent all disk records of browser activity.
-The user should be able to optionally enable URL history and other history
-features if they so desire. 
+The user SHOULD be able to optionally enable URL history and other history
+features if they so desire.
 
     </blockquote>
    </sect3>
@@ -1043,25 +1138,15 @@ features if they so desire.
     <title>Implementation Status:</title>
    <blockquote>
 
-We achieve this goal through several mechanisms. First, we set the Firefox
-Private Browsing preference
-<command>browser.privatebrowsing.autostart</command>. In addition, four Firefox patches are needed to prevent disk writes, even if
-Private Browsing Mode is enabled. We need to
-
-<ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=44b8ae43a83191bbf5161cbdbf399e10c1b943d0">prevent
-the permissions manager from recording HTTPS STS state</ulink>, <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=e5abcb28f131aa96e8762212573488d303b3614d">prevent
-intermediate SSL certificates from being recorded</ulink>, <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=ee34e122ac2929a7668314483e36e58a88c98c08">prevent
-the clipboard cache from being written to disk for large pastes</ulink>, and
-<ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=c8e357740dd7bafa2a129007f27d2b243e36f4a2">prevent
-the content preferences service from recording site zoom</ulink>. We also had
-to disable the media cache with the pref <command>media.cache_size</command>,
-to prevent HTML5 videos from being written to the OS temporary directory,
-which happened regardless of the private browsing mode setting.
-
+     We are working towards this goal through several mechanisms. First, we set
+     the Firefox Private Browsing preference
+     <command>browser.privatebrowsing.autostart</command>.
+     We also had to disable the media cache with the pref <command>media.cache_size</command>, to prevent HTML5 videos from being written to the OS temporary directory, which happened regardless of the private browsing mode setting.
+     Finally, we needed to disable asm.js as it turns out that
+     <ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1047105">asm.js
+     cache entries get written to disk</ulink> in private browsing mode. This
+     is done by setting <command>javascript.options.asmjs</command> to
+     <command>false</command> (for linkability concerns with asm.js see below).
     </blockquote>
     <blockquote>
 
@@ -1092,19 +1177,18 @@ url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-disk-leak&amp;
    <title>Application Data Isolation</title>
    <para>
 
-Tor Browser Bundle MUST NOT cause any information to be written outside of the
-bundle directory. This is to ensure that the user is able to completely and
-safely remove the bundle without leaving other traces of Tor usage on their
-computer.
+Tor Browser MUST NOT cause any information to be written outside of the bundle
+directory. This is to ensure that the user is able to completely and
+safely remove it without leaving other traces of Tor usage on their computer.
 
    </para>
    <para>
 
-To ensure TBB directory isolation, we set
+To ensure Tor Browser directory isolation, we set
 <command>browser.download.useDownloadDir</command>,
 <command>browser.shell.checkDefaultBrowser</command>, and
 <command>browser.download.manager.addToRecentDocs</command>. We also set the
-$HOME environment variable to be the TBB extraction directory.
+$HOME environment variable to be the Tor Browser extraction directory.
    </para>
 
   </sect2>
@@ -1143,7 +1227,7 @@ An example of this simplification can be seen in Figure 1.
     <caption> <para/>
 
 This example UI is a mock-up of how isolating identifiers to the URL bar
-origin can simplify the privacy UI for all data - not just cookies. Once
+domain can simplify the privacy UI for all data - not just cookies. Once
 browser identifiers and site permissions operate on a URL bar basis, the same
 privacy window can represent browsing history, DOM Storage, HTTP Auth, search
 form history, login values, and so on within a context menu for each site.
@@ -1178,33 +1262,52 @@ Firefox versions.
 
 As a stopgap to satisfy our design requirement of unlinkability, we currently
 entirely disable 3rd party cookies by setting
-<command>network.cookie.cookieBehavior</command> to 1. We would prefer that
-third party content continue to function, but we believe the requirement for 
-unlinkability trumps that desire.
+<command>network.cookie.cookieBehavior</command> to <command>1</command>. We
+would prefer that third party content continue to function, but we believe the
+requirement for unlinkability trumps that desire.
 
      </para>
     </listitem>
     <listitem><command>Cache</command>
-     <para>
+      <para><command>Design Goal:</command>
+        All cache entries MUST be isolated to the URL bar domain.
+      </para>
+        <para><command>Implementation Status:</command>
 
-In Firefox, there are actually two distinct caching mechanisms: One for
-general content (HTML, Javascript, CSS), and one specifically for images. The
-content cache is isolated to the URL bar domain by <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=7c58be929777d386a03e1faaee648909151fd951">altering
+In Firefox, there are actually several distinct caching mechanisms: One is for
+general content (HTML, JavaScript, CSS). That content cache is isolated to the
+URL bar domain by <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=9e88ab764b1c9c5d26a398ec6381eef88689929c">altering
 each cache key</ulink> to include an additional ID that includes the URL bar
 domain. This functionality can be observed by navigating to <ulink
 url="about:cache">about:cache</ulink> and viewing the key used for each cache
-entry. Each third party element should have an additional "id=string"
-property prepended, which will list the FQDN that was used to source it.
+entry. Each third party element should have an additional "string@:"
+property prepended, which will list the base domain that was used to source it.
 
      </para>
      <para>
 
-Additionally, because the image cache is a separate entity from the content
-cache, we had to patch Firefox to also <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=d8b98a75fb200268c40886d876adc19e00b933bf">isolate
+Additionally, there is the image cache. Because it is a separate entity from
+the content cache, we had to patch Firefox to also <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=05749216781d470ab95c2d101dd28ad000d9161f">isolate
 this cache per URL bar domain</ulink>.
 
+     </para>
+     <para>
+Furthermore there is the Cache API (CacheStorage). That one is currently not
+available in Tor Browser as we do not allow third party cookies and are in
+Private Browsing Mode by default.
+     </para>
+     <para>
+Finally, we have the asm.js cache. The cache entry of the sript is (among
+others things, like type of CPU, build ID, source characters of the asm.js
+module etc.) keyed <ulink url="https://blog.mozilla.org/luke/2014/01/14/asm-js-aot-compilation-and-startup-performance/">to the origin of the script</ulink>.
+Lacking a good solution for binding it to the URL bar domain instead (and given
+the storage of asm.js modules in Private Browsing Mode) we decided to disable
+asm.js for the time being by setting <command>javascript.options.asmjs</command> to
+<command>false</command>. It remains to be seen whether keying the cache entry
+to the source characters of the asm.js module helps to avoid using it for
+cross-origin tracking of users. We did not investigate that yet.
      </para>
     </listitem>
     <listitem><command>HTTP Authentication</command>
@@ -1214,7 +1317,7 @@ HTTP Authorization headers can be used to encode <ulink
 url="http://jeremiahgrossman.blogspot.com/2007/04/tracking-users-without-cookies.html">silent
 third party tracking identifiers</ulink>. To prevent this, we remove HTTP
 authentication tokens for third party elements through a <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=b8ce4a0760759431f146c71184c89fbd5e1a27e4">patch
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=5e686c690cbc33cf3fdf984e6f3d3fe7b4d83701">patch
 to nsHTTPChannel</ulink>.
 
      </para>
@@ -1222,10 +1325,10 @@ to nsHTTPChannel</ulink>.
     <listitem><command>DOM Storage</command>
      <para>
 
-DOM storage for third party domains MUST be isolated to the URL bar origin,
+DOM storage for third party domains MUST be isolated to the URL bar domain,
 to prevent linkability between sites. This functionality is provided through a
 <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=97490c4a90ca1c43374486d9ec0c5593d5fe5720">patch
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=20fee895321a7a18e79547e74f6739786558c0e8">patch
 to Firefox</ulink>.
 
      </para>
@@ -1234,8 +1337,8 @@ to Firefox</ulink>.
      <para><command>Design Goal:</command>
 
 Users should be able to click-to-play flash objects from trusted sites. To
-make this behavior unlinkable, we wish to include a settings file for all platforms that disables flash
-cookies using the <ulink
+make this behavior unlinkable, we wish to include a settings file for all
+platforms that disables flash cookies using the <ulink
 url="http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager03.html">Flash
 settings manager</ulink>.
 
@@ -1253,21 +1356,20 @@ file on Windows, so Flash remains difficult to enable.
      <para><command>Design Goal:</command>
 
 TLS session resumption tickets and SSL Session IDs MUST be limited to the URL
-bar origin.
+bar domain.
 
      </para>
      <para><command>Implementation Status:</command>
 
-We currently clear SSL Session IDs upon <link linkend="new-identity">New
-Identity</link>, we disable TLS Session Tickets via the Firefox Pref
-<command>security.enable_tls_session_tickets</command>. We disable SSL Session
-IDs via a <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=a01fb747d4b8b24687de538cb6a1304fe27d9d88">patch
-to Firefox</ulink>. To compensate for the increased round trip latency from disabling
+We disable TLS Session Tickets and SSL Session IDs by
+setting <command>security.ssl.disable_session_identifiers</command> to
+<command>true</command>.
+To compensate for the increased round trip latency from disabling
 these performance optimizations, we also enable
 <ulink url="https://tools.ietf.org/html/draft-bmoeller-tls-falsestart-00">TLS
 False Start</ulink> via the Firefox Pref
 <command>security.ssl.enable_false_start</command>.
+
     </para>
     </listitem>
     <listitem><command>Tor circuit and HTTP connection linkability</command>
@@ -1279,17 +1381,17 @@ MUST NOT be reused for that same third party in another URL bar origin.
      </para>
      <para>
 
-This isolation functionality is provided by the combination of a <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=b3ea705cc35b79a9ba27323cb3e32d5d004ea113">Firefox
-patch to allow SOCKS usernames and passwords</ulink>, as well as a Torbutton
+This isolation functionality is provided by a Torbutton
 component that <ulink
 linkend="https://gitweb.torproject.org/torbutton.git/tree/src/components/domain-isolator.js">sets
 the SOCKS username and password for each request</ulink>. The Tor client has
 logic to prevent connections with different SOCKS usernames and passwords from
-using the same Tor circuit. Firefox has existing logic to ensure that connections with
-SOCKS proxies do not re-use existing HTTP Keep-Alive connections unless the
-proxy settings match.  We extended this logic to cover SOCKS username and
-password authentication, providing us with HTTP Keep-Alive unlinkability.
+using the same Tor circuit. Firefox has existing logic to ensure that
+connections with SOCKS proxies do not re-use existing HTTP Keep-Alive
+connections unless the proxy settings match.
+<ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1200802">We extended
+this logic</ulink> to cover SOCKS username and password authentication,
+providing us with HTTP Keep-Alive unlinkability.
 
      </para>
     </listitem>
@@ -1298,20 +1400,18 @@ password authentication, providing us with HTTP Keep-Alive unlinkability.
 
 <ulink
 url="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker">SharedWorkers</ulink>
-are a special form of Javascript Worker Threads that have a shared scope
-between all threads from the same Javascript origin.
-     </para>
-     <para><command>Design Goal:</command>
-
-SharedWorker scope MUST be isolated to the URL bar domain. A SharedWorker
-launched from a third party from one URL bar domain MUST NOT have access to
-the objects created by that same third party loaded under another URL bar domain.
+are a special form of JavaScript Worker threads that have a shared scope between
+all threads from the same Javascript origin.
 
      </para>
-     <para><command>Implementation Status:</command>
+     <para>
 
-For now, we disable SharedWorkers via the pref
-<command>dom.workers.sharedWorkers.enabled</command>.
+The SharedWorker scope MUST be isolated to the URL bar domain. I.e. a
+SharedWorker launched from a third party from one URL bar domain MUST NOT have
+access to the objects created by that same third party loaded under another URL
+bar domain. This functionality is provided by a
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=d17c11445645908086c8d0af84e970e880f586eb">
+Firefox patch</ulink>.
 
      </para>
     </listitem>
@@ -1327,24 +1427,40 @@ web. While this UUID value is neither under control of the site nor
 predictable, it can still be used to tag a set of users that are of high
 interest to an adversary.
 
-     </para>
-     <para>
+      </para>
+      <para><command>Design Goal:</command>
 
 URIs created with URL.createObjectURL MUST be limited in scope to the first
-party URL bar domain that created them. We provide this isolation in Tor
-Browser via a <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=0d67ab406bdd3cf095802cb25c081641aa1f0bcc">direct
-patch to Firefox</ulink> and disable URL.createObjectURL in the WebWorker
-context as a stopgap, due to an edge case with enforcing this isolation in
-WebWorkers.
+party URL bar domain that created them.
+
+     </para>
+     <para><command>Implementation Status:</command>
+
+We provide the isolation in Tor Browser via a <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=7eb0b7b7a9c7257140ae5683718e82f3f0884f4f">direct
+patch to Firefox</ulink>. However, downloads of PDF files via the download button in the PDF viewer <ulink url="https://bugs.torproject.org/17933">are not isolated yet</ulink>.
 
      </para>
     </listitem>
-    <listitem><command>SPDY</command>
-     <para>
+    <listitem><command>SPDY and HTTP/2</command>
+    <para><command>Design Goal:</command>
 
-Because SPDY can store identifiers, it is disabled through the
-Firefox preference <command>network.http.spdy.enabled</command>.
+SPDY and HTTP/2 connections MUST be isolated to the URL bar domain. Furthermore,
+all associated means that could be used for cross-domain user tracking (alt-svc
+headers come to mind) MUST adhere to this design principle as well.
+
+    </para>
+    <para><command>Implementation status:</command>
+
+SPDY and HTTP/2 are currently disabled by setting the
+Firefox preferences <command>network.http.spdy.enabled</command>,
+<command>network.http.spdy.enabled.v2</command>,
+<command>network.http.spdy.enabled.v3</command>,
+<command>network.http.spdy.enabled.v3-1</command>,
+<command>network.http.spdy.enabled.http2</command>,
+<command>network.http.spdy.enabled.http2draft</command>,
+<command>network.http.altsvc.enabled</command>, and
+<command>network.http.altsvc.oe</command> to <command>false</command>.
 
      </para>
     </listitem>
@@ -1406,36 +1522,142 @@ since users may decide to re-enable disk history records and password saving,
 we also set the <ulink
 url="http://kb.mozillazine.org/Signon.autofillForms">signon.autofillForms</ulink>
 preference to false to prevent saved values from immediately populating
-fields upon page load. Since Javascript can read these values as soon as they
+fields upon page load. Since JavaScript can read these values as soon as they
 appear, setting this preference prevents automatic linkability from stored passwords.
 
      </para>
     </listitem>
-     <listitem><command>HSTS supercookies</command>
+     <listitem><command>HSTS and HPKP supercookies</command>
       <para>
 
 An extreme (but not impossible) attack to mount is the creation of <ulink
-url="http://www.leviathansecurity.com/blog/archives/12-The-Double-Edged-Sword-of-HSTS-Persistence-and-Privacy.html">HSTS
+  url="http://www.leviathansecurity.com/blog/archives/12-The-Double-Edged-Sword-of-HSTS-Persistence-and-Privacy.html">HSTS</ulink>
+<ulink url="http://www.radicalresearch.co.uk/lab/hstssupercookies/">
 supercookies</ulink>. Since HSTS effectively stores one bit of information per domain
 name, an adversary in possession of numerous domains can use them to construct
 cookies based on stored HSTS state.
 
       </para>
+      <para>
+
+HPKP provides <ulink url="https://zyan.scripts.mit.edu/presentations/toorcon2015.pdf">
+a mechanism for user tracking</ulink> across domains as well. It allows abusing the
+requirement to provide a backup pin and the option to report a pin validation
+failure. In a tracking scenario every user gets a unique SHA-256 value serving
+as backup pin. This value is sent back after (deliberate) pin validation failures
+working in fact as a cookie.
+
+      </para>
       <para><command>Design Goal:</command>
 
-There appears to be three options for us: 1. Disable HSTS entirely, and rely
-instead on HTTPS-Everywhere to crawl and ship rules for HSTS sites. 2.
-Restrict the number of HSTS-enabled third parties allowed per URL bar origin.
-3. Prevent third parties from storing HSTS rules. We have not yet decided upon
-the best approach.
+HSTS and HPKP MUST be isolated to the URL bar domain.
 
       </para>
-      <para><command>Implementation Status:</command> Currently, HSTS state is
-cleared by <link linkend="new-identity">New Identity</link>, but we don't
-defend against the creation of these cookies between <command>New
-Identity</command> invocations.
+      <para><command>Implementation Status:</command>
+
+Currently, HSTS and HPKP state is both cleared by <link linkend="new-identity">New Identity</link>,
+but we don't defend against the creation and usage of any of these supercookies
+between <command>New Identity</command> invocations.
+
       </para>
      </listitem>
+
+     <listitem><command>Broadcast Channels</command>
+       <para>
+
+The BroadcastChannel API allows cross-site communication within the same
+origin. However, to avoid cross-origin linkability broadcast channels MUST
+instead be isolated to the URL bar domain.
+
+      </para>
+      <para>
+
+We provide the isolation in Tor Browser via a <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=3460a38721810b5b7e785e18f202dde20b3434e8">direct
+patch to Firefox</ulink>. If we lack a window for determining the URL bar
+domain (e.g. in some worker contexts) the use of broadcast channels is disabled.
+
+      </para>
+     </listitem>
+     <listitem><command>OCSP</command>
+       <para>
+
+OCSP requests go to Certfication Authorities (CAs) to check for revoked
+certificates. They are sent once the browser is visiting a website via HTTPS and
+no cached results are available. Thus, to avoid information leaks, e.g. to exit
+relays, OCSP requests MUST go over the same circuit as the HTTPS request causing
+them and MUST therefore be isolated to the URL bar domain. The resulting cache
+entries MUST be bound to the URL bar domain as well. This functionality is
+provided by a
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=7eb1568275acd4fdf61359c9b1e97c2753e7b2be">Firefox patch</ulink>.
+
+       </para>
+    </listitem>
+    <listitem><command>Favicons</command>
+      <para>
+
+When visiting a website its favicon is fetched via a request originating from
+the browser itself (similar to the OCSP mechanism mentioned in the previous
+section). Those requests MUST be isolated to the URL bar domain. This
+functionality is provided by a
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=f29f3ff28bbc471ea209d2181770677223c394d1">Firefox patch</ulink>.
+
+      </para>
+    </listitem>
+    <listitem><command>mediasource: URIs and MediaStreams</command>
+      <para>
+
+Much like blob URLs, mediasource: URIs and MediaStreams can be used to tag
+users. Therefore, mediasource: URIs and MediaStreams MUST be isolated to the URL bar domain.
+This functionality is part of a
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=7eb0b7b7a9c7257140ae5683718e82f3f0884f4f">Firefox patch</ulink>
+
+      </para>
+    </listitem>
+    <listitem><command>Speculative and prefetched connections</command>
+      <para>
+
+Firefox provides the feature to <ulink url="https://www.igvita.com/2015/08/17/eliminating-roundtrips-with-preconnect/">connect speculatively</ulink> to
+remote hosts if that is either indicated in the HTML file (e.g. by
+<ulink url="https://w3c.github.io/resource-hints/">link
+rel="preconnect" and rel="prefetch"</ulink>) or otherwise deemed beneficial.
+
+      </para>
+      <para>
+
+Firefox does not support rel="prerender", and Mozilla has disabled speculative
+connections and rel="preconnect" usage where a proxy is used (see <ulink
+url="https://trac.torproject.org/projects/tor/ticket/18762#comment:3"> comment
+3 in bug 18762</ulink> for further details). Explicit prefetching via the
+rel="prefetch" attribute is still performed, however.
+
+      </para>
+      <para><command>Design Goal:</command>
+
+All pre-loaded links and speculative connections MUST be isolated to the URL
+bar domain, if enabled. This includes isolating both Tor circuit use, as well
+as the caching and associate browser state for the prefetched resource.
+
+      </para>
+      <para><command>Implementation Status:</command>
+
+For automatic speculative connects and rel="preconnect", we leave them
+disabled as per the Mozilla default for proxy settings. However, if enabled,
+speculative connects will be isolated to the proper first party Tor circuit by
+the same mechanism as is used for HTTP Keep-alive. This is true for rel="prefetch"
+requests as well. For rel="preconnect", we isolate them <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=9126303651785d02f2df0554f391fffba0b0a00e">via
+this patch</ulink>. This isolation makes both preconnecting and cache warming
+via rel=prefetch ineffective for links to domains other than the current URL
+bar domain. For links to the same domain as the URL bar domain, the full cache
+warming benefit is obtained. As an optimization, any preconnecting to domains
+other than the current URL bar domain can thus be disabled (perhaps with the
+exception of frames), but we do not do this. We allow these requests to
+proceed, but we isolate them.
+
+      </para>
+
+    </listitem>
    </orderedlist>
    <para>
 For more details on identifier linkability bugs and enhancements, see the <ulink
@@ -1447,7 +1669,6 @@ url="https://trac.torproject.org/projects/tor/query?keywords=~tbb-linkability&am
    <title>Cross-Origin Fingerprinting Unlinkability</title>
 
    <para>
-
 Browser fingerprinting is the act of inspecting browser behaviors and features in
 an attempt to differentiate and track individual users.
   </para>
@@ -1458,12 +1679,14 @@ vectors. Passive fingerprinting makes use of any information the browser
 provides automatically to a website without any specific action on the part of
 the website. Active fingerprinting makes use of any information that can be
 extracted from the browser by some specific website action, usually involving
-Javascript.  Some definitions of browser fingerprinting also include
+JavaScript. Some definitions of browser fingerprinting also include
 supercookies and cookie-like identifier storage, but we deal with those issues
 separately in the <link linkend="identifier-linkability">preceding section on
 identifier linkability</link>.
+
     </para>
     <para>
+
 For the most part, however, we do not differentiate between passive or active
 fingerprinting sources, since many active fingerprinting mechanisms are very
 rapid, and can be obfuscated or disguised as legitimate functionality.
@@ -1533,7 +1756,7 @@ features behind site permissions, or disable them entirely.
 On the other hand, because statistical inference of system performance
 requires many iterations to achieve accuracy in the face of noise and
 concurrent activity, we are less concerned with this mechanism of extracting
-this information. We also expect that reducing the resolution of Javascript's
+this information. We also expect that reducing the resolution of JavaScript's
 time sources will significantly increase the duration of execution required to
 extract accurate results, and thus make statistical approaches both
 unattractive and highly noticeable due to excessive resource consumption.
@@ -1563,7 +1786,7 @@ it is important to mention that users themselves theoretically might be
 fingerprinted through their behavior while interacting with a website. This
 behavior includes e.g. keystrokes, mouse movements, click speed, and writing
 style. Basic vectors such as keystroke and mouse usage fingerprinting can be
-mitigated by altering Javascript's notion of time. More advanced issues like
+mitigated by altering JavaScript's notion of time. More advanced issues like
 writing style fingerprinting are the domain of <ulink
 url="https://github.com/psal/anonymouth/blob/master/README.md">other tools</ulink>.
 
@@ -1573,16 +1796,16 @@ url="https://github.com/psal/anonymouth/blob/master/README.md">other tools</ulin
       <para>
 
 Due to vast differences in feature set and implementation behavior even
-between different versions of the same browser, browser vendor and version
-differences are simply not possible to conceal in any realistic way. It
-is only possible to minimize the differences among different installations of
-the same browser vendor and version. We make no effort to mimic any other
-major browser vendor, and in fact most of our fingerprinting defenses serve to
-differentiate Tor Browser users from normal Firefox users. Because of this,
-any study that lumps browser vendor and version differences into its analysis
-of the fingerprintability of a population is largely useless for evaluating
-either attacks or defenses. Unfortunately, this includes popular large-scale
-studies such as <ulink
+between different (<ulink url="https://tsyrklevich.net/2014/10/28/abusing-strict-transport-security/">minor</ulink>)
+versions of the same browser, browser vendor and version differences are simply
+not possible to conceal in any realistic way. It is only possible to minimize
+the differences among different installations of the same browser vendor and
+version. We make no effort to mimic any other major browser vendor, and in fact
+most of our fingerprinting defenses serve to differentiate Tor Browser users
+from normal Firefox users. Because of this, any study that lumps browser vendor
+and version differences into its analysis of the fingerprintability of a
+population is largely useless for evaluating either attacks or defenses.
+Unfortunately, this includes popular large-scale studies such as <ulink
 url="https://panopticlick.eff.org/">Panopticlick</ulink> and <ulink
 url="https://amiunique.org/">Am I Unique</ulink>.
 
@@ -1609,11 +1832,11 @@ work best with.
    <listitem><command>Value Spoofing</command>
      <para>
 
-Value spoofing can be used for simple cases where the browser directly
-provides some aspect of the user's configuration details, devices, hardware,
-or operating system directly to a website. It becomes less useful when the
-fingerprinting method relies on behavior to infer aspects of the hardware or
-operating system, rather than obtain them directly.
+Value spoofing can be used for simple cases where the browser provides some
+aspect of the user's configuration details, devices, hardware, or operating
+system directly to a website. It becomes less useful when the fingerprinting
+method relies on behavior to infer aspects of the hardware or operating system,
+rather than obtain them directly.
 
      </para>
    </listitem>
@@ -1712,7 +1935,7 @@ need for complicated statistics about the variance of the measured behaviors.
 Randomization (especially incomplete randomization) may also provide a false
 sense of security. When a fingerprinting attempt makes naive use of randomized
 information, a fingerprint will appear unstable, but may not actually be
-sufficiently randomized to impede a dedicated adversary.  Sophisticated
+sufficiently randomized to impede a dedicated adversary. Sophisticated
 fingerprinting mechanisms may either ignore randomized information, or
 incorporate knowledge of the distribution and range of randomized values into
 the creation of a more stable fingerprint (by either removing the randomness,
@@ -1814,10 +2037,10 @@ third party software), as well as their internal functionality.
      <para><command>Design Goal:</command>
 
 All plugins that have not been specifically audited or sandboxed MUST be
-disabled. To reduce linkability potential, even sandboxed plugins should not
+disabled. To reduce linkability potential, even sandboxed plugins SHOULD NOT
 be allowed to load objects until the user has clicked through a click-to-play
-barrier.  Additionally, version information should be reduced or obfuscated
-until the plugin object is loaded. For flash, we wish to <ulink
+barrier. Additionally, version information SHOULD be reduced or obfuscated
+until the plugin object is loaded. For Flash, we wish to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3974">provide a
 settings.sol file</ulink> to disable Flash cookies, and to restrict P2P
 features that are likely to bypass proxy settings. We'd also like to restrict
@@ -1847,8 +2070,8 @@ After plugins and plugin-provided information, we believe that the <ulink
 url="https://developer.mozilla.org/en-US/docs/HTML/Canvas">HTML5
 Canvas</ulink> is the single largest fingerprinting threat browsers face
 today. <ulink
-url="http://www.w2spconf.com/2012/papers/w2sp12-final4.pdf">Initial
-studies</ulink> show that the Canvas can provide an easy-access fingerprinting
+url="https://cseweb.ucsd.edu/~hovav/dist/canvas.pdf">
+Studies</ulink> <ulink url="https://securehomes.esat.kuleuven.be/~gacar/persistent/the_web_never_forgets.pdf">show</ulink> that the Canvas can provide an easy-access fingerprinting
 target: The adversary simply renders WebGL, font, and named color data to a
 Canvas element, extracts the image buffer, and computes a hash of that image
 data. Subtle differences in the video card, font packs, and even font and
@@ -1864,10 +2087,12 @@ fingerprinting vectors. If WebGL is normalized through software rendering,
 system colors were standardized, and the browser shipped a fixed collection of
 fonts (see later points in this list), it might not be necessary to create a
 canvas permission. However, until then, to reduce the threat from this vector,
-we have patched Firefox to <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=6a169ef0166b268b1a27546a17b3d7470330917d">prompt before returning valid image data</ulink> to the Canvas APIs,
-and for <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=7d51acca6383732480b49ccdb5506ad6fb92e651">access to isPointInPath and related functions</ulink>.
+we have patched Firefox to <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=526e6d0bc5c68d8c409cbaefc231c71973d949cc">prompt before returning valid image data</ulink> to the Canvas APIs,
+and for access to isPointInPath and related functions. Moreover, we put media
+streams on a canvas behind the site permission in that patch as well.
 If the user hasn't previously allowed the site in the URL bar to access Canvas
-image data, pure white image data is returned to the Javascript APIs.
+image data, pure white image data is returned to the JavaScript APIs.
+Extracting canvas image data by third parties is not allowed, though.
 
      </para>
      <para>
@@ -1948,59 +2173,61 @@ it via the pref <command>dom.gamepad.enabled</command>.
 According to the Panopticlick study, fonts provide the most linkability when
 they are provided as an enumerable list in file system order, via either the
 Flash or Java plugins. However, it is still possible to use CSS and/or
-Javascript to query for the existence of specific fonts. With a large enough
+JavaScript to query for the existence of specific fonts. With a large enough
 pre-built list to query, a large amount of fingerprintable information may
 still be available, especially given that additional fonts often end up
 installed by third party software and for multilingual support.
 
      </para>
 
-	 <para><command>Design Goal:</command> The sure-fire way to address font
-linkability is to ship the browser with a font for every language, typeface,
-and style, and to only use those fonts at the exclusion of system fonts. We are
-<ulink url="https://trac.torproject.org/projects/tor/ticket/13313">currently
-investigating</ulink> this approach, and our current favorite font sets for
-this purpose are the <ulink url="http://www.droidfonts.com/droidfonts/">Droid
-fonts</ulink>, the <ulink url="http://hangeul.naver.com/">Nanum fonts</ulink>,
-and <ulink url="https://fedorahosted.org/lohit/">Lohit fonts</ulink>. The Droid
-font set is fairly complete by itself, but Nanum and Lohit have smaller
-versions of many South Asian languages. When combined in a way that chooses the
-smallest font implementations for each locale, these three font sets provide
-coverage for the all languages used on Wikipedia with more than
-10,000 articles, and several others as well, in approximately 3MB of compressed
-overhead. The <ulink url="https://www.google.com/get/noto/">Noto font
-set</ulink> is another font set that aims for complete coverage, but is
-considerably larger than the combination of the Droid, Nanum, and Lohit fonts.
-
-     </para>
+     <para><command>Design Goal:</command>Font-based fingerprinting MUST be rendered ineffective</para>
 
      <para><command>Implementation Status:</command>
 
-In the meantime while we investigate shipping our own fonts, we disable
-plugins, which prevents font name enumeration. Additionally, we limit both the
-number of font queries from CSS, as well as the total number of fonts that can
-be used in a document <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=e78bc05159a79c1358fa9c64e565af9d98c141ee">with
-a Firefox patch</ulink>. We create two prefs,
-<command>browser.display.max_font_attempts</command> and
-<command>browser.display.max_font_count</command> for this purpose. Once these
-limits are reached, the browser behaves as if
-<command>browser.display.use_document_fonts</command> was set.
+We <ulink url="https://trac.torproject.org/projects/tor/ticket/13313">investigated
+</ulink>shipping a predefined set of fonts to all of our users allowing only
+those fonts to be used by websites at the exclusion of system fonts. We are
+currently following this approach, which has been <ulink url="https://www.bamsoftware.com/papers/fontfp.pdf">
+suggested</ulink> <ulink url="https://cseweb.ucsd.edu/~hovav/dist/canvas.pdf">by
+researchers</ulink> previously. This defense is available for all three
+supported platforms: Windows, macOS, and Linux, although the implementations
+vary in detail.
 
      </para>
      <para>
 
-To improve rendering, we exempt remote <ulink
-url="https://developer.mozilla.org/en-US/docs/CSS/@font-face">@font-face
-fonts</ulink> from these counts, and if a font-family CSS rule lists a remote
-font (in any order), we use that font instead of any of the named local fonts.
+For Windows and macOS we use a preference, <command>font.system.whitelist</command>,
+to restrict fonts being used to those in the whitelist. This functionality is
+provided <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=80d233db514a556d7255034ae057b138527cb2ea">by a Firefox patch</ulink>.
+The whitelist for Windows and macOS contains both a set of
+<ulink url="https://www.google.com/get/noto">Noto fonts</ulink> which we bundle
+and fonts provided by the operating system. For Linux systems we only bundle
+fonts and <ulink url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/commit/?id=b88443f6d8af62f763b069eb15e008a46d9b468a">
+deploy </ulink> a <command>fonts.conf</command> file to restrict the browser to
+use those fonts exclusively. In addition to that we set the <command>font.name*
+</command> preferences for macOS and Linux to make sure that a given code point
+is always displayed with the same font. This is not guaranteed even if we bundle
+all the fonts Tor Browser uses as it can happen that fonts are loaded in a
+different order on different systems. Setting the above mentioned preferences
+works around this issue by specifying the font to use explicitely.
+
+     </para>
+
+     <para>
+
+Allowing fonts provided by the operating system for Windows and macOS users is
+currently a compromise between fingerprintability resistance and usability
+concerns. We are still investigating the right balance between them and have
+created a <ulink url="https://trac.torproject.org/projects/tor/ticket/18097">
+ticket in our bug tracker</ulink> to summarize the current state of our defense
+and future work that remains to be done.
 
      </para>
     </listitem>
     <listitem><command>Monitor, Widget, and OS Desktop Resolution</command>
      <para>
 
-Both CSS and Javascript have access to a lot of information about the screen
+Both CSS and JavaScript have access to a lot of information about the screen
 resolution, usable desktop size, OS widget size, toolbar size, title bar size,
 and OS desktop widget sizing information that are not at all relevant to
 rendering and serve only to provide information for fingerprinting. Since many
@@ -2023,25 +2250,26 @@ are <ulink
 url="https://trac.torproject.org/projects/tor/ticket/7256">investigating
 zoom/viewport-based mechanisms</ulink> that might allow us to always report the
 same desktop resolution regardless of the actual size of the content window,
-and simply scale to make up the difference.  Until then, the user should also
-be informed that maximizing their windows can lead to fingerprintability under
-this scheme.
+and simply scale to make up the difference. As an alternative to zoom-based
+solutions we are testing a
+<ulink url="https://trac.torproject.org/projects/tor/ticket/14429">different
+approach</ulink> in our alpha series that tries to round the browser window at
+all times to a multiple 200x100 pixels. Regardless which solution we finally
+pick, until it will be available the user should also be informed that
+maximizing their windows can lead to fingerprintability under the current scheme.
 
      </para>
      <para><command>Implementation Status:</command>
 
-We automatically resize new browser windows to a 200x100 pixel multiple using
-a window observer <ulink
-url="https://gitweb.torproject.org/torbutton.git/tree/src/chrome/content/torbutton.js#n3361">based
-on desktop resolution</ulink>. To minimize the effect of the long tail of large
-monitor sizes, we also cap the window size at 1000 pixels in each direction.
-Additionally, we patch Firefox to use the client content window size <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=bd3b1ed32a9c21fdc92fc35f2ec0a41badc378d5">for
-window.screen</ulink>, and to <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=a5648c8d80f396caf294d761cc4a9a76c0b33a9d">report
-a window.devicePixelRatio of 1.0</ulink>. Similarly, we <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=3c02858027634ffcfbd97047dfdf170c19ca29ec">patch
-DOM events to return content window relative points</ulink>.
+We automatically resize new browser windows to a 200x100 pixel multiple <ulink
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=7b3e68bd7172d4f3feac11e74c65b06729a502b2">based
+on desktop resolution</ulink> which is provided by a Firefox patch. To minimize
+the effect of the long tail of large monitor sizes, we also cap the window size
+at 1000 pixels in each direction. In addition to that we set
+<command>privacy.resistFingerprinting</command>
+to <command>true</command> to use the client content window size for
+window.screen, and to report a window.devicePixelRatio of 1.0. Similarly,
+we use that preference to return content window relative points for DOM events.
 
 We also force popups to open in new tabs (via
 <command>browser.link.open_newwindow.restriction</command>), to avoid
@@ -2055,7 +2283,7 @@ maximized windows are detrimental to privacy in this mode.
      <para>
 
 Beyond simple resolution information, a large amount of so-called "Media"
-information is also exported to content. Even without Javascript, CSS has
+information is also exported to content. Even without JavaScript, CSS has
 access to a lot of information about the device orientation, system theme
 colors, and other desktop and display features that are not at all relevant to
 rendering and also user configurable. Most of this
@@ -2068,22 +2296,20 @@ user and OS theme defined color values</ulink> to CSS as well.
      </para>
      <para><command>Design Goal:</command>
 
-CSS should not be able infer anything that the user has configured about their
-computer. Additionally, it should not be able to infer machine-specific
+A website MUST NOT be able infer anything that the user has configured about
+their computer. Additionally, it SHOULD NOT be able to infer machine-specific
 details such as screen orientation or type.
 
      </para>
      <para><command>Implementation Status:</command>
 
-We patch
-Firefox to <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=cf8956b4460107c5b0053c8fc574e34b0a30ec1e">report
-a fixed set of system colors to content window CSS</ulink>, and <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=bbc138486e0489b0d559343fa0522df4ee3b3533">prevent
-detection of font smoothing on OSX</ulink>. We also always
-<ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=e17d60442ab0db92664ff68d90fe7bf737374912">report
-landscape-primary</ulink> for the screen orientation.
+We set <command>ui.use_standins_for_native_colors</command> to <command>true
+</command> and provide a <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=c6be9ba561a69250c7d5926d90e0112091453643">Firefox patch</ulink>
+to report a fixed set of system colors to content window CSS, and prevent
+detection of font smoothing on macOS with the help of
+<command>privacy.resistFingerprinting</command>. We also always
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=5a159c6bfa310b4339555de389ac16cf8e13b3f5">
+report landscape-primary</ulink> for the <ulink url="https://w3c.github.io/screen-orientation/">screen orientation</ulink>.
 
      </para>
     </listitem>
@@ -2103,11 +2329,14 @@ vulnerability surface</ulink>, we deploy a similar strategy against WebGL as
 for plugins. First, WebGL Canvases have click-to-play placeholders (provided
 by NoScript), and do not run until authorized by the user. Second, we
 obfuscate driver information by setting the Firefox preferences
-<command>webgl.disable-extensions</command> and
-<command>webgl.min_capability_mode</command>, which reduce the information
-provided by the following WebGL API calls: <command>getParameter()</command>,
-<command>getSupportedExtensions()</command>, and
-<command>getExtension()</command>.
+<command>webgl.disable-extensions</command>,
+<command>webgl.min_capability_mode</command>, and
+<command>webgl.disable-fail-if-major-performance-caveat</command> which reduce
+the information provided by the following WebGL API calls:
+<command>getParameter()</command>, <command>getSupportedExtensions()</command>,
+and <command>getExtension()</command>. To make the minimal WebGL mode usable we
+additionally <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=7b0caa1224c3417754d688344eacc97fbbabf7d5">
+normalize its properties with a Firefox patch</ulink>.
 
      </para>
      <para>
@@ -2117,6 +2346,75 @@ library such as <ulink url="http://www.mesa3d.org/">Mesa</ulink>. The use of
 such a library would avoid hardware-specific rendering differences.
 
      </para>
+    </listitem>
+    <listitem><command>MediaDevices API</command>
+
+    <para>
+The <ulink url="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices">
+MediaDevices API</ulink> provides access to connected media input devices like
+cameras and microphones, as well as screen sharing. In particular, it allows web
+content to easily enumerate those devices with <command>
+MediaDevices.enumerateDevices()</command>. This relies on WebRTC being compiled
+in which we currently don't do. Nevertheless, we disable this feature for now as
+a defense-in-depth by setting <command>media.peerconnection.enabled</command> and
+<command>media.navigator.enabled</command> to <command>false</command>.
+    </para>
+    </listitem>
+    <listitem><command>MIME Types</command>
+     <para>
+
+Which MIME Types are registered with an operating system depends to a great deal
+on the application software and/or drivers a user chose to install. Web pages
+can not only estimate the amount of MIME types registered by checking
+<command>navigator.mimetypes.length</command>. Rather, they are even able to
+test whether particular MIME types are available which can have a non-negligible
+impact on a user's fingerprint. We prevent both of these information leaks with
+a direct <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=38999857761196b0b7f59f49ee93ae13f73c6149">Firefox patch</ulink>.
+
+    </para>
+    </listitem>
+    <listitem><command>System Uptime</command>
+      <para>
+
+It is possible to get the system uptime of a Tor Browser user by querying the
+<command>Event.timestamp</command> property. We avoid this by setting <command>
+dom.event.highrestimestamp.enabled</command> to <command>true</command>.
+
+      </para>
+    </listitem>
+
+    <listitem><command>Keyboard Layout Fingerprinting</command>
+      <para>
+
+<command>KeyboardEvent</command>s provide a way for a website to find out
+information about the keyboard layout of its visitors. In fact there are <ulink url="https://developers.google.com/web/updates/2016/04/keyboardevent-keys-codes">
+several dimensions</ulink> to this fingerprinting vector. The <command>
+KeyboardEvent.code</command> property represents a physical key that can't be
+changed by the keyboard layout nor by the modifier state. On the other hand the
+<command>KeyboardEvent.key</command> property contains the character that is
+generated by that key. This is dependent on things like keyboard layout, locale
+and modifier keys.
+
+      </para>
+      <para><command>Design Goal:</command>
+
+Websites MUST NOT be able to infer any information about the keyboard of a Tor
+Browser user.
+
+      </para>
+      <para><command>Implementation Status:</command>
+
+We provide <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=a65b5269ff04e4fbbb3689e2adf853543804ffbf">two</ulink>
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=383b8e7e073ea79e70f19858efe1c5fde64b99cf">Firefox patches</ulink> that
+take care of spoofing <command>KeyboardEvent.code</command> and <command>
+KeyboardEvent.keyCode</command> by providing consensus (US-English-style) fake
+properties. This is achieved by hiding the user's use of the numpad, and any
+non-QWERTY US English keyboard. Characters from non-en-US languages
+are currently returning an empty <command>KeyboardEvent.code</command> and a
+<command>KeyboardEvent.keyCode</command> of <command>0</command>. Moreover,
+neither <command>Alt</command> or <command>Shift</command>, or
+<command>AltGr</command> keyboard events are reported to content.
+      </para>
     </listitem>
     <listitem><command>User Agent and HTTP Headers</command>
      <para><command>Design Goal:</command>
@@ -2133,10 +2431,93 @@ Firefox provides several options for controlling the browser user agent string
 which we leverage. We also set similar prefs for controlling the
 Accept-Language and Accept-Charset headers, which we spoof to English by default. Additionally, we
 <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=e9841ee41e7f3f1535be2d605084c41ee9faf6c2">remove
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=848da9cdb2b7c09dc8ec335d687f535fc5c87a67">remove
 content script access</ulink> to Components.interfaces, which <ulink
 url="http://pseudo-flaw.net/tor/torbutton/fingerprint-firefox.html">can be
 used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
+
+    </listitem>
+
+    <listitem><command>Timing-based Side Channels</command>
+      <para>
+Attacks based on timing side channels are nothing new in the browser context.
+<ulink url="http://sip.cs.princeton.edu/pub/webtiming.pdf">Cache-based</ulink>,
+<ulink url="https://www.abortz.net/papers/timingweb.pdf">cross-site timing</ulink>,
+and <ulink url="https://www.contextis.com/documents/2/Browser_Timing_Attacks.pdf">
+pixel stealing</ulink>, to name just a few, got investigated in the past.
+While their fingerprinting potential varies all timing-based attacks have in
+common that they need sufficiently fine-grained clocks.
+      </para>
+      <para><command>Design Goal:</command>
+
+Websites MUST NOT be able to fingerprint a Tor Browser user by exploiting
+timing-based side channels.
+
+      </para>
+      <para><command>Implementation Status:</command>
+
+The cleanest solution to timing-based side channels would be to get rid of them.
+However, this does not seem to be trivial even considering just a
+<ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=711043">single</ulink>
+<ulink url="https://cseweb.ucsd.edu/~dkohlbre/papers/subnormal.pdf">side channel</ulink>.
+Thus, we rely on disabling all possible timing sources or making them
+coarse-grained enough in order to render timing side channels unsuitable as a
+means for fingerprinting browser users.
+
+      </para>
+
+      <para>
+
+We set <command>dom.enable_user_timing</command> and
+<command>dom.enable_resource_timing</command> to <command>false</command> to
+disable these explicit timing sources. Furthermore, we clamp the resolution of
+explicit clocks to 100ms <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=1febc98f7ae5dbec845567415bd5b703ee45d774">with a Firefox patch</ulink>.
+
+This includes <command>performance.now()</command>, <command>new Date().getTime()
+</command>, <command>audioContext.currentTime</command>, <command>
+canvasStream.currentTime</command>, <command>video.currentTime</command>,
+<command>audio.currentTime</command>, <command>new File([], "").lastModified
+</command>, and <command>new File([], "").lastModifiedDate.getTime()</command>.
+
+      </para>
+      <para>
+
+While clamping the clock resolution to 100ms is a step towards neutering the
+timing-based side channel fingerprinting, it is by no means sufficient. It turns
+out that it is possible to subvert our clamping of explicit clocks by using
+<ulink url="https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_kohlbrenner.pdf">
+implicit ones</ulink>, e.g. extrapolating the true time by running a busy loop
+with a predictable operation in it. We are tracking
+ <ulink url="https://trac.torproject.org/projects/tor/ticket/16110">this problem
+</ulink> in our bug tracker and are working with the research community and
+Mozilla to develop and test a proper solution to this part of our defense
+against timing-based side channel fingerprinting risks.
+
+      </para>
+    </listitem>
+
+    <listitem><command>resource:// and chrome:// URIs Leaks</command>
+      <para>
+Due to <ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=863246">bugs
+</ulink> <ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1120398">
+in Firefox</ulink> it is possible to detect the locale and the platform of a
+Tor Browser user. Moreover, it is possible to find out the extensions a user has
+installed. This is done by including resource:// and/or chrome:// URIs into
+web content which point to resources included in Tor Browser itself or in
+installed extensions.
+      </para>
+      <para>
+
+We believe that it should be impossible for web content to extract information
+out of a Tor Browser user by deploying resource:// and/or chrome:// URIs. Until
+this is fixed in Firefox <ulink url="https://gitweb.torproject.org/torbutton.git/tree/src/components/content-policy.js">
+we filter</ulink> resource:// and chrome:// requests done
+by web content denying them by default. We need a whitelist of resource:// and
+chrome:// URIs, though, to avoid breaking parts of Firefox. Those nearly a
+dozen Firefox resources do not aid in fingerprinting Tor Browser users as they
+are not different on the platforms and in the locales we support.
+
+      </para>
 
     </listitem>
     <listitem><command>Locale Fingerprinting</command>
@@ -2144,19 +2525,20 @@ used</ulink> to fingerprint OS, platform, and Firefox minor version.  </para>
 
 In Tor Browser, we provide non-English users the option of concealing their OS
 and browser locale from websites. It is debatable if this should be as high of
-a priority as information specific to the user's computer, but for
-completeness, we attempt to maintain this property.
+a priority as information specific to the user's computer, but for completeness,
+we attempt to maintain this property.
 
      </para>
      <para><command>Implementation Status:</command>
 
 We set the fallback character set to set to windows-1252 for all locales, via
-<command>intl.charset.default</command>.  We also patch Firefox to allow us to
-<ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=4545ecd6dc2ca7d10aefe36b81658547ea97b800">instruct
-the JS engine</ulink> to use en-US as its internal C locale for all Date, Math,
-and exception handling.
-
+<command>intl.charset.default</command>. We also set
+<command>javascript.use_us_english_locale</command> to <command>true</command>
+to instruct the JS engine to use en-US as its internal C locale for all Date,
+Math, and exception handling. Additionally, we provide a patch to use an
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=0080b2d6bafcbfb8a57f54a26e53d7f74d239389">
+en-US label for the <command>isindex</command> HTML element</ulink> instead of
+letting the label leak the browser's UI locale.
      </para>
     </listitem>
     <listitem><command>Timezone and Clock Offset</command>
@@ -2164,7 +2546,7 @@ and exception handling.
 
 While the latency in Tor connections varies anywhere from milliseconds to
 a few seconds, it is still possible for the remote site to detect large
-differences between the user's clock and an official reference time source. 
+differences between the user's clock and an official reference time source.
 
      </para>
 
@@ -2173,7 +2555,7 @@ differences between the user's clock and an official reference time source.
 All Tor Browser users MUST report the same timezone to websites. Currently, we
 choose UTC for this purpose, although an equally valid argument could be made
 for EDT/EST due to the large English-speaking population density (coupled with
-the fact that we spoof a US English user agent).  Additionally, the Tor
+the fact that we spoof a US English user agent). Additionally, the Tor
 software should detect if the users clock is significantly divergent from the
 clocks of the relays that it connects to, and use this to reset the clock
 values used in Tor Browser to something reasonably accurate. Alternatively,
@@ -2183,18 +2565,22 @@ the browser can obtain this clock skew via a mechanism similar to that used in
      </para>
      <para><command>Implementation Status:</command>
 
-We set the timezone using the TZ environment variable, which is supported on
-all platforms.
+We <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=0ee3aa4cbeb1be3301d8960d0cf3a64831ea6d1b">
+set the timezone to UTC</ulink> with a Firefox patch using the TZ environment
+variable, which is supported on all platforms. Moreover, with an additional
+patch just needed for the Windows platform, <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=bdd0303a78347d17250950a4cf858de556afb1c7">
+we make sure</ulink> the TZ environment variable is respected by the
+<ulink url="http://site.icu-project.org/">ICU library</ulink> as well.
 
      </para>
     </listitem>
-    <listitem><command>Javascript Performance Fingerprinting</command>
+    <listitem><command>JavaScript Performance Fingerprinting</command>
      <para>
 
-<ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">Javascript performance
+<ulink url="http://w2spconf.com/2011/papers/jspriv.pdf">JavaScript performance
 fingerprinting</ulink> is the act of profiling the performance
-of various Javascript functions for the purpose of fingerprinting the
-Javascript engine and the CPU.
+of various JavaScript functions for the purpose of fingerprinting the
+JavaScript engine and the CPU.
 
      </para>
      <para><command>Design Goal:</command>
@@ -2203,8 +2589,8 @@ We have <ulink
 url="https://trac.torproject.org/projects/tor/ticket/3059">several potential
 mitigation approaches</ulink> to reduce the accuracy of performance
 fingerprinting without risking too much damage to functionality. Our current
-favorite is to reduce the resolution of the Event.timeStamp and the Javascript
-Date() object, while also introducing jitter. We believe that Javascript time
+favorite is to reduce the resolution of the Event.timeStamp and the JavaScript
+Date() object, while also introducing jitter. We believe that JavaScript time
 resolution may be reduced all the way up to the second before it seriously
 impacts site operation. Our goal with this quantization is to increase the
 amount of time it takes to mount a successful attack. <ulink
@@ -2213,7 +2599,7 @@ that even with the default precision in most browsers, they required up to 120
 seconds of amortization and repeated trials to get stable results from their
 feature set. We intend to work with the research community to establish the
 optimum trade-off between quantization+jitter and amortization time, as well
-as identify highly variable Javascript operations. As long as these attacks
+as identify highly variable JavaScript operations. As long as these attacks
 take several seconds or more to execute, they are unlikely to be appealing to
 advertisers, and are also very likely to be noticed if deployed against a
 large number of people.
@@ -2240,13 +2626,71 @@ flight time. It is seeing increasing use as a biometric.
      </para>
      <para><command>Design Goal:</command>
 
-We intend to rely on the same mechanisms for defeating Javascript performance
+We intend to rely on the same mechanisms for defeating JavaScript performance
 fingerprinting: timestamp quantization and jitter.
 
      </para>
+
      <para><command>Implementation Status:</command>
-We have no implementation as of yet.
+
+We clamp keyboard event resolution to 100ms with a <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=1febc98f7ae5dbec845567415bd5b703ee45d774">Firefox patch</ulink>.
+
      </para>
+    </listitem>
+    <listitem><command>Connection State</command>
+     <para>
+
+It is possible to monitor the connection state of a browser over time with
+<ulink url="https://developer.mozilla.org/en-US/docs/Web/API/NavigatorOnLine/onLine">
+navigator.onLine</ulink>. We prevent this by setting <command>
+network.manage-offline-status</command> to <command>false</command>.
+
+     </para>
+    </listitem>
+    <listitem><command>Reader View</command>
+     <para>
+
+<ulink url="https://support.mozilla.org/t5/Basic-Browsing/Firefox-Reader-View-for-clutter-free-web-pages/ta-p/38466">Reader View</ulink>
+is a Firefox feature to view web pages clutter-free and easily adjusted to
+own needs and preferences. To avoid fingerprintability risks we make Tor Browser
+users uniform by setting <command>reader.parse-on-load.enabled</command> to
+<command>false</command> and <command>browser.reader.detectedFirstArticle</command>
+to <command>true</command>.
+
+     </para>
+    </listitem>
+    <listitem><command>Contacting Mozilla Services</command>
+      <para>
+
+Tor Browser is based on Firefox which is a Mozilla product. Quite naturally,
+Mozilla is interested in making users aware of new features and in gathering
+information to learn about the most pressing needs Firefox users are facing.
+This is often implemented by contacting Mozilla services, be it for displaying
+further information about a new feature or by
+<ulink url="https://wiki.mozilla.org/Telemetry">sending (aggregated) data back
+for analysis</ulink>. While some of those mechanisms are disabled by default on
+release channels (gathering telemetry data comes to mind) others are not. We
+make sure that non of those Mozilla services is contacted to avoid possible
+fingerprinting risks.
+
+      </para>
+      <para>
+
+In particular, we disable GeoIP-based search results by setting <command>
+browser.search.countryCode</command> and <command>browser.search.region
+</command> to <command>US</command> and <command>browser.search.geoip.url
+</command> to the empty string. Furthermore, we disable Selfsupport and Unified
+Telemetry by setting <command>browser.selfsupport.enabled</command> and <command>
+toolkit.telemetry.unified</command> to <command>false</command> and we make
+sure no related ping is reaching Mozilla by setting <command>
+datareporting.healthreport.about.reportUrlUnified</command> to <command>
+data:text/plain,</command>. The same is done with <command>
+datareporting.healthreport.about.reportUrl</command> and the new tiles feature
+related <command>browser.newtabpage.directory.ping</command> and <command>
+browser.newtabpage.directory.source</command> preferences. Additionally, we
+disable the UITour backend by setting <command>browser.uitour.enabled</command>
+to <command>false</command>.
+      </para>
     </listitem>
     <listitem><command>Operating System Type Fingerprinting</command>
      <para>
@@ -2330,30 +2774,31 @@ All linkable identifiers and browser state MUST be cleared by this feature.
    <blockquote>
      <para>
 
-First, Torbutton disables Javascript in all open tabs and windows by using
+First, Torbutton disables JavaScript in all open tabs and windows by using
 both the <ulink
-url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDocShell#Attributes">browser.docShell.allowJavascript</ulink>
+url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDocShell#Attributes">browser.docShell.allowJavaScript</ulink>
 attribute as well as <ulink
 url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIDOMWindowUtils#suppressEventHandling%28%29">nsIDOMWindowUtil.suppressEventHandling()</ulink>.
 We then stop all page activity for each tab using <ulink
 url="https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebNavigation#stop%28%29">browser.webNavigation.stop(nsIWebNavigation.STOP_ALL)</ulink>.
 We then clear the site-specific Zoom by temporarily disabling the preference
 <command>browser.zoom.siteSpecific</command>, and clear the GeoIP wifi token URL
-<command>geo.wifi.access_token</command> and the last opened URL prefs (if
-they exist). Each tab is then closed.
+<command>geo.wifi.access_token</command> and the last opened URL preference (if
+it exists). Each tab is then closed.
 
      </para>
      <para>
 
-After closing all tabs, we then emit "<ulink
-url="https://developer.mozilla.org/en-US/docs/Supporting_private_browsing_mode#Private_browsing_notifications">browser:purge-session-history</ulink>"
+After closing all tabs, we then clear the searchbox and findbox text and emit
+"<ulink url="https://developer.mozilla.org/en-US/docs/Supporting_private_browsing_mode#Private_browsing_notifications">browser:purge-session-history</ulink>"
 (which instructs addons and various Firefox components to clear their session
-state), and then manually clear the following state: searchbox and findbox
-text, HTTP auth, SSL state, OCSP state, site-specific content preferences
-(including HSTS state), content and image cache, offline cache, offline
-storage, Cookies, crypto tokens, DOM storage, the safe browsing key, and the
-Google wifi geolocation token (if it exists). We also clear NoScript's site
-and temporary permissions, and all other browser site permissions.
+state). Then we manually clear the following state: HTTP auth, SSL state,
+crypto tokens, OCSP state, site-specific content preferences (including HSTS
+state), the undo tab history, content and image cache, offline and memory cache,
+offline storage, cookies, DOM storage, the safe browsing key, the
+Google wifi geolocation token (if it exists), and the domain isolator state. We
+also clear NoScript's site and temporary permissions, and all other browser site
+permissions.
 
      </para>
      <para>
@@ -2374,10 +2819,11 @@ url="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL">URL.c
 
      </para>
     </blockquote>
-    <blockquote>
+<!--    <blockquote>
 If the user chose to "protect" any cookies by using the Torbutton Cookie
 Protections UI, those cookies are not cleared as part of the above.
     </blockquote>
+-->
    </sect3>
   </sect2>
 <!--
@@ -2409,7 +2855,6 @@ privacy and security issues.
    <orderedlist>
     <listitem id="security-slider"><command>Security Slider</command>
      <para>
-
 In order to provide vulnerability surface reduction for users that need high
 security, we have implemented a "Security Slider" to allow users to make a
 tradeoff between usability and security while minimizing the total number of
@@ -2423,41 +2868,44 @@ features should be disabled at which security levels.
      </para>
      <para>
 
-The Security Slider consists of four positions:
+The Security Slider consists of three positions:
 
      </para>
      <itemizedlist>
-      <listitem><command>Low</command>
+      <listitem><command>Low (default)</command>
       <para>
 
-At this security level, the preferences are the Tor Browser defaults.
+At this security level, the preferences are the Tor Browser defaults. This
+includes three features that were formerly governed by the slider at
+higher security levels: <command>gfx.font_rendering.graphite.enabled</command>
+is set to <command>false</command> now after Mozilla got convinced that
+<ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1255731">leaving
+it enabled is too risky</ulink>. <command>network.jar.block-remote-files</command>
+is set to <command>true</command>. Mozilla tried to block remote JAR files in
+Firefox 45 but needed to revert that decision due to breaking IBM's iNotes.
+While Mozilla <ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1329336">
+is working on getting this disabled again</ulink> we take the protective stance
+already now and block remote JAR files even on the low security level. Finally,
+we exempt asm.js from the security slider and block it on all levels. See the
+<link linkend="disk-avoidance">Disk Avoidance</link> and the cache linkability
+concerns in the <link linkend="identifier-linkability">Cross-Origin Identifier
+Unlinkability</link> sections for further details.
 
       </para>
       </listitem>
-      <listitem><command>Medium-Low</command>
+      <listitem><command>Medium</command>
        <para>
 
 At this security level, we disable the ION JIT
 (<command>javascript.options.ion.content</command>), TypeInference JIT
-(<command>javascript.options.typeinference</command>), ASM.JS
-(<command>javascript.options.asmjs</command>), WebAudio
+(<command>javascript.options.typeinference</command>), Baseline JIT
+(<command>javascript.options.baselinejit.content</command>), WebAudio
 (<command>media.webaudio.enabled</command>), MathML
-(<command>mathml.disabled</command>), block remote JAR files
-(<command>network.jar.block-remote-files</command>), and make HTML5 audio and
-video click-to-play via NoScript (<command>noscript.forbidMedia</command>).
-
-       </para>
-      </listitem>
-      <listitem><command>Medium-High</command>
-       <para>
-
-This security level inherits the preferences from the Medium-Low level, and
-additionally disables the baseline JIT
-(<command>javascript.options.baselinejit.content</command>), disables Graphite
-(<command>gfx.font_rendering.graphite.enabled</command>) and SVG OpenType font
-rendering (<command>gfx.font_rendering.opentype_svg.enabled</command>) and only
-allows Javascript to run if it is loaded over HTTPS and the URL bar is HTTPS
-(by setting <command>noscript.global</command> to false and
+(<command>mathml.disabled</command>), SVG Opentype font rendering
+(<command>gfx.font_rendering.opentype_svg.enabled</command>), and make HTML5 audio
+and video click-to-play via NoScript (<command>noscript.forbidMedia</command>).
+Furthermore, we only allow JavaScript to run if it is loaded over HTTPS and the
+URL bar is HTTPS (by setting <command>noscript.global</command> to false and
 <command>noscript.globalHttpsWhitelist</command> to true).
 
        </para>
@@ -2465,9 +2913,9 @@ allows Javascript to run if it is loaded over HTTPS and the URL bar is HTTPS
       <listitem><command>High</command>
        <para>
 
-This security level inherits the preferences from the Medium-Low and
-Medium-High levels, and additionally disables remote fonts
-(<command>noscript.forbidFonts</command>), completely disables Javascript (by
+This security level inherits the preferences from the Medium level, and
+additionally disables remote fonts (<command>noscript.forbidFonts</command>),
+completely disables JavaScript (by
 unsetting <command>noscript.globalHttpsWhitelist</command>), and disables SVG
 images (<command>svg.in-content.enabled</command>).
 
@@ -2504,10 +2952,10 @@ network overhead. In the no-overhead category, we have <ulink
 url="http://freehaven.net/anonbib/cache/LZCLCP_NDSS11.pdf">HTTPOS</ulink> and
 <ulink
 url="https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting">better
-use of HTTP pipelining and/or SPDY</ulink>. 
+use of HTTP pipelining and/or SPDY</ulink>.
 In the tunable/low-overhead
 category, we have <ulink
-url="http://freehaven.net/anonbib/cache/ShWa-Timing06.pdf">Adaptive
+url="https://arxiv.org/abs/1512.00524">Adaptive
 Padding</ulink> and <ulink url="http://www.cs.sunysb.edu/~xcai/fp.pdf">
 Congestion-Sensitive BUFLO</ulink>. It may be also possible to <ulink
 url="https://trac.torproject.org/projects/tor/ticket/7028">tune such
@@ -2522,7 +2970,7 @@ network, making them also effectively no-overhead.
        <blockquote>
        <para>
 Currently, we patch Firefox to <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=20a59cec9886cf2575b1fd8e92b43e31ba053fbd">randomize
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=60f9e7f73f3dba5542f7fbe882f7c804cb8ecc18">randomize
 pipeline order and depth</ulink>. Unfortunately, pipelining is very fragile.
 Many sites do not support it, and even sites that advertise support for
 pipelining may simply return error codes for successive requests, effectively
@@ -2587,7 +3035,7 @@ date.
      <para>
 
 We also make use of the in-browser Mozilla updater, and have <ulink
-url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-31.6.0esr-4.5-1&amp;id=bcf51aae541fc28de251924ce9394224bd2b814c">patched
+url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=a5a23f5d316a850f11063ead15353d677c9153fd">patched
 the updater</ulink> to avoid sending OS and Kernel version information as part
 of its update pings.
 
@@ -2641,16 +3089,16 @@ time, however a large software project such as Firefox typically ends up
 embedding a large number of details about the machine it was built on, both
 intentionally and inadvertently. Additionally, manual changes to the build
 machine configuration can accumulate over time and are difficult for others to
-replicate externally, which leads to difficulties with binary reproducibility. 
+replicate externally, which leads to difficulties with binary reproducibility.
 
    </para>
 
    <para>
 For this reason, we decided to leverage the work done by the <ulink
-url="http://gitian.org/">Gitian Project</ulink> from the Bitcoin community.
+url="https://gitian.org/">Gitian Project</ulink> from the Bitcoin community.
 Gitian is a wrapper around Ubuntu's virtualization tools that allows you to
-specify an Ubuntu version, architecture, a set of additional packages, a set
-of input files, and a bash build scriptlet in an YAML document called a
+specify an Ubuntu or Debian version, architecture, a set of additional packages,
+a set of input files, and a bash build scriptlet in an YAML document called a
 "Gitian Descriptor". This document is used to install a qemu-kvm image, and
 execute your build scriptlet inside it.
    </para>
@@ -2661,11 +3109,10 @@ We have created a <ulink
 url="https://gitweb.torproject.org/builders/tor-browser-bundle.git/tree/refs/heads/master">set
 of wrapper scripts</ulink> around Gitian to automate dependency download and
 authentication, as well as transfer intermediate build outputs between the
-stages of the build process. Because Gitian creates an Ubuntu build
-environment, we must use cross-compilation to create packages for Windows and
-Mac OS. For Windows, we use mingw-w64 as our cross compiler. For Mac OS, we
-use crosstools-ng in combination with a binary redistribution of the Mac OS 10.6
-SDK.
+stages of the build process. Because Gitian creates a Linux build environment,
+we must use cross-compilation to create packages for Windows and macOS. For
+Windows, we use mingw-w64 as our cross compiler. For macOS, we use cctools and
+clang and a binary redistribution of the Mac OS 10.7 SDK.
 
    </para>
 
@@ -2773,9 +3220,7 @@ directly patching the aspects of the Firefox build process that included this
 information into the build. It also turns out that some libraries (in
 particular: libgmp) attempt to detect the current CPU to determine which
 optimizations to compile in. This CPU type is uniform on our KVM instances,
-but differs under LXC. We are also investigating currently
-<ulink url="https://trac.torproject.org/projects/tor/ticket/12240">oddities related to
-time-based dependency tracking</ulink> that only appear in LXC containers.
+but differs under LXC.
 
    </para>
   </listitem>
@@ -2786,18 +3231,18 @@ time-based dependency tracking</ulink> that only appear in LXC containers.
     <title>Package Signatures and Verification</title>
     <para>
 
-The build process generates a single sha256sums.txt file that contains a sorted
-list of the SHA-256 hashes of every package produced for that build version. Each
-official builder uploads this file and a GPG signature of it to a directory
-on a Tor Project's web server. The build scripts have an optional matching
-step that downloads these signatures, verifies them, and ensures that the
-local builds match this file.
+The build process generates a single sha256sums-unsigned-build.txt file that
+contains a sorted list of the SHA-256 hashes of every package produced for that
+build version. Each official builder uploads this file and a GPG signature of it
+to a directory on a Tor Project's web server. The build scripts have an optional
+matching step that downloads these signatures, verifies them, and ensures that
+the local builds match this file.
 
     </para>
     <para>
 
-When builds are published officially, the single sha256sums.txt file is
-accompanied by a detached GPG signature from each official builder that
+When builds are published officially, the single sha256sums-unsigned-build.txt
+file is accompanied by a detached GPG signature from each official builder that
 produced a matching build. The packages are additionally signed with detached
 GPG signatures from an official signing key.
 
@@ -2805,12 +3250,12 @@ GPG signatures from an official signing key.
      <para>
 
 The fact that the entire set of packages for a given version can be
-authenticated by a single hash of the sha256sums.txt file will also allow us
-to create a number of auxiliary authentication mechanisms for our packages,
-beyond just trusting a single offline build machine and a single cryptographic
-key's integrity. Interesting examples include providing multiple independent
-cryptographic signatures for packages, listing the package hashes in the Tor
-consensus, and encoding the package hashes in the Bitcoin blockchain.
+authenticated by a single hash of the sha256sums-unsigned-build.txt file will
+also allow us to create a number of auxiliary authentication mechanisms for our
+packages, beyond just trusting a single offline build machine and a single
+cryptographic key's integrity. Interesting examples include providing multiple
+independent cryptographic signatures for packages, listing the package hashes in
+the Tor consensus, and encoding the package hashes in the Bitcoin blockchain.
 
      </para>
     <para>
@@ -2839,7 +3284,7 @@ achieved even if all official build machines are compromised.
 By default, all tor-specific dependencies and inputs to the build process are
 downloaded over Tor, which allows build verifiers to remain anonymous and
 hidden. Because of this, any individual can use our anonymity network to
-privately download our source code, verify it against public signed, audited,
+privately download our source code, verify it against public, signed, audited,
 and mirrored git repositories, and reproduce our builds exactly, without being
 subject to targeted attacks. If they notice any differences, they can alert
 the public builders/signers, hopefully using a pseudonym or our anonymous
@@ -2854,8 +3299,9 @@ verifier.
 
 We make use of the Firefox updater in order to provide automatic updates to
 users. We make use of certificate pinning to ensure that update checks cannot
-be tampered with, and we sign the individual MAR update files with an offline
-signing key.
+be tampered with by setting <command>security.cert_pinning.enforcement_level
+</command> to <command>2</command>, and we sign the individual MAR update files
+with keys that get rotated every year.
 
    </para>
    <para>
@@ -2893,7 +3339,7 @@ traverses a separate circuit, to avoid holdback attacks by exit nodes.
   </sect2>
 </sect1>
 
- 
+
 <sect1 id="Testing">
   <title>Testing</title>
   <para>
@@ -3039,18 +3485,18 @@ against these from persisting across Tor Toggle.
     </para>
    </sect3>
    <sect3>
-    <title>Javascript timers and event handlers</title>
+    <title>JavaScript timers and event handlers</title>
     <para>
 
-Javascript can set timers and register event handlers in the hopes of fetching
-URLs after the user has toggled Torbutton. 
+JavaScript can set timers and register event handlers in the hopes of fetching
+URLs after the user has toggled Torbutton.
     </para>
    </sect3>
    <sect3>
     <title>CSS Popups and non-script Dynamic Content</title>
     <para>
 
-Even if Javascript is disabled, CSS is still able to 
+Even if JavaScript is disabled, CSS is still able to
 <ulink url="http://www.tjkdesign.com/articles/css%20pop%20ups/">create popup-like
 windows</ulink>
 via the 'onmouseover' CSS attribute, which can cause arbitrary browser
@@ -3084,18 +3530,18 @@ tests.
     <title>Some suggested vectors to investigate</title>
     <para>
     <itemizedlist>
-     <listitem>Strange ways to register Javascript <ulink
+     <listitem>Strange ways to register JavaScript <ulink
 url="http://en.wikipedia.org/wiki/DOM_Events">events</ulink> and <ulink
 url="http://www.devshed.com/c/a/JavaScript/Using-Timers-in-JavaScript/">timeouts</ulink> should
 be verified to actually be ineffective after Tor has been toggled.</listitem>
-     <listitem>Other ways to cause Javascript to be executed after
+     <listitem>Other ways to cause JavaScript to be executed after
 <command>javascript.enabled</command> has been toggled off.</listitem>
      <listitem>Odd ways to attempt to load plugins. Kyle Williams has had
 some success with direct loads/meta-refreshes of plugin-handled URLs.</listitem>
      <listitem>The Date and Timezone hooks should be verified to work with
 crazy combinations of iframes, nested iframes, iframes in frames, frames in
 iframes, and popups being loaded and
-reloaded in rapid succession, and/or from one another. Think race conditions and deep, 
+reloaded in rapid succession, and/or from one another. Think race conditions and deep,
 parallel nesting, involving iframes from both <ulink
 url="http://en.wikipedia.org/wiki/Same_origin_policy">same-origin and
 non-same-origin</ulink> domains.</listitem>
@@ -3119,11 +3565,11 @@ also discovered by <ulink url="http://pseudo-flaw.net">Gregory
 Fleischer</ulink> that <ulink
 url="http://pseudo-flaw.net/content/tor/torbutton/">content window access to
 chrome</ulink> can be used to build <link linkend="fingerprinting">unique
-identifiers</link>. 
+identifiers</link>.
 Are there any other
 arcane or experimental ways that Firefox provides to create and store unique
 identifiers? Or perhaps unique identifiers can be queried or derived from
-properties of the machine/browser that Javascript has access to? How unique
+properties of the machine/browser that JavaScript has access to? How unique
 can these identifiers be?
      </listitem>
      <listitem>Is it possible to get the browser to write some history to disk
@@ -3132,10 +3578,10 @@ write no history, cookie, or other browsing activity information to the
 harddisk.</listitem>
      <listitem>Do popup windows make it easier to break any of the above
 behavior? Are javascript events still canceled in popups? What about recursive
-popups from Javascript, data, and other funky URL types? What about CSS
+popups from JavaScript, data, and other funky URL types? What about CSS
 popups? Are they still blocked after Tor is toggled?</listitem>
      <listitem>Chrome-escalation attacks. The interaction between the
-Torbutton chrome Javascript and the client content window javascript is pretty
+Torbutton chrome JavaScript and the client content window javascript is pretty
 well-defined and carefully constructed, but perhaps there is a way to smuggle
 javascript back in a return value, or otherwise inject network-loaded
 javascript into the chrome (and thus gain complete control of the browser).
@@ -3181,7 +3627,7 @@ Because the total elimination of side channels during cross-origin navigation
 will undoubtedly break federated login as well as destroy ad revenue, we
 also describe auditable alternatives and promising web draft standards that would
 preserve this functionality while still providing transparency when tracking is
-occurring. 
+occurring.
 
 </para>
 
@@ -3191,39 +3637,43 @@ occurring.
   <listitem><command>The Referer Header</command>
   <para>
 
-We haven't disabled or restricted the Referer ourselves because of the
-non-trivial number of sites that rely on the Referer header to "authenticate"
-image requests and deep-link navigation on their sites. Furthermore, there
-seems to be no real privacy benefit to taking this action by itself in a
-vacuum, because many sites have begun encoding Referer URL information into
-GET parameters when they need it to cross HTTP to HTTPS scheme transitions.
-Google's +1 buttons are the best example of this activity.
+When leaving a .onion domain we <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-45.8.0esr-6.5-2&amp;id=09188cb14dfaa8ac22f687c978166c7bd171b576">
+set the Referer header to the destination</ulink> to avoid leaking information
+which might be especially problematic in the case of transitioning from a .onion
+domain to one reached over clearnet. Apart from that we haven't disabled or
+restricted the Referer ourselves because of the non-trivial number of sites
+that rely on the Referer header to "authenticate" image requests and deep-link
+navigation on their sites. Furthermore, there seems to be no real privacy
+benefit to taking this action by itself in a vacuum, because many sites have
+begun encoding Referer URL information into GET parameters when they need it to
+cross HTTP to HTTPS scheme transitions. Google's +1 buttons are the best
+example of this activity.
 
   </para>
   <para>
 
 Because of the availability of these other explicit vectors, we believe the
 main risk of the Referer header is through inadvertent and/or covert data
-leakage.  In fact, <ulink
+leakage. In fact, <ulink
 url="http://www2.research.att.com/~bala/papers/wosn09.pdf">a great deal of
 personal data</ulink> is inadvertently leaked to third parties through the
-source URL parameters. 
+source URL parameters.
 
   </para>
   <para>
 
-We believe the Referer header should be made explicit, and believe that CSP
-2.0 provides a <ulink
-url="http://www.w3.org/TR/CSP11/#directive-referrer">decent step in this
-direction</ulink>. If a site wishes to transmit its URL to third party content
-elements during load or during link-click, it should have to specify this as a
-property of the associated HTML tag or CSP policy. With an explicit property
-or policy, it would then be possible for the user agent to inform the user if
-they are about to click on a link that will transmit Referer information
+We believe the Referer header should be made explicit, and believe that Referrer
+Policy provides a <ulink
+url="https://w3c.github.io/webappsec-referrer-policy/#referrer-policy-header">
+decent step in this direction</ulink>. If a site wishes to transmit its URL to
+third party content elements during load or during link-click, it should have
+to specify this as a property of the associated <ulink url="https://blog.mozilla.org/security/2015/01/21/meta-referrer/">
+HTML tag</ulink> or in an HTTP response header. With an explicit property or
+response header, it would then be possible for the user agent to inform the user
+if they are about to click on a link that will transmit Referer information
 (perhaps through something as subtle as a different color in the lower toolbar
 for the destination URL). This same UI notification can also be used for links
-with the <ulink
-url="https://developer.mozilla.org/en-US/docs/HTML/Element/a#Attributes">"ping"</ulink>
+with the <ulink url="https://developers.whatwg.org/links.html#ping">"ping"</ulink>
 attribute.
 
   </para>
@@ -3236,7 +3686,7 @@ a DOM property that for some reason is allowed to retain a persistent value
 for the lifespan of a browser tab. It is possible to utilize this property for
 <ulink url="http://www.thomasfrank.se/sessionvars.html">identifier
 storage</ulink> during click navigation. This is sometimes used for additional
-XSRF protection and federated login.
+CSRF protection and federated login.
    </para>
    <para>
 
@@ -3245,7 +3695,7 @@ cross-origin navigation, but doing so may break federated login for some sites.
 
    </para>
   </listitem>
-  <listitem><command>Javascript link rewriting</command>
+  <listitem><command>JavaScript link rewriting</command>
    <para>
 
 In general, it should not be possible for onclick handlers to alter the
