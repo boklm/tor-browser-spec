@@ -1,0 +1,184 @@
+Lowest level resolver calls:
+ + PR_GetHostByName
+   + security/nss/cmd/libpkix/pkix_pl/pki/test_socket.c (just tests)
+   + security/nss/cmd/vfyserv/vfyserv.c (test)
+   - security/nss/lib/certhigh/ocsp.c
+   + ./netwerk/protocol/rtsp/rtsp/RTSPConnectionHandler.h
+     - MOZ_RTSP -> Only on android. XXX: Verify disabled
+   + ./netwerk/protocol/rtsp/rtsp/ARTSPConnection.cpp
+     - MOZ_RTSP -> Only on android. XXX: Verify disabled
+   + ./security/nss/lib/certhigh/ocsp.c:
+     - Patched (XXX: Verify application)
+   + ./security/nss/lib/libpkix/pkix_pl_nss/module/pkix_pl_socket.c
+     + pkix_pl_Socket_CreateByName()
+       - Patched (XXX: Verify application)
+     + pkix_pl_Socket_CreateByHostAndPort()
+       - Patched (XXX: Verify application)
+   - ./toolkit/profile/nsProfileLock.cpp
+     - nsProfileLock::LockWithSymlink() looks up 127.0.0.1..
+     - XXX: verify patch
+   - Verify DNS patch (esp with e10s)
+ + PR_GetAddrInfoByName
+ + PR_GetIPNodeByName
+
+UDPSockets
++ security/nss/cmd/certutil/certext.c
+
+FlyWeb: XXX: Disable?? Might be off already. Seems incomplete.
+ - dom/flyweb/FlyWebService.cpp
+   - https://wiki.mozilla.org/FlyWeb
+
+MDNS: (./netwerk/dns/mdns/libmdns/) verify againXXX
+ - @mozilla.org/toolkit/components/mdnsresponder/dns-sd;1
+ - DNSSERVICEDISCOVERY_CONTRACT_ID
+   - ./dom/presentation/provider/MulticastDNSDeviceProvider.cpp
+   - XXX-old: Presentation API?
+     https://developer.mozilla.org/en-US/docs/Web/API/Presentation_API
+ - DNSSERVICEINFO_CONTRACT_ID
+   - ./dom/presentation/provider/MulticastDNSDeviceProvider.cpp
+ - @mozilla.org/toolkit/components/mdnsresponder/dns-info;1
+
+Direct paths to DNS resolution:
+ + nsHostResolver::ResolveHost
+   + Only used by nsDNSService
+ + nsDNSService::Resolve
+   - Patched for safety (XXX: Verify application)
+ + nsDNSService::AsyncResolve
+   - Patched for safety (XXX: Verify application)
+ - ChildDNSService::AsyncResolve and ChildDNSService::Resolve
+   - Possibly only active if MOZILLA_XPCOMRT_API is defined.. But it seems to
+     be.
+   - ./netwerk/dns/ChildDNSService.cpp
+     - XXX: Should patch AsyncResolve and Resolve here, as we do in
+       nsDNSService.
+ - XXX: New parent/child interfaces DNSRequestParent and DNSRequestChild
+   + ./netwerk/ipc/NeckoParent.cpp
+     + Calls into DNS service via DNSRequestParent::DoAsyncResolve()
+   + ./netwerk/ipc/NeckoChild.cpp
+
+XXX Strange things doing DNS:
+ - mtransport (media/mtransport/test/ice_unittest.cpp)
+   - XXX Bleh rolls its own Resolve() using getaddirinfo (not PR_GetAddrInfo)
+   - Pretty sure is disabled.
+ - XXX: StreamingListener::SocketWriter::MakeConnection goes getaddrinfo()
+   - Pretty sure this is just a unit test though.
+ + third_party/rust/libc/src/unix/mod.rs (exports but doens't use getaddrinfo)
+
+SOCK_:
+ - netwerk/base/NetworkInfoServiceCocoa.cpp (SOCK_DGRAM)
+ - netwerk/base/NetworkInfoServiceLinux.cpp
+   - Internal code, possibly for ICE?
+   - nsNetworkInfoService::ListNetworkAddresses
+     - XXX: Used by mDNS and the presentation API (dom/presentation/*)
+ + netwerk/sctp/datachannel/DataChannel.cpp
+   + Disabled via WebRTC
+ - StreamingListener::SocketWriter::MakeConnection
+   - Pretty sure this is just a unit test though.
+
+SOCKET_:
+ + devtools/shared/webconsole/network-monitor.js
+   + Just an observer
+ - dom/network/TCPSocketParent.cpp
+   - Probably OK. Disable via DOM prefs
+ - dom/network/UDPSocketParent.cpp
+   - Probably OK. Disable via DOM prefs
+ - media/mtransport/nr_socket_prsock.cpp
+   - NrUdpSocketIpc::connect_i
+   - NrSocket::connect(nr_transport_addr *addr) {
+     - NrSocket(), NrSocketBase, CreateSocket()
+   - Probably disabled with webrtc? XXX: Check.
+ + nsSocketTransportService
+   + None of the new stuff actually makes new sockets
+ + nsUDPSocket
+ - third_party/rust/url/src/host.rs
+   - XXX: Hrmm.. Fuck to_socket_addrs
+
+UDPSocket:
+ - dom/network/UDPSocket*
+   - Same deal. Disable.
+ + media/mtransport/nr_socket_prsock.cpp
+   + Webrtc again.
+ - netwerk/dns/mdns/libmdns/fallback/MulticastDNS.jsm (XXX: Yikes)
+   - XXX: Ensure mdns is disabled
+
+TCPSocket:
+ - dom/base/Navigator.cpp (hook for MozTcpSocket)
+   - disable
+ - dom/media/bridge/MediaModule.cpp
+   - PeerConnection stuff.
+ - media/mtransport/*
+   - Disable
+ - netwerk/ipc/PNecko.ipdl (hrmm... check full source?)
+
+Rust:
+ + media/libstagefright/binding
+ + netwerk/base/rust-url-capi
+
+-socket: (XPCOM)
+ - dom/flyweb/HttpServer.cpp
+   - Ensure flyweb is disabled
+ - dom/presentation/provider/PresentationControlService.js
+   - Opens local listening sockets. We probably don't want it.
+   - Also appears to do ICE and unproxied TCP..
+ - dom/presentation/provider/LegacyPresentationControlService.js
+
+_SOCKET:
+ - devtools/client/debugger/new/bundle.js
+   - Pretty sure we disable the remote case, yes?
+ - dom/presentation/PresentationTCPSessionTransport.cpp
+   - More listener sockets
+ - netwerk/base/ThrottleQueue.cpp
+   - Seems just to be for timer notification
+
+Android XXX leaks:
+ - HttpUrlConnection
+   - XXX: mobile/android/base/java/org/mozilla/gecko/feeds/FeedFetcher.java
+     (fetchAndParseFeedIfModified)
+   - XXX: mobile/android/base/java/org/mozilla/gecko/media/GeckoMediaDrmBridgeV21.java
+   - XXX: mobile/android/base/java/org/mozilla/gecko/search/SearchEngineManager.java
+   - XXX: mobile/android/thirdparty/com/keepsafe/switchboard/SwitchBoard.java
+ - Uses ch.boye.httpclientandroidlib.impl.client.*:
+   - I think this is ok?
+ - /android/
+
+Android Java calls:
+  + Uses HttpURLConnection:
+    + mobile/android/base/java/org/mozilla/gecko/CrashReporter.java
+    + mobile/android/base/java/org/mozilla/gecko/SuggestClient.java
+    + mobile/android/base/java/org/mozilla/gecko/distribution/Distribution.java
+    + mobile/android/search/java/org/mozilla/search/providers/SearchEngineManager.java
+    + mobile/android/stumbler/java/org/mozilla/mozstumbler/service/utils/AbstractCommunicator.java
+    + mobile/android/tests/browser/robocop/src/org/mozilla/gecko/tests/BaseRobocopTest.java
+    + mobile/android/tests/browser/robocop/src/org/mozilla/gecko/tests/testDistribution.java
+    + mobile/android/thirdparty/com/keepsafe/switchboard/SwitchBoard.java
+    + mobile/android/thirdparty/com/squareup/picasso/UrlConnectionDownloader.java
+  + Uses ch.boye.httpclientandroidlib.impl.client.*:
+    + mobile/android/base/java/org/mozilla/gecko/dlc/DownloadContentHelper.java
+    + mobile/android/base/java/org/mozilla/gecko/favicons/LoadFaviconTask.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/FxAccountClient10.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/oauth/FxAccountAbstractClient.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/reading/ReadingListClient.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/DeleteChannel.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/GetChannelStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/GetRequestStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/jpake/stage/PutRequestStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/AbstractBearerTokenAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/AuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResource.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResourceDelegate.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BasicAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/HMACAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/HawkAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/ResourceDelegate.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageCollectionRequest.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageRequest.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/setup/auth/AuthenticateAccountStage.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/tokenserver/TokenServerClient.java
+    + mobile/android/tests/background/junit4/src/org/mozilla/android/sync/test/helpers/MockResourceDelegate.java
+    + mobile/android/tests/background/junit4/src/org/mozilla/gecko/sync/net/test/TestHawkAuthHeaderProvider.java
+    + mobile/android/tests/background/junit4/src/org/mozilla/gecko/sync/net/test/TestLiveHawkAuth.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/client/protocol/ResponseAuthCache.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/impl/client/cache/CachingHttpClientBuilder.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/impl/client/cache/CachingHttpClients.java
+    + mobile/android/thirdparty/ch/boye/httpclientandroidlib/impl/execchain/ProtocolExec.java
+    + mobile/android/thirdparty/com/adjust/sdk/AdjustFactory.java
