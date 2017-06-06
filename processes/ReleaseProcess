@@ -166,9 +166,10 @@
    chmod 664 htdocs/${TORBROWSER_UPDATE_CHANNEL}/*
    chmod 664 htdocs/${TORBROWSER_UPDATE_CHANNEL}/.htaccess
    chmod 775 htdocs/${TORBROWSER_UPDATE_CHANNEL}/
-   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/update_2/${TORBROWSER_UPDATE_CHANNEL}/*"
-   torsocks rsync -avP htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/update_2/
-   torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/dist-master.torproject.org/htdocs/torbrowser/update_2/${TORBROWSER_UPDATE_CHANNEL}/*"
+   torsocks ssh staticiforme.torproject.org "rm -rf /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}/*"
+   torsocks rsync -avP htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/
+   torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}/*"
+   torsocks ssh staticiforme.torproject.org "static-update-component aus1.torproject.org"
    # Finally, remove old version as we point the update channel at the new version.
    # XXX: CAREFUL! $OLD_TOR_BROWSER_VERSION must be set!
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
