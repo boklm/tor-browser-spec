@@ -118,7 +118,7 @@
    cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
    /path/to/authenticode-signing.sh
    exit
-   torsocks rsync -avP window-signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/*.mar $TORBROWSER_BUILDDIR/
+   torsocks rsync -avP window-signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/*.exe $TORBROWSER_BUILDDIR/
    # Authenticode timestamping next
    cd $TORBROWSER_BUILDDIR
    export OSSLSIGNCODE=/path/to/osslsigncode
@@ -129,9 +129,11 @@
    cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
    /path/to/tbb-signing.sh
    exit
+   torsocks rsync -avP signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/ $TORBROWSER_BUILDDIR
 
 #. Sync to people.torproject.org
-   torsocks rsync -avP $TORBROWSER_VERSION/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
+   torsocks ssh people.torproject.org "mv public_html/$TORBROWSER_BUILDDIR public_html/$TORBROWSER_VERSION"
 
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
