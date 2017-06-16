@@ -41,7 +41,7 @@ Signing and timestamping
 1) Getting the certificate
 
 - pkcs11-tool --module /usr/lib/libeTPkcs11.so --type cert --read-object \
-              --id c27eac1b263465cdd73630d94b0b92e674f01501 > tpo_cert.der
+              --id 29643b7ac0003d8a882f8a4a6e064110d96b980b > tpo_cert.der
 - convert it to PEM: openssl x509 -in tpo_cert.der -inform der -outform pem \
                      -out tpo_cert.crt
 
@@ -57,7 +57,7 @@ Signing and timestamping
 - path/to/osslsigncode -pkcs11engine /usr/lib/engines/engine_pkcs11.so \
                        -pkcs11module /usr/lib/libeTPkcs11.so           \
                        -certs tpo_cert.crt                             \
-                       -key c27eac1b263465cdd73630d94b0b92e674f01501   \
+                       -key 29643b7ac0003d8a882f8a4a6e064110d96b980b   \
                        torbrowser-install-XXX.exe tb-XXX-signed.exe
 
 - pass the passphrase to osslsigncode in case you want to script the whole
