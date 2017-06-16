@@ -70,29 +70,68 @@
    # For stable releases put tails-dev@boum.org into Cc
 
 #. Code Sign the OS X dmg files:
-   # XXX: Document
+   torsocks ssh mac-signer "mkdir $TORBROWSER_VERSION"
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/*.dmg mac-signer:$TORBROWSER_VERSION/
+   torsocks ssh mac-signer
+   # Unlock the keychain and then...
+   cd $TORBROWSER_VERSION
+   # Sign the bundles
+   ../gatekeeper-signing.sh $TORBROWSER_VERSION
+   # Check that it worked
+   tar xf torbrowser-$TORBROWSER_VERSION-osx_zh-CN-signed.tar.bz2
+   spctl -a -t exec -vv TorBrowser.app/
+   rm -rf TorBrowser.app
+   exit
+   torsocks rsync -avP mac-signer:$TORBROWSER_VERSION/*.bz2 .
 
 #. Regenerate OS X MAR files from code signed dmg files
+   # XXX Go to your directory prepared for recreating the .dmg files and containing
+   # the uploaded .bz2 files
+   ./gatekeeper-bundling.sh $TORBROWSER_VERSION
+   rsync -avP *.dmg $TORBROWSER_BUILDDIR/
+   cd $TORBROWSER_BUILDDIR/..
    # The code signed dmg files should be in the $TORBROWSER_VERSION directory
    # Install a recent p7zip version (see ../tools/dmg2mar for instructions)
    make dmg2mars # or dmg2mars-alpha
 
 #. Sign the MAR update files
-   # First, copy the torbrowser tree to removable storage:
-   rsync -avP $TORBROWSER_BUILDDIR/../../../ /media/storage/TBB/
-   # Then, remove storage, attach to offline computer that houses TBB signing key.
-   # Run the following from that rsync'ed removable storage dir:
+   # First, copy the torbrowser tree to the signing machine:
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/../../../ signing-machine
+   torsocks ssh signing-machine "mkdir tor-browser-bundle/gitian/$TORBROWSER_VERSION"
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/*.mar signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
+   torsocks ssh signing-machine
+   cd tor-browser-bundle/gitian
+   # XXX Modify the signmars.sh script to comment out the eval call.
+   export TORBROWSER_VERSION=$TORBROWSER_VERSION
    export NSS_DB_DIR=/path/to/nssdb
    # Only needed if you are not owner of the marsigner cert
    export NSS_CERTNAME=your_certname
    make signmars
-   # Now, re-attach storage to the online computer, and sync the signed
-   # results to a version-only directory (without the build number)
-   torsocks ssh people.torproject.org "cp -a public_html/builds/$TORBROWSER_BUILDDIR public_html/builds/$TORBROWSER_VERSION"
-   torsocks rsync -avP /media/storage/TBB/tor-browser-bundle/gitian/$TORBROWSER_BUILDDIR/*.mar people.torproject.org:public_html/builds/$TORBROWSER_VERSION
+   exit
+   torsocks rsync -avP signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/*.mar $TORBROWSER_BUILDDIR/
 
 #. Sign individual bundle files:
-   # XXX: Document
+   # Authenticode signing first
+   torsocks ssh windows-signing-machine "mkdir tor-browser-bundle/gitian/$TORBROWSER_VERSION"
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/*.exe windows-signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
+   torsocks ssh windows-signing-machine
+   cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
+   /path/to/authenticode-signing.sh
+   exit
+   torsocks rsync -avP window-signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/*.mar $TORBROWSER_BUILDDIR/
+   # Authenticode timestamping next
+   cd $TORBROWSER_BUILDDIR
+   export OSSLSIGNCODE=/path/to/osslsigncode
+   /path/to/authenticode-timestamping.sh
+
+   # All the GPG signatures at last
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/* signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
+   cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
+   /path/to/tbb-signing.sh
+   exit
+
+#. Sync to people.torproject.org
+   torsocks rsync -avP $TORBROWSER_VERSION/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
 
 #. Clear out old builds, transfer builds to staticiforme
 #. Remote:
