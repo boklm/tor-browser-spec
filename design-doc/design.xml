@@ -3759,7 +3759,7 @@ occurring.
   <listitem><command>The Referer Header</command>
   <para>
 
-When leaving a .onion domain we set the Referer header to the destination by
+When leaving a .onion domain we set the Referer header to an empty string by
 <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=021bffff111b6b93eecb5859e680d540991c20c9">
 providing a preference</ulink>, <command>network.http.referer.hideOnionSource</command>, and setting it to <command>true</command>. That avoids leaking
 information which might be especially problematic in the case of transitioning
