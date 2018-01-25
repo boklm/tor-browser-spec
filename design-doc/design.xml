@@ -29,7 +29,7 @@
      <address><email>gk#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>January 24th, 2018</pubdate>
+   <pubdate>January 25th, 2018</pubdate>
  </articleinfo>
 
 <sect1>
@@ -2308,6 +2308,7 @@ maximized windows are detrimental to privacy in this mode.
 
      </para>
     </listitem>
+
     <listitem><command>Display Media information</command>
      <para>
 
@@ -2390,6 +2391,7 @@ a defense-in-depth by setting <command>media.peerconnection.enabled</command> an
 <command>media.navigator.enabled</command> to <command>false</command>.
     </para>
     </listitem>
+
     <listitem><command>MIME Types</command>
      <para>
 
@@ -2434,6 +2436,25 @@ to the surface. That is achieved by a direct
 <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=7d9701c2b6a203b1b7a556f614858588e3e5976e">
 Firefox patch</ulink> which reports back <command>1</command> for the first two
 properties and <command>0.0</command> for the two last ones.
+
+      </para>
+    </listitem>
+
+    <listitem><command>Battery Status API</command>
+      <para>
+
+The Battery Status API provides access to information about the system's battery
+charge level. From Firefox 52 on it is disabled for web content. Initially, it
+was possible on Linux to get a double-precision floating point value for the
+charge level, which means there was a large number of possible values making it
+almost behave like an identifier allowing to track a user cross-origin. But
+still after that got fixed (and on other platforms where the precision was just
+two significant digits anyway) the risk for tracking users remained as combined
+with the <command>chargingTime</command> and <command>dischargingTime</command>
+the possible values <ulink url="https://senglehardt.com/papers/iwpe17_battery_status_case_study.pdf">
+got estimated to be in the millons</ulink> under normal conditions. We avoid all
+those possible issues with disabling the Battery Status API by setting
+<command>dom.battery.enabled</command> to <command>false</command>.
 
       </para>
     </listitem>
@@ -2572,10 +2593,15 @@ against timing-based side channel fingerprinting risks.
 Due to <ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=863246">bugs
 </ulink> <ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1120398">
 in Firefox</ulink> it is possible to detect the locale and the platform of a
-Tor Browser user. Moreover, it is possible to find out the extensions a user has
-installed. This is done by including resource:// and/or chrome:// URIs into
-web content which point to resources included in Tor Browser itself or in
-installed extensions.
+Tor Browser user. Moreover, it is possible to
+<ulink url="https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-sanchez-rola.pdf">
+find out the extensions</ulink> a user has installed. This is done by
+including resource:// and/or chrome:// URIs into web content, which point to
+resources included in Tor Browser itself or in installed extensions, and
+exploiting the different behavior resulting out of that: the browser raises
+an exception if a webpage requests a resource but the extension is not
+installed. This does not happen if the extension is indeed installed but the
+resource path does not exist.
       </para>
       <para>
 
@@ -2738,6 +2764,33 @@ size exfiltration.
 
       </para>
     </listitem>
+
+    <listitem><command>Web Audio API</command>
+      <para>
+
+The <ulink url="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">
+Web Audio API</ulink> provides several means to aid in fingerprinting users.
+At the simplest level it allows differentiating between users having the API
+available and those who don't by checking for an <command>AudioContext</command>
+or <command>OscillatorNode</command> object. However, there are more bits of
+information that the Web Audio API reveals if audio signals generated with an
+<command>OscillatorNode</command> are processed as
+<ulink url="https://senglehardt.com/papers/ccs16_online_tracking.pdf">hardware
+and software differences</ulink> influence those results.
+
+      </para>
+      <para>
+
+We disable the Web Audio API by setting <command>dom.webaudio.enabled</command>
+to <command>false</command>. That has the positive side effect that it disables
+one of several means to perform
+<ulink url="https://petsymposium.org/2017/papers/issue2/paper18-2017-2-source.pdf">
+ultrasound cross-device tracking</ulink> as well, which is based on having
+<command>AudioContext</command> available.
+
+      </para>
+    </listitem>
+
     <listitem><command>MediaError.message</command>
       <para>
 
@@ -2802,14 +2855,43 @@ datareporting.healthreport.about.reportUrlUnified</command> to <command>
 data:text/plain,</command>. The same is done with <command>
 datareporting.healthreport.about.reportUrl</command> and the new tiles feature
 related <command>browser.newtabpage.directory.ping</command> and <command>
-browser.newtabpage.directory.source</command> preferences. Additionally, we
-disable the UITour backend by setting <command>browser.uitour.enabled</command>
-to <command>false</command>. Finally, we provide <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=9f24ce35cd8776a0f7c3a4d54992ecb0eaad6311">a patch</ulink>
+browser.newtabpage.directory.source</command> preferences.
+<command>browser.newtabpage.remote</command> is set to <command>false</command>
+in this context as well, as a defense-in-depth given that this feature is
+already of by default. Additionally, we disable the UITour backend by setting
+<command>browser.uitour.enabled</command> to <command>false</command> and avoid
+getting Mozilla experiments installed into Tor Browser by flipping
+<command>experiments.enabled</command> to <command>false</command>. On the
+update side we prevent the browser from pinging the new
+<ulink url="https://wiki.mozilla.org/Firefox/Kinto">Kinto</ulink> service for
+blocklist updates as it is not used for it yet anyway. This is done by setting
+<command>services.blocklist.update_enabled</command> to <command>false</command>.
+The captive portal detection code is disabled as well as it phones home to
+Mozilla. We set <command>network.captive-portal-service.enabled</command> to
+<command>false</command> to achieve that. Unrelated to that we make sure that
+Mozilla does not get bothered with TLS error reports from Tor Browser users by
+hiding the respective checkbox with
+<command>security.ssl.errorReporting.enabled</command> set to
+<command>false</command>. And while we have the Push API disabled as there are
+no Service Workers available in Tor Browser yet, we remove the value for
+<command>dom.push.serverURL</command> as a defense-in-depth. Finally, we provide
+<ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=9f24ce35cd8776a0f7c3a4d54992ecb0eaad6311">a patch</ulink>
 to prevent Mozilla's websites from querying whether particular extensions are
 installed and what their state in Tor Browser is by using the
 <command>window.navigator.AddonManager</command> API. As a defense-in-depth the
 patch makes sure that not only Mozilla's websites can't get at that information
 but that the whitelist governing this access is empty in general.
+
+      </para>
+
+      <para>
+
+We have <ulink url="https://wiki.mozilla.org/Security/Safe_Browsing">Safebrowsing</ulink>
+disabled in Tor Browser. In order to avoid pinging providers for list updates we
+remove the entries for <command>browser.safebrowsing.provider.mozilla.updateURL</command>
+and <command>browser.safebrowsing.provider.mozilla.gethashURL</command> (and the
+values for Google related preferences as well).
+
       </para>
     </listitem>
     <listitem><command>Operating System Type Fingerprinting</command>
@@ -2839,16 +2921,13 @@ tag on our bug tracker</ulink>.
      </para>
      <para><command>Implementation Status:</command>
 
-At least three HTML5 features have different implementation status across the
+At least two HTML5 features have a different implementation status across the
 major OS vendors and/or the underlying hardware: the <ulink
-url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.battery">Battery
-API</ulink>, the <ulink
 url="https://developer.mozilla.org/en-US/docs/DOM/window.navigator.connection">Network
 Connection API</ulink>, and the <ulink
 url="https://wiki.mozilla.org/Sensor_API">Sensor API</ulink>. We disable these APIs through the Firefox preferences
-<command>dom.battery.enabled</command>,
-<command>dom.network.enabled</command>, and
-<command>device.sensors.enabled</command>.
+<command>dom.network.enabled</command> and
+<command>device.sensors.enabled</command>, setting both to <command>false</command>.
 
      </para>
     </listitem>
@@ -3786,7 +3865,7 @@ through the source URL parameters.
   <para>
 
 We believe the Referer header should be made explicit, and believe that Referrer
-Policy provides a <ulink
+Policy, which is available since Firefox 52, provides a <ulink
 url="https://w3c.github.io/webappsec-referrer-policy/#referrer-policy-header">
 decent step in this direction</ulink>. If a site wishes to transmit its URL to
 third party content elements during load or during link-click, it should have
