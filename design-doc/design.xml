@@ -738,7 +738,7 @@ Also, JavaScript can be used to query the user's timezone via the
 url="https://www.khronos.org/registry/webgl/specs/1.0/#5.13">WebGL</ulink> can
 reveal information about the video card in use, and high precision timing
 information can be used to <ulink
-url="https://cseweb.ucsd.edu/~hovav/dist/jspriv.pdf">fingerprint the cpu and
+url="https://cseweb.ucsd.edu/~hovav/dist/jspriv.pdf">fingerprint the CPU and
 interpreter speed</ulink>. JavaScript features such as
 <ulink url="https://www.w3.org/TR/resource-timing/">Resource Timing</ulink>
 may leak an unknown amount of network timing related information. And, moreover,
@@ -1086,7 +1086,7 @@ a helper application.
 
 Furthermore, we ship a <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=d75b79f6fa920e6a1e3043005dfd50060ea70e57">patch for Linux users</ulink> that makes
 sure sftp:// and smb:// URLs are not passed along to the operating system as this
-can lead to proxy bypasses on systems that have GIO/GnomeVS support. And proxy
+can lead to proxy bypasses on systems that have GIO/GnomeVFS support. And proxy
 bypass risks due to file:// URLs should be mitigated for macOS and Linux users
 by <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=8db44df10d1d82850e8b4cfe81ac3b5fce32a663">
 two</ulink> <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=a8e1fcc8678aa1583f73ef231c99f77cf17196d9">
@@ -1095,7 +1095,7 @@ further patches</ulink>.
   </para>
   <para>
 
-Additionally, modern desktops now pre-emptively fetch any URLs in Drag and
+Additionally, modern desktops now preemptively fetch any URLs in Drag and
 Drop events as soon as the drag is initiated. This download happens
 independent of the browser's Tor settings, and can be triggered by something
 as simple as holding the mouse button down for slightly too long while
@@ -1264,7 +1264,7 @@ and no other browser vendor or standards body had invested the effort to
 enumerate or otherwise deal with these vectors for third party tracking. As
 such, we have had to enumerate and isolate these identifier sources on a
 piecemeal basis. This has gotten better lately with Mozilla stepping up and
-helping us with uplifting our patches, and with contributing own ones where we
+helping us with uplifting our patches, and with contributing their own patches where we
 lacked proper fixes. However, we are not done yet with our unlinkability defense
 as new identifier sources are still getting added to the web platform. Here is
 the list that we have discovered and dealt with to date:
@@ -1303,10 +1303,11 @@ We isolate the content and image cache to the URL bar domain by setting
       <para>
 Furthermore there is the Cache API (CacheStorage). That one is currently not
 available in Tor Browser as we do not allow third party cookies and are in
-Private Browsing Mode by default.
+Private Browsing Mode by default. <!-- XXX: Link to Cache API and briefly
+mention why it is disabled in PBM? What about memory-only cache? -->
       </para>
       <para>
-Finally, we have the asm.js cache. The cache entry of the sript is (among
+Finally, we have the asm.js cache. The cache entry of the script is (among
 others things, like type of CPU, build ID, source characters of the asm.js
 module etc.) keyed <ulink url="https://blog.mozilla.org/luke/2014/01/14/asm-js-aot-compilation-and-startup-performance/">to the origin of the script</ulink>.
 Lacking a good solution for binding it to the URL bar domain instead we decided
@@ -1581,7 +1582,7 @@ We provide the isolation in Tor Browser by setting
      <listitem><command>OCSP</command>
        <para>
 
-OCSP requests go to Certfication Authorities (CAs) to check for revoked
+OCSP requests go to Certificate Authorities (CAs) to check for revoked
 certificates. They are sent once the browser is visiting a website via HTTPS and
 no cached results are available. Thus, to avoid information leaks, e.g. to exit
 relays, OCSP requests MUST go over the same circuit as the HTTPS request causing
@@ -1600,7 +1601,7 @@ the browser itself (similar to the OCSP mechanism mentioned in the previous
 section). Those requests MUST be isolated to the URL bar domain.
 
       </para>
-      <para><command>Implemetation Status:</command>
+      <para><command>Implementation Status:</command>
 
 Favicon requests are isolated to the URL bar domain by setting
 <command>privacy.firstparty.isolate</command> to <command>true</command>.
@@ -1665,7 +1666,7 @@ We allow these requests to proceed, but we isolate them.
 
 The Permissions API allows a website to query the status of different
 permissions. Although permissions are keyed to the origin, that is not enough to
-alleviate cross-linkabilility concerns: the combined permission state could work
+alleviate cross-linkability concerns: the combined permission state could work
 like an identifier given more and more permissions and their state being
 accessible under this API.
 
@@ -1831,6 +1832,8 @@ population is largely useless for evaluating either attacks or defenses.
 Unfortunately, this includes popular large-scale studies such as <ulink
 url="https://panopticlick.eff.org/">Panopticlick</ulink> and <ulink
 url="https://amiunique.org/">Am I Unique</ulink>.
+<!-- XXX: What about our fpcentral implementation? Is it ready to be mentioned
+here? -->
 
       </para>
      </listitem>
@@ -1951,6 +1954,8 @@ url="https://panopticlick.eff.org/">Panopticlick</ulink> or <ulink
 url="https://amiunique.org/">Am I Unique</ulink> could report the entropy and
 uniqueness rates for all users of a single user agent version, without the
 need for complicated statistics about the variance of the measured behaviors.
+<!-- XXX: What about our fpcentral implementation? Is it ready to be mentioned
+here? -->
 
       </para>
       <para>
@@ -2237,7 +2242,7 @@ use those fonts exclusively. In addition to that we set the <command>font.name*
 is always displayed with the same font. This is not guaranteed even if we bundle
 all the fonts Tor Browser uses as it can happen that fonts are loaded in a
 different order on different systems. Setting the above mentioned preferences
-works around this issue by specifying the font to use explicitely.
+works around this issue by specifying the font to use explicitly.
 
      </para>
 
@@ -2412,7 +2417,7 @@ SpeechRecognition (Asynchronous Speech Recognition). The latter is still
 disabled in Firefox. However, the former is enabled by default and there is the
 risk that <command>speechSynthesis.getVoices()</command> has access to
 computer-specific speech packages making them available in an enumerable
-fashion. Morevover, there are callbacks that would allow JavaScript to time how
+fashion. Moreover, there are callbacks that would allow JavaScript to time how
 long a phrase takes to be "uttered". To prevent both we set
 <command>media.webspeech.synth.enabled</command> to <command>false</command>.
 
@@ -2430,6 +2435,8 @@ the Touch API by setting <command>dom.w3c_touch_events.enabled</command> to
 have this API available we patched the code to give content-window related
 coordinates back. Furthermore, we made sure that the touch area described by
 <command>Touch.radiusX</command>, <command>Touch.radiusY</command>, and
+<!-- FWIW I suspect that rotationAngle and force will break more things than
+radius, and also reveal less or no persistent information. -->
 <command>Touch.rotationAngle</command> does not leak further information and
 <command>Touch.force</command> does not reveal how much pressure a user applied
 to the surface. That is achieved by a direct
@@ -2452,7 +2459,7 @@ still after that got fixed (and on other platforms where the precision was just
 two significant digits anyway) the risk for tracking users remained as combined
 with the <command>chargingTime</command> and <command>dischargingTime</command>
 the possible values <ulink url="https://senglehardt.com/papers/iwpe17_battery_status_case_study.pdf">
-got estimated to be in the millons</ulink> under normal conditions. We avoid all
+got estimated to be in the millions</ulink> under normal conditions. We avoid all
 those possible issues with disabling the Battery Status API by setting
 <command>dom.battery.enabled</command> to <command>false</command>.
 
@@ -2465,6 +2472,9 @@ those possible issues with disabling the Battery Status API by setting
 It is possible to get the system uptime of a Tor Browser user by querying the
 <command>Event.timestamp</command> property. We avoid this by setting <command>
 dom.event.highrestimestamp.enabled</command> to <command>true</command>.
+<!-- XXX: wait, true?? Weren't there other reasons to disable highres
+timestamps? highres DOM timing information was believed to be fingerprintable,
+IIRC. -->
 
       </para>
     </listitem>
@@ -2480,6 +2490,10 @@ changed by the keyboard layout nor by the modifier state. On the other hand the
 <command>KeyboardEvent.key</command> property contains the character that is
 generated by that key. This is dependent on things like keyboard layout, locale
 and modifier keys.
+
+<!-- XXX: We should make some statement about what this does to intl users.
+Also, stuff like this used to be hooked to extensions.torbutton.spoof_english
+if it had user-facing effects -->
 
       </para>
       <para><command>Design Goal:</command>
@@ -2574,7 +2588,7 @@ and <command>document.timeline.currentTime</command>.
       </para>
       <para>
 
-While clamping the clock resolution to 100ms is a step towards neutering the
+While clamping the clock resolution to 100ms is a step towards mitigating 
 timing-based side channel fingerprinting, it is by no means sufficient. It turns
 out that it is possible to subvert our clamping of explicit clocks by using
 <ulink url="https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_kohlbrenner.pdf">
@@ -2610,7 +2624,7 @@ out of a Tor Browser user by deploying resource:// and/or chrome:// URIs. Until
 this is fixed in Firefox <ulink url="https://gitweb.torproject.org/torbutton.git/tree/src/components/content-policy.js">
 we filter</ulink> resource:// and chrome:// requests done
 by web content denying them by default. We need a whitelist of resource:// and
-chrome:// URIs, though, to avoid breaking parts of Firefox. Those more than a
+chrome:// URIs, though, to avoid breaking parts of Firefox. There are more than a
 dozen Firefox resources do not aid in fingerprinting Tor Browser users as they
 are not different on the platforms and in the locales we support.
 
@@ -2634,7 +2648,7 @@ We set the fallback character set to set to windows-1252 for all locales, via
 to instruct the JS engine to use en-US as its internal C locale for all Date,
 Math, and exception handling. Additionally, we provide a patch to use an
 <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=d144738fedeeb23746d7a9f16067bd985b0d59aa">
-en-US label for the <command>isindex</command> HTML element</ulink> instead of
+en-US label for the <command>isindex</command>HTML element</ulink> instead of
 letting the label leak the browser's UI locale.
      </para>
     </listitem>
@@ -2738,8 +2752,9 @@ We clamp keyboard event resolution to 100ms with a <ulink url="https://gitweb.to
     <listitem><command>Amount of Processor Cores (hardwareConcurrency)</command>
       <para>
 
-Modern computers have multiple physical processor cores in their CPU available.
-One core typically allows to run more than one thread at a time and
+Modern computers have multiple physical processor cores available in their
+CPU.  For optimum performance, native code typically attempts to run as many
+threads as there are cores, and
 <command>navigator.hardwareConcurrency</command> makes the number of those
 threads (i.e. logical processors) available to web content.
 
@@ -2754,7 +2769,7 @@ the amount of logical processors available.
 
 We set <command>dom.maxHardwareConcurrency</command> to <command>1</command> to
 report the same amount of logical processors for everyone. However, there are
-<ulink url="https://github.com/oftn/core-estimator">probablistic ways of
+<ulink url="https://github.com/oftn/core-estimator">probabilistic ways of
 determining the same information available</ulink> which we are not defending
 against currently. Moreover, we might even want to think about a more elaborate
 approach defending against this fingerprinting technique by not making all users
@@ -2770,7 +2785,7 @@ size exfiltration.
 
 The <ulink url="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">
 Web Audio API</ulink> provides several means to aid in fingerprinting users.
-At the simplest level it allows differentiating between users having the API
+At the simplest level it allows differentiating between users who have the API
 available and those who don't by checking for an <command>AudioContext</command>
 or <command>OscillatorNode</command> object. However, there are more bits of
 information that the Web Audio API reveals if audio signals generated with an
@@ -2824,6 +2839,7 @@ own needs and preferences. To avoid fingerprintability risks we make Tor Browser
 users uniform by setting <command>reader.parse-on-load.enabled</command> to
 <command>false</command> and <command>browser.reader.detectedFirstArticle</command>
 to <command>true</command>.
+<!-- XXX: Explain how this is fingerprintable -->
 
      </para>
     </listitem>
@@ -2837,8 +2853,8 @@ This is often implemented by contacting Mozilla services, be it for displaying
 further information about a new feature or by
 <ulink url="https://wiki.mozilla.org/Telemetry">sending (aggregated) data back
 for analysis</ulink>. While some of those mechanisms are disabled by default on
-release channels (gathering telemetry data comes to mind) others are not. We
-make sure that non of those Mozilla services is contacted to avoid possible
+release channels (such as telemetry data) others are not. We
+make sure that none of those Mozilla services are contacted to avoid possible
 fingerprinting risks.
 
       </para>
