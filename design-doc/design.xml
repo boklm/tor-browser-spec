@@ -1301,10 +1301,17 @@ We isolate the content and image cache to the URL bar domain by setting
 
       </para>
       <para>
-Furthermore there is the Cache API (CacheStorage). That one is currently not
-available in Tor Browser as we do not allow third party cookies and are in
-Private Browsing Mode by default. <!-- XXX: Link to Cache API and briefly
-mention why it is disabled in PBM? What about memory-only cache? -->
+Furthermore there is the <ulink url="https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage">
+CacheStorage API</ulink>. That one is currently not available in Tor Browser as
+we do not allow third party cookies and are in Private Browsing Mode by default.
+As the cache entries are written to disk the CacheStorage API
+<ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1173467">got disabled</ulink>
+in that mode in Firefox, similar to how IndexedDB is handled. There are
+<ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=1117808">thoughts</ulink>
+about enabling it by providing a memory-only database but that is still work
+in progress. But even if users are leaving the Private Browsing Mode and are
+enabling third party cookies the storage is isolated to the URL bar domain by
+<command>privacy.firstparty.isolate</command> set to <command>true</command>.
       </para>
       <para>
 Finally, we have the asm.js cache. The cache entry of the script is (among
@@ -1334,6 +1341,22 @@ third party tracking identifiers</ulink>. To prevent this, we set
 DOM storage for third party domains MUST be isolated to the URL bar domain,
 to prevent linkability between sites. We achieve this by setting
 <command>privacy.firstparty.isolate</command> to <command>true</command>.
+
+      </para>
+    </listitem>
+    <listitem><command>IndexedDB Storage</command>
+      <para>
+
+IndexedDB storage for third party domains MUST be isolated to the URL bar
+domain, to prevent linkability between sites. By default
+<ulink url="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">
+IndexedDB storage</ulink> is disabled as Tor Browser is using Firefox's Private
+Browsing Mode and does not allow third party cookies. There are
+<ulink url="https://bugzilla.mozilla.org/show_bug.cgi?id=781982">thoughts</ulink>
+about enabling this API in Private Browsing Mode as well but that is still work
+in progress. However, if users are leaving this mode and are enabling third
+party cookies, isolation to the URL bar is achieved, though, by
+<command>privacy.firstparty.isolate</command> set to <command>true</command>.
 
       </para>
     </listitem>
@@ -1831,9 +1854,14 @@ and version differences into its analysis of the fingerprintability of a
 population is largely useless for evaluating either attacks or defenses.
 Unfortunately, this includes popular large-scale studies such as <ulink
 url="https://panopticlick.eff.org/">Panopticlick</ulink> and <ulink
-url="https://amiunique.org/">Am I Unique</ulink>.
-<!-- XXX: What about our fpcentral implementation? Is it ready to be mentioned
-here? -->
+url="https://amiunique.org/">Am I Unique</ulink>. To gather usable data about
+Tor Browser's fingerprinting defenses we launched a Google Summer of Code
+project in 2016, called <ulink url="https://github.com/plaperdr/fp-central">
+FPCentral</ulink>, with the aim to provide us an own testbed. We set this up
+during 2017 and <ulink url="https://fpcentral.tbb.torproject.org/">have it
+available now</ulink> for further integration into our quality assurance efforts
+and possible research into improving our fingerprinting defenses and measuring
+their effectiveness.
 
       </para>
      </listitem>
@@ -1954,9 +1982,9 @@ url="https://panopticlick.eff.org/">Panopticlick</ulink> or <ulink
 url="https://amiunique.org/">Am I Unique</ulink> could report the entropy and
 uniqueness rates for all users of a single user agent version, without the
 need for complicated statistics about the variance of the measured behaviors.
-<!-- XXX: What about our fpcentral implementation? Is it ready to be mentioned
-here? -->
-
+<ulink url="https://fpcentral.tbb.torproject.org/fp">FPCentral</ulink> is trying
+to achieve that for Tor Browser by providing feedback on acceptable browser
+properties and giving guidance on possible improvements.
       </para>
       <para>
 
@@ -2471,10 +2499,14 @@ those possible issues with disabling the Battery Status API by setting
 
 It is possible to get the system uptime of a Tor Browser user by querying the
 <command>Event.timestamp</command> property. We avoid this by setting <command>
-dom.event.highrestimestamp.enabled</command> to <command>true</command>.
-<!-- XXX: wait, true?? Weren't there other reasons to disable highres
-timestamps? highres DOM timing information was believed to be fingerprintable,
-IIRC. -->
+dom.event.highrestimestamp.enabled</command> to <command>true</command>. This
+might seem to be counterintuitive at first glance but the effect of setting
+that preference to <code>true</code> is a
+<ulink url="https://trac.torproject.org/projects/tor/ticket/17046#comment:8">
+normalization</ulink> of <code>evt.timestamp</code> and
+<code>new Event('').timeStamp</code>. Together with clamping the timer
+resolution to 100ms this provides an effective means against system uptime
+fingerprinting.
 
       </para>
     </listitem>
@@ -2490,10 +2522,6 @@ changed by the keyboard layout nor by the modifier state. On the other hand the
 <command>KeyboardEvent.key</command> property contains the character that is
 generated by that key. This is dependent on things like keyboard layout, locale
 and modifier keys.
-
-<!-- XXX: We should make some statement about what this does to intl users.
-Also, stuff like this used to be hooked to extensions.torbutton.spoof_english
-if it had user-facing effects -->
 
       </para>
       <para><command>Design Goal:</command>
@@ -2514,6 +2542,19 @@ are currently returning an empty <command>KeyboardEvent.code</command> and a
 <command>KeyboardEvent.keyCode</command> of <command>0</command>. Moreover,
 neither <command>Alt</command> or <command>Shift</command>, or
 <command>AltGr</command> keyboard events are reported to content.
+
+      </para>
+      <para>
+
+We are currently not taking the actually deployed browser locale or the locale
+indicated by a loaded document into account when spoofing the keyboard layout.
+We think that would be the right thing to do in the longer run, to mitigate
+possible usability issues and broken functionality on websites. Similarily to
+how users of non-english Tor Browser bundles right now can choose between
+keeping the Accept header spoofed or not they would then be able to keep a
+spoofed english keyboard or a spoofed one depending on the actual Tor Browser
+locale or language of the document.
+
       </para>
     </listitem>
     <listitem><command>User Agent and HTTP Headers</command>
@@ -2588,7 +2629,7 @@ and <command>document.timeline.currentTime</command>.
       </para>
       <para>
 
-While clamping the clock resolution to 100ms is a step towards mitigating 
+While clamping the clock resolution to 100ms is a step towards mitigating
 timing-based side channel fingerprinting, it is by no means sufficient. It turns
 out that it is possible to subvert our clamping of explicit clocks by using
 <ulink url="https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_kohlbrenner.pdf">
@@ -2838,8 +2879,9 @@ is a Firefox feature to view web pages clutter-free and easily adjusted to
 own needs and preferences. To avoid fingerprintability risks we make Tor Browser
 users uniform by setting <command>reader.parse-on-load.enabled</command> to
 <command>false</command> and <command>browser.reader.detectedFirstArticle</command>
-to <command>true</command>.
-<!-- XXX: Explain how this is fingerprintable -->
+to <command>true</command>. This makes sure that documents are not parsed on
+load as this is disabled on some devices due to memory consumption and we
+pretend that everybody has already been using that feature in the past.
 
      </para>
     </listitem>
@@ -3010,10 +3052,10 @@ After closing all tabs, we then clear the searchbox and findbox text and emit
 state). Then we manually clear the following state: HTTP auth, SSL state,
 crypto tokens, OCSP state, site-specific content preferences (including HSTS
 state), the undo tab history, content and image cache, offline and memory cache,
-offline storage, IndexedDB storage, asm.js cache, cookies, DOM storage, the
-safe browsing key, the Google wifi geolocation token (if it exists), and the
-domain isolator state. We also clear NoScript's site and temporary permissions,
-and all other browser site permissions.
+offline storage, Cache storage, IndexedDB storage, asm.js cache, cookies,
+DOM storage, the safe browsing key, the Google wifi geolocation token (if it
+exists), and the domain isolator state. We also clear NoScript's site and
+temporary permissions, and all other browser site permissions.
 
      </para>
      <para>
