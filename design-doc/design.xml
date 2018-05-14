@@ -3270,7 +3270,7 @@ So sadly, we are still left in the dark on this point.
 In order to inform the user when their Tor Browser is out of date, we perform a
 privacy-preserving update check asynchronously in the background. The
 check uses Tor to download the file <ulink
-url="https://check.torproject.org/RecommendedTBBVersions">https://check.torproject.org/RecommendedTBBVersions</ulink>
+url="https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions">https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions</ulink>
 and searches that version list for the current value for the local preference
 <command>torbrowser.version</command>. If the value from our preference is
 present in the recommended version list, the check is considered to have
