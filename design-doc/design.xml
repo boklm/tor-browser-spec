@@ -29,7 +29,7 @@
      <address><email>gk#torproject org</email></address>
     </affiliation>
    </author>
-   <pubdate>May 15, 2018</pubdate>
+   <pubdate>June 15, 2018</pubdate>
  </articleinfo>
 
 <sect1>
@@ -1429,7 +1429,7 @@ While the vast majority of web requests adheres to the circuit and connection
 unlinkability requirement there are still corner cases we
 <ulink url="https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-52.5.2esr-7.0-2&amp;id=8661822237c56d543d5c9117c8a4708c402a110f">
   need to treat separately</ulink> or that
-<ulink href="https://bugs.torproject.org/22343">lack a fix altogether</ulink>.
+<ulink url="https://bugs.torproject.org/22343">lack a fix altogether</ulink>.
       </para>
     </listitem>
     <listitem><command>SharedWorkers</command>
