@@ -55,8 +55,8 @@ Key Creation Incantations and Instructions
 
 1) `mkdir nssdb`
 2) `certutil -d nssdb -N`
-3) Choose a strong passphrase to protect the keys
-4) `certutil -d nssdb -S -x -g 4096 -Z SHA512 -n marsigner -s "CN=Tor Browser MAR signing key" -t,,`
+3) Choose a strong passphrase to protect the key
+4) `certutil -d nssdb -S -x -g 4096 -Z SHA384 -n marsigner -s "CN=Tor Browser MAR signing key" -t,,`
 5) If there should be additional keys in the database repeat step 4. Note, you
    need a different CN and ideally a different nickname ("marsigner" in the
    example above).
