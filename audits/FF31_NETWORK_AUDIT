@@ -75,7 +75,7 @@ Direct paths to DNS resolution:
  + nsDNSService::AsyncResolve
    + Patched for safety
  + nsHostResolver::ResolveHost
-   + Only used by nsDNSService
+   + Only used by nsDNSService2
 
 Misc UDP (SOCK_DGRAM, PR_DESC_SOCKET_UDP):
  + PR_DESC_SOCKET_UDP

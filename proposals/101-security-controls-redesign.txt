@@ -1,0 +1,234 @@
+Filename: 101-security-controls-redesign.txt
+Title: Redesign of Tor Browser's Security Controls
+Author: Georg Koppen
+Created: 5-Apr-2018
+Status: Open
+Ticket: #25658
+
+1 Introduction
+
+  Tor Browser is well-known for its defenses against web tracking and
+  fingerprinting. However, providing Tor users just a privacy-enhanced
+  browser is often not enough to safeguard against deanonymization
+  attacks as those protections might simply get bypassed by exploiting
+  browser vulnerabilities. Tor Browser therefore offers several security
+  enhancements as well to reduce that risk. Most of those features are
+  provided by extensions which Tor Browser includes, namely Torbutton,
+  NoScript, and HTTPS Everywhere.
+
+1.1 Motivation
+
+  By default Torbutton, NoScript, and HTTPS Everywhere are visible on
+  the toolbar in Tor Browser and there is no hint about possible
+  security enhancements, with the exception of a notification bar shown
+  on first start and pointing to our security slider. This has a number
+  of suboptimal outcomes which this proposal seeks to address:
+
+  a) Security controls are scattered over and within different
+     extensions. That makes it hard to understand which knobs a user
+     could turn to improve their security settings while not being
+     exposed to additional fingerprinting risks.
+  b) The toolbar gets cluttered with three additional icons that provide
+     access to both per-site and global security settings. This is
+     confusing to users. Part of the confusion stems from mixing
+     non-global with global security controls on the toolbar not
+     indicating which of them just affect a particular website while
+     others affect the whole browser session. Another part is that users
+     feel the need to navigate through different levels of extension
+     menus to make basic adjustments to their security level.
+  c) There is the security vs. usability trade-off and little incentives
+     to change the default which comes with Tor Browser. That results in
+     users just staying on the lowest security level while at least some
+     of them could get convinced to raise that level if we managed to
+     provide an improved experience around our security controls, both
+     functionality- and UX-wise.
+
+1.2 The State of the Security Controls
+
+  That is how the toolbar in Tor Browser looks like currently:
+
+  ----------------------------------------------------------------------
+  |  ---  ---  -------------------------   ---------------   ---  ---  |
+  |  |N|  |T|  | URL bar               |   | Search bar  |   |H|  |M|  |
+  |  ---  ---  -------------------------   ---------------   ---  ---  |
+  ----------------------------------------------------------------------
+
+  N = NoScript button
+  T = Torbutton button
+  H = HTTPS Everywhere button
+  M = (Hamburger) Menu button
+
+  We include HTTPS Everywhere to help against potential Tor Exit node
+  eavesdroppers and active attackers. To provide users with optional
+  defense-in-depth against JavaScript and other potential exploit
+  vectors, we use NoScript modifying some of its defaults[1]. Torbutton
+  includes the security slider which is meant to give users an easy way
+  to adjust their security level from Standard to Safest, depending on
+  their perceived needs.
+
+2 Proposal
+
+  Generally, items on the toolbar serve two important purposes: they are
+  shortcuts to features often used and they inform about current state.
+  With that in mind we can think about redoing our toolbar helping that
+  way with issues outlined in 1.1 a) and b). The remaining problems
+  (part of 1.1 b) and 1.1 c)) will be addressed in section 2.2, 3.3, and
+  follow-up proposals.
+
+2.1 Restructuring the Toolbar
+
+2.1.1 Removing HTTPS Everywhere and NoScript from the Toolbar
+
+  I'd propose we remove both NoScript and HTTPS Everywhere from the
+  toolbar and leave Torbutton on it for now:
+
+  Torbutton serves a number of purposes and access to security settings
+  is just one of them. Moreover, we are in the process of restructuring
+  at least part of its functionality right now[2] and more will likely
+  happen in the future in this area. We can think about whether
+  Torbutton should remain on the toolbar after that transition is done.
+
+  HTTPS Everywhere has the option to block all unencrypted requests and
+  apart from that is just enforcing HTTPS connections according to the
+  rulesets it ships, which is our default. There is not much gain
+  security-wise leaving it on the toolbar and users might just be
+  confused by the "Block all unencrypted requests" option. I'd argue as
+  well that the status indicator is not important enough to justify
+  precious space on the toolbar either.
+
+  NoScript comes with a myriad of configuration options. We try to
+  abstract that away by shipping a list of defaults for Tor Browser[1].
+  But still having NoScript easily accessible makes it dangerous to
+  choose the wrong option, especially as the majority of its
+  functionality does not need to be exposed for Tor Browser users.
+  Moreover, the scary warning icon which is visible when NoScript
+  allows JavaScript is highly confusing to users as we ship this
+  configuration as our default. Removing the icon from the toolbar
+  should solve those two problems. We might want to think about exposing
+  the small amount of functionality which especially users with the
+  security slider set to "Safest" might need: managing finer-grained
+  script control. See section 2.2 for that.
+
+2.1.2 Showing Security Slider State
+
+  We essentially have one tool we want to promote to deal with security
+  settings: the security slider. Keeping in mind that icons on the
+  toolbar serve as well the purpose of showing state of important
+  settings, we could think about providing an own toolbar button for the
+  security slider. We could use an icon similar to the one suggested by
+  ninavizz[3] or come up with a different solution.
+
+  However, being able to easily adjust the slider level is risky as it
+  affects all the tabs and windows in a session. It might lead to
+  confusion as to whether the settings are applied globally or just for
+  a tab in question, which is error-prone. To mitigate that problem we
+  could at least warn users about the possible danger and provide the
+  option to acquire a New Identity right after changing the security
+  slider level. Doing so is a good idea anyway, but might not be enough
+  to justify exposing security slider functionality on the toolbar.
+
+  We'll add a security settings button to the toolbar which shows the
+  current slider state but, once clicked on, opens an about:preferences
+  pane in a new tab which contains the security slider. That way we
+  make the current slider state easily visible while avoiding the risk
+  of accidentally changing it. Moreover, having it as an option on
+  Firefox's preferences pane reinforces the idea of slider settings
+  being applied to the whole session and not just to a particular tab or
+  window.
+
+2.1.3 Reorganizing the Toolbar
+
+  Taking the preceding chapters into account this leaves us with two
+  toolbar buttons for the Tor Browser toolbar: the one from the
+  Torbutton extension and the button for the security settings.
+  Following the toolbar layout of Firefox we should move both buttons to
+  the right, between the search bar and the menu button.
+
+  Now, the new toolbar would look like:
+
+  ----------------------------------------------------------------------
+  |  --------------------------------   --------------  ---  ---  ---  |
+  |  | URL bar                      |   | Search bar |  |T|  |S|  |M|  |
+  |  --------------------------------   --------------  ---  ---  ---  |
+  ----------------------------------------------------------------------
+
+  T = Torbutton button
+  S = Security Settings button
+  M = (Hamburger) Menu button
+
+  Note: The reorganized toolbar has the additional benefit that no
+  per-site state is shown anymore on it, which should lead to less
+  confusion about whether the settings visible there apply globally or
+  not.
+
+2.2 Dealing with Per-Site Security Settings
+
+  There are a number of features disabled on higher security settings as
+  they are potentially dangerous, yet sometimes users need or want to
+  allow them anyway. So far, these options were exposed by click-to-play
+  buttons or directly in the NoScript user interface accessible over the
+  toolbar button.
+
+  With NoScript gone from the toolbar the click-to-play options remain,
+  but easily allowing JavaScript per site and making the status of
+  NoScript related settings visible is not available anymore. To solve
+  this I'd propose to follow the path we are currently taking with our
+  circuit display redesign[2]: we are moving site specific settings into
+  the URL bar.
+
+  One way to do that would be to use the Permissions section which opens
+  after clicking on the "i" icon in the URL bar. However, while showing
+  the security permissions the user has granted there (too) is a good
+  idea, it does not solve the problem of easily allowing e.g. JavaScript
+  on a website, and seeing its status without the need to click on any
+  button. We could have small icons on the right side of the URL bar
+  accomplishing that, though. That way, users could easily see if they
+  had JavaScript, or WebGL, or ... enabled on that particular website in
+  case they are on higher security levels. Moreover, they would be able
+  to adjust those permissions quickly without the need to deal with any
+  NoScript user interface or additional menus just by toggling those
+  icons.
+
+  By default only the option to temporarily allow JavaScript would be
+  visible. All the click-to-play features could show up once there is a
+  respective object embedded on a website. We should refrain from
+  exposing icons for every single "active content" in the URL bar,
+  though. Rather, besides the button for temporarily allowing JavaScript
+  we would only add one additionally, which is responsible for
+  manipulating and showing the state of "active content" (like WebGL,
+  SVG, fonts etc.).
+
+3 Additional Considerations
+
+3.1 Where Are My Extensions Gone?
+
+  Some users might be confused and think NoScript and HTTPS Everywhere
+  are gone now, plus they want to have their "old" way of setting their
+  per-site settings back. That's okay and they can easily add NoScript
+  and HTTPS Everywhere back to their toolbar if they wish. It would be
+  good to point this out in the transition phase to the new interface at
+  least.
+
+3.2 How Do We Inform Users about the New Interface?
+
+  I don't know yet how we ideally inform users about the new interface.
+  That is not part of this proposal but might merit an own one.
+
+3.3 Should We Change the Default Security Level?
+
+  As much as I wished to change the default security level, to e.g.
+  "Safer", right now I think we are not there yet. Part of the security
+  control redesign should be fixing bugs that make the current and new
+  interface less effective and painful to use[4][5][6][7]. We could
+  revisit that discussion, though, once we have solved the low hanging
+  bugs.
+
+
+[1]
+https://gitweb.torproject.org/builders/tor-browser-build.git/tree/projects/tor-browser/Bundle-Data/linux/Data/Browser/profile.default/preferences/extension-overrides.js
+[2] https://trac.torproject.org/projects/tor/ticket/24309
+[3] https://trac.torproject.org/projects/tor/ticket/21183
+[4] https://trac.torproject.org/projects/tor/ticket/22981
+[5] https://trac.torproject.org/projects/tor/ticket/22985
+[6] https://trac.torproject.org/projects/tor/ticket/20314
+[7] https://trac.torproject.org/projects/tor/ticket/21805

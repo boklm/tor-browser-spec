@@ -1,0 +1,119 @@
+Filename: 001-process.txt
+Title: The Tor Browser Proposal Process
+Author: Georg Koppen
+Created: 21-Sep-2018
+Status: Meta
+
+Overview:
+
+  This document describes how Tor Browser proposals work. It heavily borrowed
+  and copied from the Tor proposal process.
+
+  This is an informational document.
+
+Motivation:
+
+  Previously, our process for implementing complex features possibly including
+  the expertise of different teams consisted of discussions on IRC, our bug
+  tracker, and at informal sessions at our developer meetings. While this worked
+  more or less it's hard to keep track of the status of various ideas and it
+  makes it more difficult to reason about their pros and cons. Tor Browser
+  proposals should help address those issues and aid in deciding which ideas to
+  implement and how, and which not.
+
+How new proposals get added:
+
+  Once an idea has been proposed on the tbb-dev (or if relevant: the tor-dev)
+  development list, a properly formatted (see below) draft exists, and rough
+  consensus within the active development community exists that this idea
+  warrants consideration, the proposal editors will officially add the proposal.
+
+  To get your proposal in, send it to the tbb-dev mailing list.
+
+  The current proposal editors are Georg Koppen.
+
+What should go in a proposal:
+
+  Every proposal should have a header containing these fields:
+    Filename, Title, Author, Created, Status, Ticket.
+
+  These fields are optional but recommended:
+    Target, Implemented-In.
+
+  The Target field should describe which version the proposal is hoped to be
+  implemented in (if it's Open or Accepted). The Implemented-In field should
+  describe which version the proposal was implemented in (if it's Finished or
+  Closed). The Ticket field should be a ticket number referring to Tor's
+  canonical bug tracker (e.g. "#21952" refers to
+  https://bugs.torproject.org/21952) or to a publicly accessible URI where one
+  may subscribe to updates and/or retrieve information on implementation
+  status.
+
+  The body of the proposal should start with an Overview section explaining
+  what the proposal's about, what it does, and about what state it's in.
+
+  After the Overview, the proposal becomes more free-form. Depending on its
+  length and complexity, the proposal can break into sections as appropriate,
+  or follow a short discursive format. Every proposal should contain at least
+  the following information before it is "ACCEPTED", though the information
+  does not need to be in sections with these names.
+
+    Motivation: What problem is the proposal trying to solve? Why does this
+      problem matter? If several approaches are possible, why take this one?
+
+    Design: A high-level view of what the new or modified features are, how the
+      new or modified features work, how they interoperate with each other, and
+      how they interact with the rest of Tor Browser. This is the main body of
+      the proposal.
+
+Proposal status:
+
+  Open: A proposal under discussion.
+
+  Accepted: The proposal is complete, and we intend to implement it. After this
+    point, substantive changes to the proposal should be avoided, and regarded
+    as a sign of the process having failed somewhere.
+
+  Finished: The proposal has been accepted and implemented. After this point,
+    the proposal should not be changed.
+
+  Rejected: We're not going to implement the feature as described here, though
+    we might do some other version. See comments in the document for details.
+    The proposal should not be changed after this point; to bring up some other
+    version of the idea, write a new proposal.
+
+  Draft: This isn't a complete proposal yet; there are definite missing pieces.
+    Please don't add any new proposals with this status; put them in the "ideas"
+    sub-directory instead.
+
+  Needs-Revision: The idea for the proposal is a good one, but the proposal as
+    it stands has serious problems that keep it from being accepted. See
+    comments in the document for details.
+
+  Dead: The proposal hasn't been touched in a long time, and it doesn't look
+    like anybody is going to complete it soon. It can become "Open" again if it
+    gets a new proponent.
+
+  Needs-Research: There are research problems that need to be solved before it's
+    clear whether the proposal is a good idea.
+
+  Meta: This is not a proposal, but a document about proposals.
+
+  Reserve: This proposal is not something we're currently planning to
+    implement, but we might want to resurrect it some day if we decide to do
+    something like what it proposes.
+
+  Informational: This proposal is the last word on what it's doing.
+    It isn't going to turn into a spec unless somebody copy-and-pastes it into
+    a new spec for a new subsystem.
+
+  Obsolete: This proposal was flawed and has been superseded by another
+    proposal. See comments in the document for details.
+
+  The editors maintain the correct status of proposals, based on rough
+  consensus and their own discretion.
+
+Proposal numbering:
+
+  Numbers 000-099 are reserved for special and meta-proposals. 100 and up
+  are used for actual proposals. Numbers aren't recycled.
