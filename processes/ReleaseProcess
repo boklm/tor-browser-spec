@@ -4,98 +4,74 @@
 #
 
 #. Tag any relevant component versions.
-   # Depends on which components have been updated
-   # If this is a firefox version update, you must rebase the patches, and
-   # then:
-   vim browser/config/version.txt config/milestone.txt
-   git commit browser/config/version.txt config/milestone.txt -m "Bug 10895: Fix versioning for langpacks."
-   # git tag and push..
 
-#. Update changelog, updater relevant config and versions file in
-#  tor-browser-bundle:
-   cd gitian/tor-browser-bundle
-   vim Bundle-Data/Docs/ChangeLog.txt
-   vim tools/update-responses/config.yml
-# No need to bother with old .xml and .htaccess files
-   rm tools/update-resonses/htdocs/$TORBROWSER_UPDATE_CHANNEL/*
-   cd gitian
-   vim versions*
-   git commmit ..
-   git diff --color HEAD^1
-   cd ../..
+#. Update changelog and relevant config files in tor-browser-build.
+   cd tor-browser-build
+   vim projects/firefox/config
+   vim ChangeLog.txt
+   vim rbm.conf
 
-#. Tag a build tag in tor-browser-bundle.git
-   TORBROWSER_VERSION=x.x.x
-   git tag -s tbb-$TORBROWSER_VERSION-build1
+#. Tag a build tag in tor-browser-build.
+   make signtag-release # or `make signtag-alpha` for an alpha build
 
-#. Check that the build is correctly tagged
-   eval $( ./get-tb-version release ) # or alpha / beta
-   echo $TORBROWSER_VERSION
-   echo $TORBROWSER_BUILDDIR
-   echo
-   echo 'You must still set $OLD_TORBROWSER_VERSION'
-
-#. Push tag and version to tor-browser-bundle.git   
+#. Push tag and version to tor-browser-build.git. In case of doing a stable
+#  release with a maintenance branch use that one instead of `master`.
    torsocks git push origin master:master
    torsocks git push origin --tags
 
-#. Build:
-   make
-   make sign
-   make match
+#. Build and generate incremental MAR files.
+   make && make incrementals-release # `make alpha && make incrementals-alpha`
 
-#. Place all build signatures in the correct location and fix permissions
-   source versions
-   for i in gk linus mikeperry boklm
-   do
-     if [ -d ${TORBROWSER_BUILDDIR}/$i ]; then
-       if [ -f ${TORBROWSER_BUILDDIR}/${i}/sha256sums-unsigned-build.txt.asc ]; then
-         cp ${TORBROWSER_BUILDDIR}/$i/sha256sums-unsigned-build.txt.asc ${TORBROWSER_BUILDDIR}/sha256sums-unsigned-build.txt-${i}.asc
-       fi
-       if [ -f ${TORBROWSER_BUILDDIR}/${i}/sha256sums-unsigned-build.incrementals.txt.asc ]; then
-         cp ${TORBROWSER_BUILDDIR}/$i/sha256sums-unsigned-build.incrementals.txt.asc ${TORBROWSER_BUILDDIR}/sha256sums-unsigned-build.incrementals.txt-${i}.asc
-       fi
-       rm -rf ${TORBROWSER_BUILDDIR}/$i
-     fi
-   done
+#. Compare the SHA256 sums of the bundles and MAR files with an independent
+#  builder.
+   sha256sum tor-browser-build/release/unsigned/$TORBROWSER_BUILDDIR/sha256sums-unsigned-build.txt
+   sha256sum tor-browser-build/release/unsigned/$TORBROWSER_BUILDDIR/sha256sums-unsigned-build.incrementals.txt
+
+#. If the sums match (download and) upload the bundles to your build dir on
+#  people.torproject.org. Fix permissions.
    chmod 755 $TORBROWSER_BUILDDIR
    chmod 644 $TORBROWSER_BUILDDIR/*
+   chmod 644 $TORBROWSER_BUILDDIR/.htaccess
+   torsocks ssh people.torproject.org "mkdir ~/public_html/builds/${TORBROWSER_BUILDDIR}"
+   torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
 
 #. (Optional): Upload your binaries to people using partial rsync over old version
    torsocks ssh people.torproject.org "mv ~/public_html/builds/${TORBROWSER_VERSION}-build1 ~/public_html/builds/$TORBROWSER_BUILDDIR"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
 
 #. Distribute build to tor-qa@lists.torproject.org
-   #XXX: Currently manual
-   # For stable releases put tails-dev@boum.org into Cc
+   # XXX: Currently manual email with link to candidate build, important changes,
+   # and changelog.
+   # For stable releases put tails-dev@boum.org into Cc.
 
-#. Code Sign the OS X dmg files:
+#. Codesign the macOS dmg files.
    torsocks ssh mac-signer "mkdir $TORBROWSER_VERSION"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/*.dmg mac-signer:$TORBROWSER_VERSION/
    torsocks ssh mac-signer
    # Unlock the keychain and then...
    cd $TORBROWSER_VERSION
-   # Sign the bundles
+   # Sign the bundles.
    ../gatekeeper-signing.sh $TORBROWSER_VERSION
-   # Check that it worked
+   # Check that it worked.
    tar xf torbrowser-$TORBROWSER_VERSION-osx_zh-CN-signed.tar.bz2
    spctl -a -t exec -vv TorBrowser.app/
    rm -rf TorBrowser.app
    exit
    torsocks rsync -avP mac-signer:$TORBROWSER_VERSION/*.bz2 .
 
-#. Regenerate OS X MAR files from code signed dmg files
+#. Regenerate macOS MAR files from code signed dmg files.
    # XXX Go to your directory prepared for recreating the .dmg files and containing
-   # the uploaded .bz2 files
+   # the uploaded .bz2 files.
    ./gatekeeper-bundling.sh $TORBROWSER_VERSION
    rsync -avP *.dmg $TORBROWSER_BUILDDIR/
-   cd $TORBROWSER_BUILDDIR/..
+   cd tor-browser-build
    # The code signed dmg files should be in the $TORBROWSER_VERSION directory
    # Install a recent p7zip version (see ../tools/dmg2mar for instructions)
-   make dmg2mars # or dmg2mars-alpha
+   make dmg2mar-release # or `make dmg2mar-alpha`
 
-#. Sign the MAR update files
-   # First, copy the torbrowser tree to the signing machine:
+#. Sign the MAR files
+   # First, copy the tor-browser-bundle tree to the signing machine. XXX: This
+   # still uses part of the old Gitian related infrastructure.
    torsocks rsync -avP $TORBROWSER_BUILDDIR/../../../ signing-machine
    torsocks ssh signing-machine "mkdir tor-browser-bundle/gitian/$TORBROWSER_VERSION"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/*.mar signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
@@ -110,7 +86,7 @@
    exit
    torsocks rsync -avP signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/*.mar $TORBROWSER_BUILDDIR/
 
-#. Sign individual bundle files:
+#. Sign individual bundle files.
    # Authenticode signing first
    torsocks ssh windows-signing-machine "mkdir tor-browser-bundle/gitian/$TORBROWSER_VERSION"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/*.exe windows-signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
@@ -123,7 +99,8 @@
    cd $TORBROWSER_BUILDDIR
    export OSSLSIGNCODE=/path/to/osslsigncode
    /path/to/authenticode-timestamping.sh
-
+   # Hashes of the signed bundles
+   ../tools/hash_signed_bundles.sh
    # All the GPG signatures at last
    torsocks rsync -avP $TORBROWSER_BUILDDIR/* signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
    cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
@@ -135,18 +112,7 @@
    torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
    torsocks ssh people.torproject.org "mv public_html/$TORBROWSER_BUILDDIR public_html/$TORBROWSER_VERSION"
 
-#. Clear out old builds, transfer builds to staticiforme
-#. Remote:
-   # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
-   rsync -avP $TORBROWSER_VERSION staticiforme.torproject.org:/srv/dist-master.torproject.org/htdocs/torbrowser/
-   ssh staticiforme.torproject.org "chmod g+w,o+r -R /srv/dist-master.torproject.org/htdocs/torbrowser/*"
-   ssh staticiforme.torproject.org "chown -R :torwww /srv/dist-master.torproject.org/htdocs/torbrowser/"
-   ssh staticiforme.torproject.org "cd /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION ; for i in *.asc; do echo $i ; gpg -q $i || break; done"
-   ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
-#. Local to staticiforme:
-   cd ~/tbb-builds/tor-browser-bundle/gitian
-   git pull origin
-   eval $( ./get-tb-version release ) # or alpha / beta
+#. Transfer builds to staticiforme
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
    wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~gk/builds/$TORBROWSER_VERSION
    rm $TORBROWSER_VERSION/index.html*
@@ -170,19 +136,19 @@
    static-update-component cdn.torproject.org
 
 #. Make sure we really built from the proper Mozilla build tag by consulting
-   # the respective ESR release branch (for a good overview for ESR38 see
-   # https://hg.mozilla.org/releases/mozilla-esr38/graph/).
+   # the respective ESR release branch (for a good overview for ESR60 see
+   # https://hg.mozilla.org/releases/mozilla-esr60/graph/).
 
 #. Update website's torbrowser versions file in the website git
    cd webwml
    torsocks git pull origin
    # Update `version-win32-stable` as well if we include a new stable tor
    # version. See: #14152.
-   # Update the release data (via releasedate-torbrowserbundle*). See: #8968.
+   # Update the release date (via releasedate-torbrowserbundle*). See: #8968.
    # In the RecommendedTBBVersions file, only add the new version. Don't
    # remove the old one yet. That comes later.
    vim ./include/versions.wmi ./projects/torbrowser/RecommendedTBBVersions
-   git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Add new TBB version"
+   git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Add new Tor Browser version"
    torsocks git push origin master:master
    cd ..
 
@@ -194,21 +160,22 @@
 #. Check whether the MAR files got properly signed
    # Point SIGNMAR to your signmar binary
    # Point LD_LIBRARY_PATH to your mar-tools directory
-   cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
-   ../../tools/marsigning_check.sh
+   cd tor-browser-build/$TORBROWSER_VERSION
+   ../tools/marsigning_check.sh
    cd ..
 
 #. Update and upload new update responses for the updater
    # IMPORTANT: Copy the signed MAR files back before creating the update
    # responses!
-   make update_responses # (or update_responses-alpha, update_responses-beta)
-   cd ../tools/update-responses
-   export TORBROWSER_UPDATE_CHANNEL=release # or alpha / beta
-   chmod 664 htdocs/${TORBROWSER_UPDATE_CHANNEL}/*
-   chmod 664 htdocs/${TORBROWSER_UPDATE_CHANNEL}/.htaccess
-   chmod 775 htdocs/${TORBROWSER_UPDATE_CHANNEL}/
+   export TORBROWSER_UPDATE_CHANNEL=release # or alpha / nightly
+   make update_responses-$TORBROWSER_UPDATE_CHANNEL
+   cd $TORBROWSER_UPDATE_CHANNEL/update-responses
+   tar -xf update-responses-$TORBROWSER_UPDATE_CHANNEL-$TORBROWSER_VERSION.tar
+   chmod 664 ${TORBROWSER_UPDATE_CHANNEL}/*
+   chmod 664 ${TORBROWSER_UPDATE_CHANNEL}/.htaccess
+   chmod 775 ${TORBROWSER_UPDATE_CHANNEL}/
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}/*"
-   torsocks rsync -avP htdocs/$TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/
+   torsocks rsync -avP $TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/
    torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}/*"
    torsocks ssh staticiforme.torproject.org "static-update-component aus1.torproject.org"
    # Finally, remove old version as we point the update channel at the new version.
@@ -228,7 +195,6 @@
    torsocks git pull origin
    # Now it's time to remove the obsolete version(s)
    vim ./projects/torbrowser/RecommendedTBBVersions
-   git commit projects/torbrowser/RecommendedTBBVersions -m "Deprecate old TBB version"
+   git commit projects/torbrowser/RecommendedTBBVersions -m "Deprecate old Tor Browser version"
    torsocks git push origin master:master
    cd ..
-
