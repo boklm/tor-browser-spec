@@ -89,7 +89,7 @@ Ticket: #21952
    bandwidth needlessly if it's also served to non-Tor clients. Hence websites
    with lots of client traffic are encouraged to use tools that detect Tor
    users and only serve the header to them (e.g. tordnsel). Website operators
-   should be aware that tools like tordnsel have false positive potential (they
+   should be aware that tools like tordnsel have false negative potential (they
    might treat Tor users as non-Tor users) which will result in not sending
    them the Onion-Location header.
 
