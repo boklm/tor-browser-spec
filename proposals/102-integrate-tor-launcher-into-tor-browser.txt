@@ -1,0 +1,201 @@
+Filename:102-integrate-tor-launcher-into-tor-browser.txt
+Title: Integration of Tor Launcher into Tor Browser Core
+Author: Mark Smith and Kathleen Brade
+Created: 22-Jan-2019
+Updated: 7-Feb-2019
+Status: Accepted
+Ticket: #28044
+
+1. Overview
+
+This proposal describes how we will integrate Tor Launcher into the
+browser core code while still allowing it to be built as a separate
+XUL/XPCOM extension for use in conjunction with TorBirdy and other
+projects.
+
+2. Motivation
+
+Tor Launcher was created in 2013 as a XUL/XPCOM extension to replace use
+of Vidalia within what was then referred to as the Tor Browser Bundle.
+Starting with Firefox 68esr, XUL/XPCOM extensions are no longer supported
+within the ESR series or any other Firefox codebase that is actively
+maintained by Mozilla.
+
+2.1 Why Not Rewrite Tor Launcher as a WebExtension?
+
+The WebExtensions API is Mozilla's replacement for the legacy XUL/XPCOM
+extension framework. Mozilla's implementation is based on that of
+Chrome with some of their own changes. Unfortunately, WebExtensions
+is by design a much more limited and restrictive API than the legacy
+extension framework.
+
+Given the large gap between the capabilities that Tor Launcher needs
+and what is provided by the WebExtensions API, it makes more sense to
+integrate Tor Launcher into the browser core so that it can continue
+to use privileged APIs that WebExtensions will probably never acquire.
+See https://trac.torproject.org/projects/tor/ticket/17248 for more
+background.
+
+2.2 Requirements
+ R1. Integrate Tor Launcher into the core browser so that it does
+     not appear as a separate extension.
+ R2. Provide a way to omit Tor Launcher at build time. This is needed
+     for projects such as Tor Browser Android that have their own
+     Tor launcher and controller implementation.
+ R3. Allow users and projects such as Tails to disable Tor Launcher
+     at runtime via environment variables and hidden preferences as is
+     possible today.
+ R4. Minimize changes to the Tor Launcher code, architecture, and UI.
+     We do not have a lot of time before we need to move Tor Browser to
+     a Firefox 68esr codebase; minimizing unnecessary changes will help
+     that process go faster and will minimize regressions.
+ R5. Continue to maintain a separate git repository for Tor Launcher. This
+     will allow development of Tor Launcher to proceed outside of core
+     browser development and will also facilitate continued use of Tor
+     Launcher as a XUL/XPCOM extension by those projects that have that
+     requirement, e.g., TorBirdy.
+
+3. Design
+
+Building upon the work done by Matt (sysrqb) in
+https://trac.torproject.org/projects/tor/ticket/25260, we will include
+Tor Launcher in the browser core. We will also maintain the capability
+to package the Tor Launcher code as a XUL/XPCOM extension for use by
+projects such as TorBirdy.
+
+3.1 Source Code Integration
+
+Prior to building the browser, the Tor Launcher code will be placed
+under browser/extensions/tor-launcher/. To avoid the problems
+associated with git submodules, this will be done using a nested git
+repository. Specifically, we want to facilitate nightly and developer
+builds that require that the Tor Launcher code be referred to by a
+branch or symbolic name rather than a git hash.
+
+To accomplish the above within the tor-browser-build rbm-based process,
+we will do the following:
+  - Modify the tor-launcher project to create a tar file from the sources
+    instead of an xpi file.
+  - Remove the tor-launcher dependency from projects/tor-browser and add
+    it to projects/firefox.
+  - Modify projects/firefox/build to extract the tor-launcher tarball
+    under browser/extensions/tor-launcher/ before starting the Firefox
+    build process.
+
+To allow Tor Launcher to be omitted from the browser at build time,
+we will patch the tor-browser code to add a --disable-tor-launcher
+configure option.
+
+3.2 The Location of Tor Launcher Files In The Final Browser Package
+
+All of the Tor Launcher files will be packaged inside browser/omni.ja
+in the final browser package. Within browser/omni.ja, files will be at
+the following locations:
+  defaults/preferences/torlauncher-prefs.js
+  chrome/torlauncher/components/
+  chrome/torlauncher/content/
+  chrome/torlauncher/locale/
+  chrome/torlauncher/modules/
+  chrome/torlauncher/skin/
+
+This approach will keep most of the Tor Launcher files together, which
+will make things easier for developers who want to test changes to Tor
+Launcher without rebuilding the entire browser.
+
+3.3 Firefox Build System Integration
+
+We will add moz.build and jar.mn files to the top level of the
+tor-launcher code to allow the Tor Launcher files to be included in
+the standard Firefox build process. Matt made a great start on this;
+see https://trac.torproject.org/projects/tor/ticket/25260#comment:2
+
+We will modify the following files (subject to the proposed
+--disable-tor-launcher build option) to incorporate Tor Launcher into
+the Firefox build process:
+  browser/extensions/moz.build
+  browser/installer/package-manifest.in
+
+3.4 Elimination of pkg-prepare
+
+The current Tor Launcher packaging process uses a staged approach (see
+the pkg-prepare target in the Tor Launcher Makefile). This process makes a
+shadow copy of the source tree in a /tmp directory; it moves and modifies
+files; and then zips up the files to create an .xpi file. We would like
+to avoid this extra step, and propose that we make some source and build
+changes to eliminate the need for it.
+
+3.4.1 en vs. en-US Locale
+
+Currently, the pkg-prepare step moves src/chrome/locale/en to
+src/chrome/locale/en-US. Instead, we will address this need by moving
+the directory in the tor-launcher git repository, i.e., we will use git
+mv to move it.
+
+3.4.2 Omit Incomplete Locales
+
+Currently, the pkg-prepare step checks each locale to see if any string
+files are missing. Currently, this only affects one locale: ca-ES. We
+propose that this step be eliminated by removing the incomplete locale
+from the Tor Launcher repository and modifying the translation import
+process to omit such locales.
+
+3.4.3 Add Locales To The chrome.manifest File
+
+Currently, the pkg-prepare step adds each locale to the chrome.manifest
+file. The new jar.mm file must also include a list of locales. We propose
+that these file updates be done during the translation import process.
+
+3.4.4 Tor Launcher Logo Override
+
+See section 4.1 below.
+
+3.5 Code Changes
+
+To avoid confusion and potential conflicts with other browser
+preference files, src/defaults/preferences/prefs.js will be renamed to
+src/defaults/preferences/torlauncher-prefs.js.
+
+For Tor Browser 8 (based on Firefox 60esr), we had to add code to load
+default preferences at startup. This code can be disabled when Tor
+Launcher is running as part of the browser but we should continue to use
+it when running as an XPCOM extension. See the loadDefaultPreferences()
+function in src/modules/tl-util.jsm.
+
+Although somewhat unrelated to this proposal, we will also need to
+eliminate all use of XUL overlays for 68esr (Mozilla has removed
+support for them). Currently, Tor Launcher uses one overlay,
+src/chrome/content/network-settings-overlay.xul, which allows the
+configuration UI elements to be shared between the setup wizard and
+the Tor Network Settings dialog. There is a ticket for this work:
+https://trac.torproject.org/projects/tor/ticket/29197
+
+4. Open Issues
+
+4.1 TL_LOGO and pkg-prepare
+
+Tails uses Tor Launcher for their Tor network configuration UI. To avoid
+confusion, they include the Tails logo in their copy of Tor Launcher,
+replacing the Tor Browser logo. This replacement is handled by the
+pkg-prepare Makefile target. We will need to find a different way to
+handle the logo override.
+
+4.2 Localization
+
+The localization strategy for other extensions that have been integrated
+into the core browser follows the one used by Firefox itself: a single
+locale is included in each browser package while additional languages
+are available via installation of a language pack. We have not yet
+determined whether the traditional Tor Launcher strategy of including
+.dtd and .properties files for all locales will work correctly or if we
+will need to move to custom/repackaged language packs for Tor Browser.
+
+4.3 UI For Access To The Tor Network Settings
+
+Currently, the Torbutton toolbar menu contains a "Tor Network Settings"
+menu item which causes Tor Launcher to open its Network Settings
+dialog. As plans for incorporating the Torbutton functionality into
+the core browser proceed, we may need to provide a new method for users
+to access the network settings. Tentatively, we plan to eliminate the
+Torbutton toolbar item and its associated menu, which means new UI will
+need to be added to provide access to Tor Launcher's Network Settings
+dialog.
