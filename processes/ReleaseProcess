@@ -140,15 +140,15 @@
    # https://hg.mozilla.org/releases/mozilla-esr60/graph/).
 
 #. Update website's torbrowser versions file in the website git
-   cd webwml
+   cd tpo
    torsocks git pull origin
    # Update `version-win32-stable` as well if we include a new stable tor
    # version. See: #14152.
    # Update the release date (via releasedate-torbrowserbundle*). See: #8968.
    # In the RecommendedTBBVersions file, only add the new version. Don't
    # remove the old one yet. That comes later.
-   vim ./include/versions.wmi ./projects/torbrowser/RecommendedTBBVersions
-   git commit include/versions.wmi projects/torbrowser/RecommendedTBBVersions -m "Add new Tor Browser version"
+   vim databags/versions.ini content/projects/torbrowser/RecommendedTBBVersions/contents.lr
+   git commit databags/versions.ini content/projects/torbrowser/RecommendedTBBVersions/contents.lr -m "Add new Tor Browser version"
    torsocks git push origin master:master
    cd ..
 
@@ -191,10 +191,10 @@
 #  update responses before doing this, so that people have a chance to see
 #  the Firefox notification first before their browser starts weirdly blinking
 #  at them.
-   cd webwml
+   cd tpo
    torsocks git pull origin
    # Now it's time to remove the obsolete version(s)
-   vim ./projects/torbrowser/RecommendedTBBVersions
-   git commit projects/torbrowser/RecommendedTBBVersions -m "Deprecate old Tor Browser version"
+   vim content/projects/torbrowser/RecommendedTBBVersions/contents.lr
+   git commit content/projects/torbrowser/RecommendedTBBVersions/contents.lr -m "Deprecate old Tor Browser version"
    torsocks git push origin master:master
    cd ..
