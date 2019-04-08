@@ -1,0 +1,203 @@
+Filename: xxx-download-user-safety.txt
+Title: Protecting Against Malicious Exit Nodes Performing File Infection
+Author: Tom Ritter
+Created: 06-Mar-2019
+Status: Draft
+
+1. Motivation
+
+  Sometimes, exit nodes are malicious. One activity malicious exit nodes
+  perform is infecting files (most commonly executables) downloaded over
+  insecure or otherwise compromised connections. Tor Project and
+  volunteers scan and report malicious exit relays where-upon they are
+  given the BadExit flag.
+
+  In the period of time between the nodes being identified and being
+  blocklisted, users are put at risk from these nodes.
+
+2. Proposal
+
+2.1. Required Infrastructure
+
+  Firstly, we assume that for each operating system, we have devised two lists of
+  file types for that system.
+
+    Executable File Types: These files are programs or otherwise things that
+         can definitly and intentionally execute code.
+         Examples: .exe .deb
+
+    Transparent File Types: These files are trivial or simple file types where
+         the risk presented is very low.
+         Examples: .txt .html .jpg, .png
+
+  Additionally, it would be ideal if, for file archive types (e.g. .zip), we read
+  the file archive manifest and classified the file archive accordingly.
+
+  Secondly, this proposal is complementary to the 103-selfsigned-user-safety.txt
+  proposal.  We assume that (only) one of the following is in place, and we concern
+  ourselves only with downloads that meet one of the follow criteria
+
+  Criteria:
+   - the resource of concern is loaded over HTTP
+   or
+   - selfsigned-user-safety is not implemented, the resource of concern is loaded
+     over HTTPS, and the certificate has a Class 1 Suspicious Certificate Error
+     (defined below)
+
+2.1.1 selfsigned-user-safety
+
+  The selfsigned-user-safety proposal is implemented.
+
+2.1.2 Self-signed certificate error detection
+
+  As in selfsigned-user-safety, we classify TLS Certificate Errors into two
+  categories.
+
+  Class 1: Suspicious Certificate Errors
+
+   - A self-signed certificate
+   - A certificate signed by a Trust Anchor but for a different hostname
+   - A certificate that appears to be signed by a Trust Anchor, but is
+     missing an intermediate allowing a full path to be built
+
+  Class 2: Unsuspicious Certificate Errors
+
+   - An expired certificate signed by a Trust Anchor
+   - A certificate that requires an OCSP staple, but the staple is not
+     present
+
+  The browser will detect a Class 1 error and make this state available for
+  the browser to base decisions off of.
+
+2.2. The difference between the download _link_ and the download
+
+  We concern ourselves with two situations, that is whether or not the
+  download link appears on is secure (defined as not having a Class 1
+  Error for any active page content).
+
+  When the download link comes from a secure page, but the target of the
+  download is insecure (defined as being HTTP or having a Class 1 Error),
+  the link itself impacts some amount of authenticity for the download.
+
+  However, when the download link comes from an insecure page, no
+  authenticity is possible, as a MITM attacker can point the download link
+  at a malicious file.
+
+2.3. Browser Logic for Executable Files
+
+  Option 1: If the filetype of a download is one of a predefined set of executable
+            formats, the download is prevented entirely.
+
+  Option 2: If the filetype of a download is one of a predefined set of executable
+            formats, we attempt to verify the download.
+
+  If the download link is secure, we could consider either option.
+  If the download link is insecure, we should only consider Option 1. Verification
+  can impart no additional value.
+
+2.4. Browser Logic for Non-Transparent, Non-Executable Files
+
+  This essentially reverses the option numbers from above, to reflect the reduced
+  risk of infection of non-executable files.
+
+  To be clear, however, the risk is still non-zero. Complex types such as .doc can
+  include macros or other executable code, alternately they are prime suspects for
+  client-side exploits.
+
+  Option 1: If the filetype of a download is NOT one of a predefined set of executable
+            formats, we attempt to verify the download.
+
+  Option 2: If the filetype of a download is NOT one of a predefined set of executable
+            formats, the download is prevented entirely.
+
+  Option 3: No verification is performed, and the download is allowed.
+
+  Again, if the download link is secure, we could consider Option 1 or 2.
+  If the download link is insecure, we should only consider Options 2 or 3. (Option 3
+  given the reduced risk for this filetype, Option 2 given the non-zero risk.)
+
+2.4. Browser Logic for Transparent Files
+
+  To be exhaustive, no special action is taken for transparent files.
+
+2.5 Verifying a File Download
+
+  To verify a file download, several different approaches could be taken:
+
+  Option 1: The entire file could be downloaded over a new circuit (taking care to
+            avoid the same exit family) and compared.
+
+  Option 2: Assuming the server supports range requests, random parts of the file could
+            be requested over a new circuit, and compared. This would save bandwidth and
+            time.
+
+            Note that we must choose random parts of the file; otherwise an attacker
+            could rewrite the binary in a way that avoids alternating the checked parts.
+
+            [[ How probable is it that we catch an alteration? We'd need to check a
+            component of the file already downloaded, and for large files we'd need to
+            check a lotbecause thered be a lot of places malicious code could hide...]]
+
+  Option 3: If the file supports Authenticode or a similar signature extension, we could
+            a) Check if the file has an authenticode signature. If not, verify by
+               some other means
+            b) Download the PE Header and the signature block at the end of the
+               file over a new circuit
+            c) Compare the Header,, Signature Block, and Signature Public Key and
+               confirm they match
+            d) Confirm that the signature isn't a weak signature that would verify
+               any file
+
+            At this point we should be assured that a) The OS will check the
+            authenticode block b) if the file hash doesn't match the signature
+            block the OS won't run it c) the file hash was the same on both
+            circuit downloads.
+
+  [[ Are there other approaches to file verification we could do that would work? ]]
+
+2.6. Optional Extension
+
+  If a download verification fails, the browser could prompt the user to
+  send a report to Tor Project.
+
+  The simple version of this feature could open an email message with
+  details prepopulated and addressed to badrelays@.
+
+  The more advanced version could submit the information to an onion
+  service operated by Tor Project. On the backend, we could build an
+  automatic verification process as well.
+
+  The details would include the hostname visited, time, exit nodes, and
+  file data received over which exit nodes.
+
+3. False Positives
+
+  False Positives during verification could occur if a server provides customized
+  binaries or only allows download of a file once.
+
+4. User Interface/Experience
+
+  We should, in some way, alter the download screens to ensure that they do not register
+  a download as complete before the verification process has occured.
+
+  Similarly, we should not rename in-progress .part download files until the verification
+  has completed.
+
+5. Concerns
+
+  An exit node who observes a range request will learn that a user is downloading
+  this file on another circuit. What would this tell them? It leaks a user's browsing
+  activity. Anything else?
+
+  Exit nodes who lie about their family have a chance to successfully attack the
+  user.
+
+6. Research
+
+  It would probably be possible to perform a research experiment at one or more
+  exit nodes to determine the frequency of users download filetypes over HTTP.
+  We could record the number of filetypes downloaded over HTTP and the total
+  amount of exit traffic pushed by Tor. (No other records should be kept, for
+  safety reasons.) This would given us some ratio to indicate the frequency such
+  files are downloaded. This may guide us to choose more stringent blocking or
+  less stringent.
