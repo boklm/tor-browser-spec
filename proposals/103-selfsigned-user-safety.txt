@@ -1,0 +1,111 @@
+Filename: 103-selfsigned-user-safety.txt
+Title: Protecting Against Malicious Exit Nodes Performing TLS Interception
+Author: Tom Ritter
+Created: 06-Mar-2019
+Status: Open
+
+1. Motivation
+
+  Sometimes, exit nodes are malicious and perform TLS interception using self-
+  signed or otherwise invalid TLS certificates. Tor Project and volunteers
+  scan and report malicious exit relays where-upon they are given the BadExit
+  flag.
+
+  In the period of time between the nodes being identified and being
+  blocklisted, users are put at risk from these nodes.
+
+2. Proposal
+
+2.1. Classifying TLS Certificate Errors
+
+  First we classify TLS Certificate Errors into two categories. We will use
+  these classifications later.
+
+  Class 1: Suspicious Certificate Errors
+
+   - A self-signed certificate
+   - A certificate signed by a Trust Anchor but for a different hostname
+   - A certificate that appears to be signed by a Trust Anchor, but is
+     missing an intermediate allowing a full path to be built
+
+  Class 2: Unsuspicious Certificate Errors
+
+   - An expired certificate signed by a Trust Anchor
+   - A certificate that requires an OCSP staple, but the staple is not
+     present
+
+2.2. Browser Logic
+
+  If the browser encounters an invalid TLS certificate when connecting to a
+  hostname, and the type of invalidness is a Suspicious Certificate Error,
+  the browser will not _immediately_ allow the user to bypass the error and
+  add an exception.
+
+  Instead it will create a new circuit through a new exit node (making sure
+  to check the Family of the nodes), begin a TLS handshake, and obtain the
+  certificate offered.
+
+  If the certificate is the same as the one offered through the initial
+  circuit, the user is allowed to add an exception and continue. If the
+  certificate is different, the user is not allowed to bypass the error.
+
+2.3. Optional Extension
+
+  If a certificate mismatch occurs, the browser could prompt the user to
+  send a report to Tor Project.
+
+  The simple version of this feature could open an email message with
+  details prepopulated and addressed to badrelays@.
+
+  The more advanced version could submit the information to an onion
+  service operated by Tor Project. On the backend, we could build an
+  automatic verification process as well.
+
+  The details would include the hostname visited, time, exit nodes, and
+  certificates received over which exit nodes.
+
+3. False Positives
+
+  It is possible, although I suspect uncommon, that a server may have
+  geographic or other load balancing that presents different self-signed
+  certificates to different exit nodes.
+
+  If we receive reports of such occurances, we could either relax protects
+  for such domains we hardcode into the browser, or perform the new-circuit
+  verification choosing an exit node in the same country.
+
+4. User Interface/Experience
+
+  While the certificate is being verified over another circuit, it would be
+  best to provide feedback to the user.
+
+  a. The button can appear disabled and say something like
+     'Pending (Verifying Certificate)'
+  b. A small progress bar can appear under the button that tracks the progress
+     of creating and extending the circuit, sending the request and getting
+     the reply.
+  c. A small 'Retry' underlined, clickable link could sit by the progress
+     bar to retry the circuit in case it gets stalled.
+
+  If the certificate comes back and is a mismatch, we could replace the entire
+  error page with more information, including a cloudflare-style diagram[0] showing
+  the malicious exit node, and prompting the user to submit the information.
+
+  If the certificate comes back with a match, we could add some text noting that
+  some amount of verification has been performed. However it seems bad to
+  automatically accept the certificate or relax the warning too much, since it
+  is still possible a TLS attack is occuring (just not inside the Tor network.)
+  Alternately, we could not change the warning page at all.
+
+5. Concerns
+
+  An exit node who observes an aborted TLS handshake will learn that a user
+  encountered a self-signed certificate error for this server on another circuit.
+  What would this tell them? It leaks a user's browsing activity. It also leaks
+  the prescence of a malicious exit node on the network (assuming the exit node
+  observes a valid TLS certificate.)
+
+  Exit nodes who lie about their family have a chance to successfully attack the
+  user.
+
+  [0] https://external-preview.redd.it/S65-yhtC6IAqpzS6AMhMnrrFwvtyRA6WjuM_hQpJLg0.png?auto=webp&s=285e86af8e638df6ecc143a52af024f006389151
