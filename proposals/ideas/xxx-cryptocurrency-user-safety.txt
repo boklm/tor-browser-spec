@@ -1,0 +1,97 @@
+Filename: xxx-cryptocurrency-user-safety.txt
+Title: Protecting Against Malicious Exit Nodes Performing Cryptocurrency Hijacking
+Author: Tom Ritter
+Created: 06-Mar-2019
+Status: Draft
+
+1. Motivation
+
+  Sometimes, exit nodes are malicious. One activity malicious exit nodes
+  perform is rewriting the addresses of cryptocurrencies to hijack and steal
+  funds users are trying to send to the original address. Tor Project and
+  volunteers scan and report malicious exit relays where-upon they are
+  given the BadExit flag.
+
+  In the period of time between the nodes being identified and being
+  blocklisted, users are put at risk from these nodes.
+
+2. Proposal
+
+2.1. Required Infrastructure
+
+  This proposal is complementary to the 103-selfsigned-user-safety.txt proposal.
+  We assume that (only) one of the following is in place.
+
+2.1.1 selfsigned-user-safety
+
+  The selfsigned-user-safety proposal is implemented.
+
+2.1.2 Self-signed certificate error detection
+
+  As in selfsigned-user-safety, we classify TLS Certificate Errors into two
+  categories.
+
+  Class 1: Suspicious Certificate Errors
+
+   - A self-signed certificate
+   - A certificate signed by a Trust Anchor but for a different hostname
+   - A certificate that appears to be signed by a Trust Anchor, but is
+     missing an intermediate allowing a full path to be built
+
+  Class 2: Unsuspicious Certificate Errors
+
+   - An expired certificate signed by a Trust Anchor
+   - A certificate that requires an OCSP staple, but the staple is not
+     present
+
+  The browser will detect a Class 1 error and make this state available for
+  the browser to base decisions off of.
+
+2.2. Browser Logic
+
+  The browser will be able to recognize addresses of common cryptocurrencies
+  and when a user executes a copy event, will search for such an address in the
+  copied text.
+
+  If an address is detected and:
+   - the page is loaded over HTTP
+   or
+   - selfsigned-user-safety is not implemented, the page is loaded over HTTPS,
+     and the certificate has a Class 1 Suspicious Certificate Error
+
+  Then the text MUST NOT be copied to the clipboard.
+
+  Basically this prevents the address from being copied if the address could
+  have been changed by the exit node.
+
+3. False Positives
+
+  Not every cryptocurrency address served over HTTP is being attacked by a
+  malicious exit node.
+
+4. False Negatives (Attacker-Controlled)
+
+  An attacker could change the address to a QR code and prompt the user to
+  scan it with their phone. This would not be detectable if the attacker
+  rendered the QR code using background-colored <div> elements for example.
+
+  There are likely other bypasses to consider.
+
+5. User Interface/Experience
+
+  The text will not be copied. But when the user executes the copy shortcut or
+  menu item a model dialog (like alert()) could be presented explaining why the
+  copy failed.
+
+  We could also use a doorhanger or information bar - but both of these seem prone
+  to being missed or ignored; while a modal dialog will be immediate, come with a
+  sound, and
+
+6. User Bypass
+
+  The user can, of course, manually type the address.
+
+7. Implementation
+
+  In Firefox, this entire concept can likely be implemented as a WebExtension
+  using the TLS Web Extension APIs and the Clipboard APIs.
