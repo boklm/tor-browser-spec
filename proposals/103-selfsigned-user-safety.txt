@@ -3,6 +3,7 @@ Title: Protecting Against Malicious Exit Nodes Performing TLS Interception
 Author: Tom Ritter
 Created: 06-Mar-2019
 Status: Open
+Ticket: #30271
 
 1. Motivation
 
