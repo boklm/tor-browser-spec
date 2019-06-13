@@ -1,0 +1,263 @@
+Filename: 104-integrate-torbutton-into-tor-browser.txt
+Title: Integration of Torbutton into Tor Browser Core
+Author: Alex Catarineu
+Created: 13-May-2019
+Status: Accepted
+Ticket: #10760
+Target: Tor Browser 9 (Firefox ESR 68)
+
+1. Overview
+
+This proposal describes how we will integrate Torbutton into the browser
+core code.
+
+2. Motivation
+
+We refer to Tor Browser proposal 102 [1] for motivation, since it is shared. This
+has been a task in backlog for a while and we intend to use the ESR68 release
+to finally integrate Torbutton code in the tor-browser repository.
+
+3. Design
+
+The design is similar to the one specified in proposal 102 for Tor
+Launcher. One notable difference is that we do not need to maintain the
+capability to package the Torbutton code as a XUL/XPCOM extension. Besides,
+we will not continue further development of Torbutton in a separate repository,
+but directly in the tor-browser one.
+
+3.1 Source Code Integration
+
+Torbutton code is already a git submodule inside tor-browser, and used in
+Android without being an extension. Its source code is currently placed
+in toolkit/torproject/torbutton. For the scope of this proposal, we will
+keep that location for the parts that do not require moving somewhere
+else in the tor-browser repository. This includes XPCOM components, files
+needed for the build (moz.build, jar.mn, chrome.manifest), localization,
+UI resources and other logic that is loaded in the main process (chrome/content,
+chrome/skin). Therefore, we leave big code refactorization efforts (e.g. of
+torbutton.js) as a next step, once code has been integrated.
+
+Note that this code location differs from browser/extensions where Tor Launcher
+will be placed according to proposal 102. This is because while Tor Launcher is
+not used in Android, Torbutton components are. Therefore, toolkit seems a
+more suitable choice than browser, since the latter is Desktop only, while the
+other is shared.
+
+For reviewing purposes, work needed for this proposal for the files in
+toolkit/torproject/torbutton will be done on the Torbutton repository. Once the
+changes are accepted, the code will be moved to toolkit/torproject/torbutton
+together with the rest of commits in tor-browser needed for the integration.
+From then on, Torbutton code maintenance will happen entirely on tor-browser
+repository. Ideally, we would like to find a way to do this while keeping
+change history and original committers, but we are not sure this is possible.
+
+Changes in tor-browser-build will also be required to remove Torbutton as
+a dependency.
+
+3.2 The Location of Torbutton Files In The Final Browser Package
+
+All of the Torbutton files will be packaged inside omni.ja in the final
+browser package. Within omni.ja, files will be at the following locations:
+
+  chrome/torbutton/defaults/preferences/preferences.js
+  chrome/torbutton/defaults/
+  chrome/torbutton/components/
+  chrome/torbutton/content/
+  chrome/torbutton/locale/
+  chrome/torbutton/modules/
+  chrome/torbutton/skin/
+
+3.3 Firefox Build System Integration
+
+We will use the work that was already done for this in #25013 as part of
+Torbutton integration for Android.
+
+We will modify toolkit/moz.build to not only use Torbutton code on Android but
+also on Desktop, and also browser/installer/package-manifest.in to include
+the needed files.
+
+3.4 Remove unnecessary files for build
+
+The folder structure of the Torbutton repository is currently:
+
+  makexpi.sh
+  moz.build
+  pkg
+  README
+  README.BUILD
+  README.RELEASE
+  src
+  trans_tools
+  update-unsigned.rdf
+  website
+
+We will remove everything that is not needed for building, with the exception
+of trans_tool/import-translations.sh, which will be moved one level up
+together with the contents of src.
+
+The final structure will be:
+
+  chrome
+  chrome.manifest
+  components
+  CREDITS
+  defaults
+  jar.mn
+  modules
+  moz.build
+  import-translations.sh
+
+3.5 Code Changes
+
+3.5.1 Components
+
+In order to minimize code changes for the integration, we will keep the
+components almost as they are now. One exception is aboutTor, which can be
+easily moved to AboutRedirector.cpp by simply adding the about:tor definition
+in the corresponding array. After this proposals work, we can revise whether
+we can eliminate code that is not needed anymore, perhaps together with
+refactorization work for chrome/content scripts.
+
+aboutTor:
+  Handles about:tor page. Move to AboutRedirector.cpp.
+
+@torproject.org/torbutton-dragDropFilter;1
+  Filter drag events to prevent OS access to URLs (a potential proxy bypass
+  vector). Keep as it is.
+
+@torproject.org/torbutton-extAppBlocker;1
+   Handles displaying confirmation dialogs for external apps and
+   protocols. Keep as it is.
+
+@torproject.org/startup-observer;1
+  Sets up Tor Browser networking proxy settings and loads the content-policy
+  and aboutTor scripts. Keep as it is.
+
+@torproject.org/cookie-jar-selector;1
+  Used at least by the new identity feature. Probably contains code that
+  is not used anymore, but keep as it is for now.
+
+@torproject.org/torbutton-torCheckService;1
+  Verifies if the Tor Service is up and running. Keep as it is.
+
+@torproject.org/torbutton-logger;1
+  Used internally, not sure if we need a component for this but keep for now.
+
+@torproject.org/domain-isolator;1
+  Put requests from different first party domains on separate circuits.
+  Keep as it is.
+
+3.5.2 Overlays in chrome/content
+
+Overlays will not work anymore on ESR68. Therefore, the needed ones will have
+to be ported and the rest, dropped. In general, we will try to move them to the
+corresponding parts of the browser UI where they would have been overlaid. Next
+is a detailed plan, file by file.
+
+torbutton.xul
+  - Scripts that are needed in desktop or mobile can be loaded from
+    browser/base/content/browser.js or android/chrome/content/browser.js
+    respectively. Platform specific scripts can be loaded
+    from the specific browser.xul. The same applies to stylesheets.
+  - Move localization DTD to browser/base/content/browser-doctype.inc.
+  - Torbutton context menu will go away: that should include popup.xul
+    and toolbarpalette.
+  - Move keyset shortcuts to browser/base/content/browser-sets.inc
+
+menu-items-overlay.xul
+  - Move elements to browser/base/content/browser-menubar.inc and
+    browser/components/customizableui/content/panelUI.inc.xul.
+
+menu-overlay.xul
+  - Move elements to browser/base/content/browser-menubar.inc. For
+    elements with removeelement="true", comment out the corresponding ones
+    in the previous file.
+  - Add aboutTor.dtd to browser/base/content/browser-doctype.inc.
+
+tor-circuit-display.xul
+  - Move css to browser.xul.
+  - Move elements to browser/components/controlcenter/content/panel.inc.xul.
+
+torbutton-extensions.xul
+  - This can be moved to toolkit/mozapps/extensions/content/extensions.xul
+    together with patch for #10280 rebase.
+
+aboutDialog.xul
+  - Move to browser/base/content/aboutDialog.xul.
+
+torbutton_tb.xul, pref-connection.xul
+  - Not needed, just remove.
+
+3.5.3 Scripts and other xul files in chrome/content
+
+popup.xul:
+  - Remove, already mentioned in overlays part.
+
+torcookiedialog.xul
+  - Used from popup.xul, button used to open it is hidden: remove.
+
+torcookie.js
+  - Remove, only used in torcookiedialog.xul.
+
+preferences.xhtml, preferences-mobile.js
+  - Leave as they are.
+
+torbutton.js, tor-circuit-display.js, torbutton_util.js
+  - Currently loaded in torbrowser.xul, this proposal suggests loading them
+  in browser.xul or browser.js instead.
+
+  These implement, amongst others:
+    1) New Identity
+    2) New circuit for this site
+    3) The circuit display logic
+    4) Check for Tor Browser update...
+    5) Showing the state of Tor (green onion vs. crossed out onion)
+    6) Helpers for 1) - 5)
+
+  Even though there is potentially significant work to do, for the scope of
+  this proposal we would prefer to only do changes to these if they are strictly
+  required to fix ESR68 migration. After the integration has been done,
+  we can keep doing maintenance work, refactoring and removing
+  unnecessary code in subsequent tickets or proposals. Some examples of
+  items that might need some work:
+
+  - Move parts of torbutton.js to components when they belong there
+    (e.g. torbutton_unique_pref_observer).
+
+  - Make sure loaded tor scripts in browser.xul or browser.js do not
+    export more symbols than needed (ideally only functions that need to be
+    called from some UI element).
+
+  - Reviewing New Identity feature (ticket #30504).
+
+4. Localization
+
+In the final omni.jar we will still ship all the locales that were available
+already in the Torbutton xpi package. We will have to fix some code that relied on
+specific paths to find these locales at runtime, such as [2].
+For example, in that case the path for es-ES locale would have to be found at
+jar:file:///absolute/path/to/firefox/omni.ja!/chrome/torbutton/locale/es-ES/torbutton.dtd
+
+While not strictly needed, we should start working on moving
+to the new localization system used in Firefox: Fluent
+(https://firefox-source-docs.mozilla.org/intl/l10n/l10n/index.html). However,
+to simplify work on this proposal we will postpone these localization migration
+efforts until the changes has been accepted and merged (ticket #30505).
+
+Currently, there are some localization strings that are duplicated, due to the fact that
+we use *.properties on desktop and *.dtd on mobile. While the migration to Fluent will
+solve this, until that happens we will move the duplicated strings to *.dtd files, and use
+DOMParser JavaScript API to obtain the translated strings in those cases.
+
+5. Code style
+
+We should follow Firefox internal JS code style. One way is to make sure we
+obey their ESLint rules
+https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/ESLint. On a
+related note, it would be desirable to make a decision on ticket #26184.
+
+We will also postpone code style changes after the work on this proposal has
+been accepted and merged, in order to simplify reviewing process (ticket #30506).
+
+[1] https://gitweb.torproject.org/tor-browser-spec.git/tree/proposals/102-integrate-tor-launcher-into-tor-browser.txt
+[2] https://gitweb.torproject.org/tor-browser.git/tree/toolkit/xre/nsAppRunner.cpp?h=tor-browser-60.7.0esr-9.0-1&id=defe73e8c1969c02f137e8b474d85a66b9605427#n1823
