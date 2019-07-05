@@ -152,6 +152,18 @@
    torsocks git push origin master:master
    cd ..
 
+#. Add new locales to the download page
+   # If this release is introducing new locales, add them to the
+   # databags/download-alternatives.ini file (for a stable release) or
+   # the databags/download-alternatives-alpha.ini file (for an alpha
+   # release).
+   cd tpo
+   torsocks git pull origin
+   vim databags/download-alternatives.ini # or databags/download-alternatives-alpha.ini
+   git commit databags/download-alternatives.ini -m "Add new Tor Browser locales"
+   torsocks git push origin master:master
+   cd ..
+
 #. Create blog post from changelog
    # See https://blog.torproject.org/blog/tor-browser-352-released for now
    # Don't forget to link to Mozilla's security advisories if this is a security
