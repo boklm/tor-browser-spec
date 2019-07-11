@@ -1,0 +1,196 @@
+Things to grep for in general when investigating changes:
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+SOCK_
+SOCKET_
+_SOCKET
+UDPSocket
+PR_NewTCPSocket
+AsyncTCPSocket
+TCPSocket
+
+Rust
+
+Misc PR_Socket
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+Android Java calls
+
+-------------------------------------------------------------------------------
+I followed the diff approach by doing `git diff -U10 esr52 esr60` and then
+going over all the changes containing the above mentioned potentially dangerous
+calls and features. For additional details see: comment:15:ticket:22176.
+
+Direct Paths to DNS resolution:
++ changes mainly to take originAttributes into account
++ nsHostResolver::ResolveHost
+  + Only used by nsDNSService
++ nsDNSService::Resolve
+  - Patched for safety (XXX: Verify application)
++ nsDNSService::AsyncResolve
+  - Patched for safety (XXX: Verify application)
++ ChildDNSService::AsyncResolve and ChildDNSService::Resolve
+   + ./netwerk/dns/ChildDNSService.cpp
+     + Resolve is not implemented and AsyncResolve goes over NeckoParent and
+       DNSRequestParent to nsDNSService::AsyncResolve
+       nsDNSService.
+   + ./netwerk/ipc/NeckoParent.cpp
+     + Calls into DNS service via DNSRequestParent::DoAsyncResolve()
+   + ./netwerk/ipc/NeckoChild.cpp
+
+- TRR (DNS Trusted Recursive Resolver)
+  - off for now (`network.trr.mode` is `0`), should be unproblematic, though, as
+  we make sure to resolve DNS remotely anyway
+    - XXX verify when it gets enabled
+
++ FlyWeb
+  + removed in esr 60, bug 1374574
+
++ Mortar
+  + not compiled in as we are not compiling with --enable-mortar
+
+Strange things doing DNS:
+  - media/webrtc/trunk/webrtc/voice_engine/test/channel_transport/udp_transport_impl.cc
+    + (just a test; is using getaddrinfo)
+  - a bunch of gtest.cc inclusions
+    + (just a test; using getaddrinfo (via
+      StreamingListener::SocketWriter::MakeConnection() or
+      StreamingListener::MakeConnection))
+  + third_party/python/requests/requests/packages/urllib3/util/connection.py
+    (getaddrinfo)
+  - mtransport
+    + Not compiled in due to us using --disable-webrtc
+
+Rust
+  + Auditing Rust for proxy bypasses is tricky.
+    https://bugzilla.mozilla.org/show_bug.cgi?id=1376621
+    (https://hg.mozilla.org/mozilla-central/rev/435183826647) got some way to
+    enforce proxy safety for Linux at least (bug 1524408 is the bug for
+    macOS/Windows). I went backwards from the enabled features in
+    toolkit/library/rust/gkrust-features.mozbuild and think we are good here.
+    For a double-check of that approach and a different one, see: #27616.
+    See as well comment:11:ticket:21862.
+
+SOCK_
+  + media/webrtc/trunk/webrtc/base/network.cc,
+    media/webrtc/trunk/webrtc/base/physicalsocketserver.cc and other WebRTC
+    code
+    + disabled via WebRTC
+  - netwerk/srtp/src/test/rtpw.c (just a test)
+  - nsprpub/pr/src/md/windows/w95sock.c XXX part of TCP Fast Open implementation
+    (bug 1188435; disabled by pref right now)
+  - in a bunch of .py files in psutil update (which is used for unit tests)
+  - third_party/python/pyasn1-modules/tools/snmpget.py in pyasn1-modules update
+    (which is used for unit tests)
+
+UDPSocket
+  + Mortar (not compiled in as we are not compiling with --enable-mortar)
+
+PR_NewTCPSocket
+  - security/nss/fuzz/tls_server_target.cc (just used for fuzzing)
+
+AsyncTCPSocket
+  + /media/webrtc/trunk/webrtc/base/nat_unittest.cc (just test and we compile
+    WebRTC out)
+
+TCPSocket (test in bug 1329245 that ensures TCPSocket is not exposed to content)
+  + Mortar (not compiled in as we are not compiling with --enable-mortar)
+
+udp-socket
+  + netwerk/test/unit/test_udpsocket.js (test-only)
+  + netwerk/test/unit/test_udpsocket_offline.js (test-only)
+
+tcpsocket
+  + not exposed to content; test_tcpsocket_not_exposed_to_content.html checks
+    that (see bug 1329245)
+
+NS_*SOCKET*_C
+  - mtransport (media/mtransport/ipc/StunAddrsRequestParent.cpp)
+    + not compiled in via MOZ_WEBRTC not specified (nor MOZ_SCTP, which relies on
+      the former being available)
+
+@mozilla.org/network/*socket
+  + browser/base/content/test/urlbar/browser_urlbar_search_no_speculative_connect_with_client_cert.js
+
+Android
+  - HttpURLConnection
+  + ch.boye.httpclientandroidlib.impl.client.* seems good
+  - ch.boye.httpclientandroidlib.impl.conn XXX: needs hard-coding proxy settings
+
+Android Java calls
+  + Uses ch.boye.httpclientandroidlib.impl.client.*:
+    + mobile/android/base/java/org/mozilla/gecko/telemetry/TelemetryUploadService.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/oauth/FxAccountAbstractClient.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/push/autopush/AutopushClient.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/AbstractBearerTokenAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/AuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResource.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResourceDelegate.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BasicAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/HMACAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/HawkAuthHeaderProvider.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/ResourceDelegate.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageCollectionRequest.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageRequest.java
+    + mobile/android/services/src/main/java/org/mozilla/gecko/tokenserver/TokenServerClient.java
+    + mobile/android/services/src/test/java/org/mozilla/android/sync/test/helpers/MockResourceDelegate.java
+    + mobile/android/services/src/test/java/org/mozilla/gecko/sync/net/test/TestHawkAuthHeaderProvider.java
+    + mobile/android/services/src/test/java/org/mozilla/gecko/sync/net/test/TestLiveHawkAuth.java
+
+  - Uses ch.boye.httpclientandroidlib.impl.conn.*
+    + mobile/android/base/java/org/mozilla/gecko/util/URIUtils.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResource.java
+      - XXX: needs hard-coding proxy settings
+    + mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/TLSSocketFactory.java
+
+  - Proxy bypass by mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/BaseResource.java|Resource.java
+    - mobile/android/base/java/org/mozilla/gecko/telemetry/TelemetryUploadService.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/FxAccountClient20.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/oauth/FxAccountOAuthClient10.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/background/fxa/profile/FxAccountProfileClient10.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/browserid/verifier/BrowserIDRemoteVerifierClient10.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/browserid/verifier/BrowserIDRemoteVerifierClient20.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/push/autopush/AutopushClient.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageRecordRequest.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/SyncStorageRequest.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/repositories/downloaders/BatchingDownloader.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/repositories/uploaders/RecordUploadRunnable.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/stage/EnsureCrypto5KeysStage.java
+    - mobile/android/services/src/main/java/org/mozilla/gecko/tokenserver/TokenServerClient.java
+
+  - Misc other issues
+    - mobile/android/geckoview/src/thirdparty/java/com/google/android/exoplayer2/upstream/DefaultHttpDataSource.java (fixed upstream in bug 1459420)
+    - mobile/android/geckoview/src/thirdparty/java/com/google/android/exoplayer2/upstream/UdpDataSource.java
+      - XXX: patch out
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/MetaGlobal.java
+      - XXX likely proxy bypass
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/net/TLSSocketFactory.java
+      - XXX possible bypass via ch.boye.httpclientandroidlib.conn.ssl.SSLSocketFactory.createSocket()
+    - mobile/android/services/src/main/java/org/mozilla/gecko/sync/stage/FetchInfoCollectionsStage.java
+      - XXX: likely proxy bypass
+    - mobile/android/stumbler/java/org/mozilla/mozstumbler/service/utils/AbstractCommunicator.java (URL.openConnection())
+    - mobile/android/thirdparty/com/leanplum/internal/WebSocketClient.java
+    - mobile/android/thirdparty/com/squareup/picasso
+      - XXX needs a patch (done in #27016)
+
+  - DNS leaks in Android core's library before Android O
+    - XXX: patched out in #28125 with duct tape
