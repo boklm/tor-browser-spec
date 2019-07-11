@@ -1,0 +1,33 @@
+dom.vr.openvr.enabled and gfx.vr.openvr-enabled for Web Virtual Reality features. (More: https://mozvr.com/ https://iswebvrready.org/) These features are only in Nightly right now fortunetly.
+
+media.webspeech.recognition.enabled - currently disabled I think. Required mic permission but seems like something that should be disabled at Medium or High on the slider
+
+media.recorder.audio_node.enabled - similar but *enabled* by default
+
+media.webspeech.synth.enabled - seemingly a second speech synthesis API, seems to be enabled by default but might be good to disable at High slider
+
+gfx.content.azure.backends is a list of libraries that can/will be used for graphics rendering under certain conditions. It seems like it might be something we'd want to alter at different security slider levels
+
+security.enterprise_roots.enabled - this pref is off by default (and no plans to enable it) but it automatically imports roots from the windows cert store
+
+gfx.font_rendering.graphite.enabled - a complex rendering library that was actually disabled in FF for some time due to security concerns. Probably should be disabled at Medium/High slider level
+
+webgl.disable-angle - disables the ANGLE library that is used by WebGL on Windows
+
+beacon.enabled - seems to be an analytics-type feature https://w3c.github.io/beacon/
+
+There's an orientation API that I believe is disabled by device.sensors but this seems worth confirming/making a test case... https://www.w3.org/TR/orientation-event/
+
+(Too many to list, go to about:config and search for media.*.enabled) - Some of these disable media libraries, other disable media features
+
+pointer-lock-api.prefixed.enabled -  a feature that provides raw mouse input, appears to be disabled by default
+
+The ScreenOrientation API may not have a pref... https://developer.mozilla.org/en-US/docs/Web/API/Screen/orientation
+
+There is support for SVG favicons, I'm unsure if our disabling SVG disables these also...
+
+dom.vibrator.enabled - The Vibration API seems like something that might enable fingerprinting...
+
+dom.animations-api.core.enabled - Web Animations API, currently disabled in release https://birtles.github.io/areweanimatedyet/  Worth disabling at Medium Slider level for sure!
+
+gfx.downloadable_fonts.woff2.enabled - disable WOFF2 fonts, definetly worth at High or even Medium slider level
