@@ -142,8 +142,9 @@
 #. Update website's torbrowser versions file in the website git
    cd tpo
    torsocks git pull origin
-   # Update `version-win32-stable` as well if we include a new stable tor
-   # version. See: #14152.
+   # Update `win32` in the `torbrowser-stable` section as well if we
+   # include a new stable tor version (called the Windows Expert Bundle
+   # on the website). See: #14152.
    # In the RecommendedTBBVersions file, only add the new version. Don't
    # remove the old one yet. That comes later.
    vim databags/versions.ini content/projects/torbrowser/RecommendedTBBVersions/contents.lr
