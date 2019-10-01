@@ -127,6 +127,14 @@
    for i in *.asc; do echo $i ; gpg -q $i || break; done
    static-update-component dist.torproject.org
 
+#. Check diskspace available on cdn.tpo
+#  We currently have enough disk space to host two alpha and stable
+#  releases. However with the size of each Tor Browser release increasing,
+#  it may become necessary to increase disk space. The server hosting
+#  the files for cdn.tpo is savii.tpo and its disk usage can be monitored
+#  by going to https://grafana.torproject.org/d/Z7T7Cfemz/node-exporter-full
+#  and selecting the host savii.torproject.org.
+
 #. Upload the *.mar files to cdn.tpo
 #. Local to staticiforme:
    mkdir /srv/cdn-master.torproject.org/htdocs/aus1/torbrowser/$TORBROWSER_VERSION
