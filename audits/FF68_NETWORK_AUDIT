@@ -155,8 +155,9 @@ _SOCKET
     + Looks benign and also not new
 
 UDPSocket
-  - XXX: devtools debugger discovery still uses it
+  - devtools debugger discovery still uses it
     - ./devtools/shared/discovery/discovery.js
+    + Disabled via pref in #18546
   + webrtc moved code
   + dom.udpsocket.enabled still false
   - fallback multicastDNS uses it (not new)
@@ -167,14 +168,15 @@ TCPSocket
 
 SocketTransport
  + IOactivityMonitor, NetworkActivityMonitor? (old)
- - XXX: presentation control service? I think this is old but moved
+ - presentation control service? I think this is old but moved
    - dom/presentation/PresentationTCPSessionTransport.cpp
-   - App to app service..
+   + Patched
  - Dashboard
    - netwerk/base/Dashboard.cpp
      + Only examine opened sockets and cached DNS
- - XXX: Roku control (old)
+ - Roku control (old)
    - ./toolkit/modules/secondscreen/RokuApp.jsm
+   + patched
  - NetworkConnectivityService?? This looks new
    - ./netwerk/base/NetworkConnectivityService.cpp
      + Uses DNS service and nsIChannels.. Proxy safe
@@ -228,7 +230,7 @@ Android Java calls
  + ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
    + BaseResource.java (is this proxied? Who calls this?)
      + Lots of consumers..
-     - XXX: Patch going back in: https://bugs.torproject.org/31934
+     + Patch going back in: https://bugs.torproject.org/31934
    + leanplum (disabled)
    + Adjust SDK uses execute directly
      + https://bugs.torproject.org/25906 disabled
