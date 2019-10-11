@@ -1,0 +1,88 @@
+`git diff esrA esrB` and then go over all the changes containing the
+above mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+Misc PR_Socket
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
