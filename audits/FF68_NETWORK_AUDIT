@@ -1,0 +1,311 @@
+Things to grep for in general when investigating changes:
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+Misc PR_Socket
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net
+   - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+ 
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+
+-------------------------------------------------------------------------------
+I followed the diff approach by doing `git diff esr60 esr68` and then
+going over all the changes containing the above mentioned potentially dangerous
+calls and features. 
+
+Direct Paths to DNS resolution:
+ + PR_GetHostByName
+   + No new cals in diff
+PR_GetIPNodeByName
+ + No new calls in diff
+PR_GetAddrInfoByName
+ + Edited calls in diff, but no change
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+ + One change in NSS unit tests ("127.0.0.1" to higher level call)
+
+MDNS:
+ + No substantive changes
+
+nsDNSService:
+  - nsDNSServiceDiscovery appears to support fallback JS mDNS option
+    + nsDNSServiceDiscovery itself is not new..
+  + nsDNSService has an mProxyType now
+  - nsDNSService::AsyncResolveInternal()?
+    + Patch blocks this (XXX: Maybe should move to PreprocessHostName)
+    + nsDNSAsyncRequest
+    - nHostResolver::ResolveHost
+      + not used outside dnsservice
+  + nsDNSService::ResolveInternal()
+    + ResolveHost() with type now...
+    + Patched
+  + AsyncResolve, AsyncResolveNative, AsyncResolveByType
+    + AsyncResolveInternal()
+      + Patched
+  + Resolve()
+    + ResolveNative
+      + ResolveInternal()
+        + Patched
+  + What about our dns service patch? where did that go?
+    + https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-68.1.0esr-9.0-2&id=97b3893a5710229a4efaf009d1b1b80d9a3918f0
+    + https://gitweb.torproject.org/tor-browser.git/commit/?h=tor-browser-60.8.0esr-8.5-1&id=edd3fbf5af01a812c1f5e8e04731fa1abc52da7f
+nsHostResolver:
+  + Only used by DNS service
+
+
+SOCK_
+  + libvpx has unit tests that use sockets
+  + many changes due to moved webrtc code..
+    + All disabled and not compiled in
+  + Lots of python unittests
+  + Sctp code has sockets.. Is this used?
+    + by webrtc, which we disable
+  - rust/cloudabi has some...
+  + recordreplay has some but they are AF_UNIX
+
+SOCKET_
+  + Again, lots due to moved WebRTC code
+  + Some android sockets in "LeanPlum" android lib
+    + leanplum is disabled
+  + Curl is in the tree now? lol
+  + Some sandboxing constants
+
+_SOCKET
+  - media/audioipc in rust?
+  - mio in rust?
+  + is media/mtransport/nr_socket_prsock.cpp off with webrtc?
+    + looks like yes
+  - IOActivityMonitor?
+    + Looks benign and also not new
+
+UDPSocket
+  - XXX: devtools debugger discovery still uses it
+    - ./devtools/shared/discovery/discovery.js
+  + webrtc moved code
+  + dom.udpsocket.enabled still false
+  - fallback multicastDNS uses it (not new)
+TCPSocket
+ + devtools adbsocket uses, but to localhost
+ + mtransport uses, but disabled for webrtc
+ + Tests use
+
+SocketTransport
+ + IOactivityMonitor, NetworkActivityMonitor? (old)
+ - XXX: presentation control service? I think this is old but moved
+   - dom/presentation/PresentationTCPSessionTransport.cpp
+   - App to app service..
+ - Dashboard
+   - netwerk/base/Dashboard.cpp
+     + Only examine opened sockets and cached DNS
+ - XXX: Roku control (old)
+   - ./toolkit/modules/secondscreen/RokuApp.jsm
+ - NetworkConnectivityService?? This looks new
+   - ./netwerk/base/NetworkConnectivityService.cpp
+     + Uses DNS service and nsIChannels.. Proxy safe
+ - TCPFastOpen (old, but flagged before)
+   - ./netwerk/base/TCPFastOpenLayer.cpp
+     - AttachTCPFastOpenIOLayer
+       + Appears to attach to nsSocketTransport such that it would only fast
+         open to the socks port..
+     - TCPFastOpenConnect
+       + Only used via nsSocketTransport
+ 
+Extra:
+  PR_Socket()
+   + None
+  PR_Connect()?
+   + Minor changes
+
+
+Misc XPCOM (including commands for pre-diff review approach)
+ + *SocketProvider
+   + Only minor changes
+ grep -R udp-socket .
+   + minor changes
+ grep -R tcp-socket .
+   + docstring only
+ grep for tcpsocket
+   + adb uses for 127.0.0.1 connection
+   + webrtc
+ grep -R "NS_" | grep SOCKET | grep "_C"
+   + indent and thread check changes; removed code
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+   + minor changes to spdy and unittests
+
+Rust
+ + Check for new sendmsg and recvmsg usage
+   - XXX: only in mio, audioipc..
+ - XXX: ask tjr to re-run tool?
+
+Android Java calls
+ - URLConnection (and HttpURLConnection)
+   + updater code moved; still looks ok
+   + BitmapConnection extends in mobile/android/geckoview/src/main/java/org/mozilla/gecko/GeckoAppShell.java
+   + Some DRM thing
+   + Crashreporter
+   + leanplum (disabled)
+   + DefaultHttpDataSource (used only by exoplayer/HLS, which is disabled)
+   + tests
+ + grep -n openConnection\( mobile/android/thirdparty/
+   + leanplum (disabled)
+ + UrlConnectionDownloader in mobile/android/thirdparty/com/squareup/picasso/
+ + ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+   + BaseResource.java (is this proxied? Who calls this?)
+     + Lots of consumers..
+     - XXX: Patch going back in: https://bugs.torproject.org/31934
+   + leanplum (disabled)
+   + Adjust SDK uses execute directly
+     + https://bugs.torproject.org/25906 disabled
+ + java.net
+   + mobile/android/geckoview/src/thirdparty/java/com/google/android/exoplayer2/upstream/UdpDataSource.java
+     + Not used anywhere
+     + also: https://gitweb.torproject.org/tor-browser.git/commit/mobile/android/geckoview/src/thirdparty?h=tor-browser-68.1.0esr-9.0-2&id=662ebfc05416d2c0cd7769f864116581a1a78cad
+     + also https://gitweb.torproject.org/tor-browser.git/commit/mobile/android/moz.configure?h=tor-browser-68.1.0esr-9.0-2&id=ed1e6aecbd3c1ef4e4949e08cb023e9ef83cc142
+ - java.net.URL
+   - XXX: GeckoApplication.downloadImageForSetImage uses URL.openStream()
+   - XXX: GeckoActionProvider.downloadImageForIntent uses java.net.URL.openStream()
+   - XXX: GeckAppShell has many wrappers to create inputstreams from URLConnections
+     - Do these always have to be opened/connected first?
+   - XXX: GeckoMediaDrmBridgeV21.java - uses android.media.MediaDrm which seems to fetch stuff??
+   - XXX: BitmapUtils.decodeUrl uses openStream for non-jar urls
+   - XXX: GeckoJarReader - tons of use.. Can this be used on remote jars?
+   - XXX: AbstractCommunicator.openConnectionAndSetHeaders() - uses url.openConnection()
+   - XXX: AbstractCommunicator.sendData() - uses url.getOutputStream().. maybe ok?
+ + javax.net
+   + TLSSocketFactory from sync
+     + not used
+ + ch.boye.httpclientandroidlib.conn.* (esp ssl)
+   + Not used
+ + ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+   + Not used
+ - IntentHelper
+   + openUriExternal prompts if private browsing mode enabled
+     - XXX: Do we enable this? Can users turn it off?
+   - XXX: ./mobile/android/base/java/org/mozilla/gecko/activitystream/homepanel/menu/ActivityStreamContextMenu.java
+     - Uses intents to direct fetch URL
+     - XXX: Sets "show in private browsing mode" prompt to false
+   - XXX: ./mobile/android/base/java/org/mozilla/gecko/BrowserApp.java
+     - Also does telemetry via IntentHelper.openURIExternal
+     - XXX: Delegates to BrowserAppDelegate list in onNewIntent()... What's in this
+       list?
+   - XXX: ./mobile/android/base/java/org/mozilla/gecko/ChromeCastDisplay.java
+     - XXX: Looks like it might launch external service?
+   - XXX: ./mobile/android/base/java/org/mozilla/gecko/home/HomeFragment.java
+ - getHandlersFor*
+   - HelperApps.jsm
+     + browser.js uses prompt
+     + HelperAppDialog.js
+ - android.content.Intent? OMG everywhere :(
+   - startActivity
+     - XXX: ActivityHandlerHelper - Good candidate to patch for external
+       activities
+     - XXX: BrowserApp.onUrlOpenWithRefferer - Might be able to launch other
+       apps if OPEN_WITH_INTENT flag is set?
+     - XXX: CustomTabsActivity.java - Several methods
+     - XXX: WebAppActivity.onLoadRequest
+     - XXX: BasicGeckoViewPrompt.onFilePrompt()
+     - XXX: GeckoViewActivity.onExternalResponse()
+   + startActivities
+     + not used
+   + sendBroadcast
+     + Some wifi scanning/GPS stuff but is local broadcast..
+   + sendOrderedBroadcast
+     + not used
+   + startService
+     + all use seems targeted to sub-components
+   - bindService
+     - XXX: SurfaceAllocator - no idea what is happening here :/
+     - XXX: RemoteManager - no idea what is happening here :/
+- android.app.PendingIntent
+  - XXX: ChromeCastDisplay.java - probably want to make sure this is disabled?
+    - It uses RemotePresentationService
+  - XXX: CustomTabsActivity.performPendingIntent - again, hard to tell what is
+    happening here :/
+- android.app.DownloadManager
+  - XXX: BrowserApp.java uses it
+  - XXX: DownloadsIntegration.java uses it, but has a check for useSystemDownloadManager()
++ ActivityHandlerHelper.startIntentAndCatch
+  + Used only by other wrappers already covered 
+
+ 
+
+TRR:
+ - assuming disabled by pref; deferring audit
+
+
