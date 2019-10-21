@@ -4,6 +4,10 @@
 #
 
 #. Tag any relevant component versions.
+#  In particular: before tagging the tor-browser tag, the final code from
+#  Torbutton needs to get included and in order to avoid unnecessary commit
+#  inflation the commit for bumping the git submodule should be a fixup commit
+#  to the one with "Pick up latest Torbutton code" in its commit message.
 
 #. Update changelog and relevant config files in tor-browser-build.
    cd tor-browser-build
@@ -45,6 +49,8 @@
    # For stable releases put tails-dev@boum.org into Cc.
 
 #. Codesign the macOS dmg files.
+   # XXX: Update with Notarization bits once they are included in our signing
+   # setup
    torsocks ssh mac-signer "mkdir $TORBROWSER_VERSION"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/*.dmg mac-signer:$TORBROWSER_VERSION/
    torsocks ssh mac-signer
