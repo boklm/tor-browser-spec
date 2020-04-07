@@ -35,10 +35,8 @@ Ticket: #21952
 
 2.1. Redirection method
 
-   We introduce a new HTTP header called "Onion-Location" with the exact same
-   restrictions and semantics as the Location HTTP header. Websites can use the
-   Onion-Location HTTP header to specify their onion counterpart, in the same
-   way that they would use the Location header.
+   We introduce a new HTTP header called "Onion-Location", which websites
+   can use to specify their onion counterpart.
 
    Example:
     Onion-Location: http://vwc43ag5jyewlfgf.onion
@@ -46,8 +44,29 @@ Ticket: #21952
 2.2. Browser logic
 
    The Tor Browser intercepts the Onion-Location HTTP header (if any) and
-   informs the user of the existence of the onion site, giving them the option
-   to visit it. Tor Browser only does so if the header is served over HTTPS.
+   acts upon it in two possible ways, depending on the configuration state
+   of the browser:
+
+   a) If the user has enabled automatic Onion-Location redirects
+      the header is equivalent to a redirect with a Refresh header and a
+      timeout of 0 seconds [1]. As an example: the header in 2.1 would be
+      treated like a `Refresh: 0;URL='http://vwc43ag5jyewlfgf.onion'` header.
+
+   b) If the user has not enabled automatic Onion-Location redirects,
+      it informs them of the existence of the onionsite, giving them the option
+      to visit it. If the user chooses to visit the onionsite, the webpage
+      will be reloaded and redirected to its onion counterpart, as in a).
+
+   Before acting upon it, the browser checks whether the Onion-Location has
+   a valid value, and ignores it if it does not. For the header to be valid
+   the following conditions need to be fulfilled:
+
+   * The Onion-Location value must be a valid URL with http: or https: protocol
+     and a .onion hostname.
+
+   * The webpage defining the Onion-Location header must be served over HTTPS.
+
+   * The webpage defining the Onion-Location header must not be an onionsite.
 
    Tor Browser should inform the user about the onion in a non-intrusive way
    (e.g. an infobar below the address bar), it should also provide a way for
@@ -55,6 +74,18 @@ Ticket: #21952
    onions.
 
    Browsers that don't support Tor SHOULD ignore the Onion-Location header.
+
+2.3. Using an HTML <meta> attribute instead of an HTTP header
+
+   The (conditionally) identical behaviour of Onion-Location and a Refresh
+   header (with 0 seconds timeout) includes the option of defining it as a
+   HTML <meta> http-equiv attribute. This may be used by websites that prefer
+   (or need) to define Onion-Location by modifying the served HTML content
+   instead of adding a new HTTP header.
+
+   As an example, the Onion-Location header in 2.1 would be equivalent to a
+   `<meta http-equiv="onion-location" content="http://vwc43ag5jyewlfgf.onion" />`
+   added in the HTML head element of the webpage.
 
 3. Drawbacks
 
@@ -122,3 +153,6 @@ Ticket: #21952
    and would still confuse people. So I think starting with a simple approach
    that will educate users and then moving to more advanced designs is a more
    normative way to go.
+
+
+[1] https://www.w3.org/TR/2016/NOTE-WCAG20-TECHS-20161007/H76
