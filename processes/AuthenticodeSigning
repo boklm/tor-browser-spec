@@ -56,6 +56,7 @@ Signing and timestamping
 
 - path/to/osslsigncode -pkcs11engine /usr/lib/engines/engine_pkcs11.so \
                        -pkcs11module /usr/lib/libeTPkcs11.so           \
+                       -h sha256                                       \
                        -certs tpo_cert.crt                             \
                        -key 29643b7ac0003d8a882f8a4a6e064110d96b980b   \
                        torbrowser-install-XXX.exe tb-XXX-signed.exe
@@ -65,13 +66,16 @@ process by using `-pass $pass` as an additional commandline parameter
 
 4) Timestamping the executable(s):
 
-- path/to/osslsigncode add -t http://timestamp.digicert.com \
+- path/to/osslsigncode add -ts http://timestamp.digicert.com \
+                           -h sha256 \
                            -p socks://127.0.0.1:9050 \
                            torbrowser-install-XXX.exe tb-XXX-timestamped.exe
 
 Note: the current tip of osslsigncode's master branch does not allow the
 decoupling of signing and timestamping. In order to do so one needs to apply
-the following patch:
+the following patches:
+
+1.
 
 From 28b384e77fa0d4dd38751a0c72ab5976d2e38f75 Mon Sep 17 00:00:00 2001
 From: Georg Koppen <gk@torproject.org>
@@ -107,4 +111,29 @@ index 32e37c8..2978c02 100644
 --
 2.7.0
 
+2.
 
+From 8159546dfa270da0e3512dcba983ce15029111d0 Mon Sep 17 00:00:00 2001
+From: Georg Koppen <gk@torproject.org>
+Date: Sat, 11 Apr 2020 05:50:36 +0000
+Subject: [PATCH] fixup! Allow timestamping with the 'add' command
+
+
+diff --git a/osslsigncode.c b/osslsigncode.c
+index 3797458..4f4b897 100644
+--- a/osslsigncode.c
++++ b/osslsigncode.c
+@@ -2447,7 +2447,7 @@ int main(int argc, char **argv)
+ 		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-n")) {
+ 			if (--argc < 1) usage(argv0);
+ 			desc = *(++argv);
+-		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-h")) {
++		} else if ((cmd == CMD_SIGN || cmd == CMD_ADD) && !strcmp(*argv, "-h")) {
+ 			if (--argc < 1) usage(argv0);
+ 			++argv;
+ 			if (!strcmp(*argv, "md5")) {
+--
+2.26.0
+
+For compilation against OpenSSL 1.1.x see the patch(es) at:
+https://sourceforge.net/p/osslsigncode/patches/10/
