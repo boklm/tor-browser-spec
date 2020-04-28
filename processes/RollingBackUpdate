@@ -1,0 +1,71 @@
+Rolling Back Tor Browser Updates
+================================
+
+In some cases a critical issue is found shortly after releasing an update.
+In those cases rolling back an update to avoid having more users hitting
+the issue can be useful.
+
+There are two separate cases:
+ - rolling back an update for users of all platforms
+ - rolling back an update only for users of a specific platform
+
+Note: this is about rolling back updates for stable/alpha releases.
+Rolling back updates on nightly is more difficult.
+
+In the following instructions we are assuming that we are rolling back
+an alpha update. But the same instructions should work for a stable
+release too by replacing all instances of "alpha" by "release".
+We also assume that we released version 9.5a11 and want to roll back to
+version 9.5a10. You will need to replace those versions numbers in the
+instructions.
+
+If you followed the instructions from ReleaseProcess, in the directory
+/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3 on staticiforme
+you should have renamed the directory alpha to alpha.old.
+If you didn't do it, you should get a new copy of the update_responses
+directory for the previous release, for instance by running
+"make update_responses-alpha" in tor-browser-build, after
+checking out the tag from the previous release.
+
+You should also check that the previous release is still present in
+the directory /srv/cdn-master.torproject.org/htdocs/aus1/torbrowser.
+
+
+Rolling back an update for users of all platforms
+-------------------------------------------------
+
+You can roll back the update with the following steps on staticiforme:
+
+ - in /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3, remove
+   the directory "alpha" and rename "alpha.old" to "alpha".
+
+ - edit the file "alpha/.htaccess" and at the top, after the line
+   "RewriteEngine On" add a new line:
+      RewriteRule ^[^/]+/9.5a11/ no-update.xml [last]
+   With this line we can avoid proposing an update to the previous
+   version to the users who already updated to the new version.
+
+ - run "static-update-component aus1.torproject.org"
+
+
+Rolling back an update only for users of a specific platform
+------------------------------------------------------------
+
+In the following instructions, we assume that we want to roll back the
+update for users of Windows x86_64 only. In the following instructions,
+you should replace WINNT_x86_64-gcc3-x64 with the platform for which
+you want to roll back the update (see build_targets in the file
+projects/release/update_responses_config.yml in tor-browser-build for
+the list of platforms).
+
+You can roll back the update with the following steps on staticiforme:
+
+ - in /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3, rename
+   or copy the directory "alpha.old" to "alpha.9.5a10".
+
+ - edit the file "alpha/.htaccess" and at the top, after the line
+   "RewriteEngine On" add a new line:
+      RewriteRule ^WINNT_x86_64-gcc3-x64/.* https://aus1.torproject.org/torbrowser/update_3/alpha.95a10/$0 [last]
+
+ - run "static-update-component aus1.torproject.org"
+

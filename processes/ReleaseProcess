@@ -201,7 +201,8 @@
    chmod 664 ${TORBROWSER_UPDATE_CHANNEL}/.htaccess
    chmod 775 ${TORBROWSER_UPDATE_CHANNEL}/
    # Rename the update responses directory to .old to make it easier to
-   # revert in case of problem
+   # revert in case of problem (see the file RollingBackUpdate for more
+   # details about this)
    torsocks ssh staticiforme.torproject.org "rm -rf /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}.old"
    torsocks ssh staticiforme.torproject.org "mv -v /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL} /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}.old"
    torsocks rsync -avP $TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/
