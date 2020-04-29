@@ -16,7 +16,7 @@ In the following instructions we are assuming that we are rolling back
 an alpha update. But the same instructions should work for a stable
 release too by replacing all instances of "alpha" by "release".
 We also assume that we released version 9.5a11 and want to roll back to
-version 9.5a10. You will need to replace those versions numbers in the
+version 9.5a10. You will need to replace those version numbers in the
 instructions.
 
 If you followed the instructions from ReleaseProcess, in the directory
