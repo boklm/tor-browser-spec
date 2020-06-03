@@ -121,6 +121,7 @@
 #. Transfer builds to staticiforme
    # IMPORTANT: Remove the oldest version in a series in case there is more
    # than 1 available on dist.torproject.org before proceeding
+   # XXX: TORBROWSER_VERSION_OLDEST needs to be set
    rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION_OLDEST
    static-update-component dist.torproject.org
    # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
@@ -212,10 +213,6 @@
    torsocks rsync -avP $TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/
    torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}/*"
    torsocks ssh staticiforme.torproject.org "static-update-component aus1.torproject.org"
-   # Finally, remove old version as we point the update channel at the new version.
-   # XXX: CAREFUL! $OLD_TOR_BROWSER_VERSION must be set!
-   torsocks ssh staticiforme.torproject.org "rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$OLD_TORBROWSER_VERSION"
-   torsocks ssh staticiforme.torproject.org "static-update-component dist.torproject.org"
 
 #. Write an email to tor-announce in case this release is concerned with getting
 #  a stable version out. Using the contents of the blog entry should do it.
