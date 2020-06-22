@@ -6,11 +6,6 @@ An alpha version is a series of dot separated numbers, followed by an
   4.0a1
   4.0a2
 
-A beta version is a series of dot separated numbers, followed by a
-'b' and an other number. Examples:
-  4.0b1
-  4.0b2
-
 A stable version is a series of dot separated numbers. Examples:
   3.6.6
   4.0
