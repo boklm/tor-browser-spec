@@ -1,0 +1,161 @@
+Rebasing Tor Browser patches on top of a new Firefox version
+============================================================
+
+These instructions assume branches of Tor Browser code are maintained with git,
+and consist of a sequence of patches (commits) applied on top of some commit
+from the https://github.com/mozilla/gecko-dev.git mirror of the Mercurial
+Gecko repositories.
+
+1) Rebase
+---------
+
+This consists of applying the Tor Browser patches (commits) from some branch on
+top of a newer Firefox branch, and fixing up possible conflicts. There should be
+a helper script that automates as much of this process as possible:
+
+Steps:
+
+- Move to the branch that contains the patches to be rebased and create a new
+  one, since it will be modified during the rebasing process:
+  `git checkout [current_tor_browser_branch] -b [new_rebased_branch_name]`
+- Execute the rebase helper script: `./git-tbrebase [target_firefox_branch]`.
+  Responsibilities of the script:
+    - Get the list of Tor Browser patches from `current_tor_browser_branch`.
+    - Check whether some of the patches are already in `target_firefox_branch`
+      (e.g. backports) and mark them to be skipped in that case.
+    - Move to `target_firefox_branch` (e.g.
+      `git reset --hard [target_firefox_branch]`) and apply patches.
+    - Keep a log of all the process in a way that it can be used as a "rebase
+      report" for the reviewer.
+        - This should include, among other things, the time needed for resolving
+          patch conflicts.
+    - For each conflict, show the bugzilla tickets responsible for it, based on
+      `git blame` on the conflicting lines.
+    - After resolving a patch conflict, ask the rebaser whether comments need to
+      be added, and make sure these are included in the "rebase report".
+    - If there are patches that require manual steps when rebasing (e.g. copying
+      nightly branding folder to alpha, etc.), stop and warn about it.
+        - There could be instructions encoded in the commit message using some
+          convention.
+        - Or maybe run some script automatically, similarly to git hooks.
+- In case of conflict:
+  - Resolve manually.
+  - Check whether the commit message needs to be changed due to the conflict
+    resolution (e.g. a partially uplifted patch), and do so if needed.
+  - Run `./git-tbrebase --continue` to continue with the process (or `--skip` or
+    `--abort`, similarly to `git rebase`).
+
+2) Build
+--------
+
+Ideally, we should do a full tor-browser-build here. But:
+
+- These can take quite long, and are not incremental.
+- The `tor-browser-build` toolchains might need changes for newer Firefox
+  versions.
+
+At this stage, it should be fine to do a local build and use a `repackage_tb`
+script which takes the latest linux64 Tor Browser build and repackages it with
+the locally built Tor Browser from `obj-x86_64-pc-linux-gnu`.
+
+Steps:
+
+- Copy `tor-launcher` master to `browser/extensions`.
+- Make sure `torbutton` submodule is correctly loaded:
+  `git submodule update --init`
+- Edit `.mozconfig` to set
+    - `ac_add_options --enable-tests`
+    - `ac_add_options --enable-debug`
+    - `ac_add_options --enable-tor-launcher`
+    - `ac_add_options --enable-tor-browser-update`
+- Optionally, add
+  `ac_add_options --with-ccache=/home/user/.mozbuild/sccache/sccache` to use
+  `sccache` for speeding up subsequent builds.
+- `./mach build && ./mach package`
+- `./repackage_tb`
+
+At the end, there should be a `tor-browser-linux64-version_en-US.tar.xz`
+artifact, which is the repackaged Tor Browser.
+
+3) Manual testing
+-----------------
+
+This should ideally not be needed, but until everything is covered by automated
+testing we can do a quick manual test to catch the most obvious breakage:
+
+- Launch the repackaged browser and check:
+    - Tor is launched correctly.
+    - `about:tor` is displayed with no errors
+    - `about:preferences` is not broken.
+    - It's possible to navigate to some website (e.g. duckduckgo search)
+    - The circuit display is working and displayed correctly.
+
+4) Automated testing
+--------------------
+
+There should be a single script that runs all tests, but for now let's
+list the individual commands:
+
+- `./run-tbb-tests` should run the Tor Browser unit tests locally.
+-
+  `./tor-browser-bundle-testsuite/tbb-testsuite --no-xdummy tor-browser-linux64-version_en-US.tar.xz`
+  should run the Tor Browser testsuite.
+- `./mach lint` should check for linting errors.
+
+5) Debug/Fix
+------------
+
+For each issue found while running tests, debug and/or fix it, then iterate 2-5
+until no more test failures are found.
+
+For fixing up a commit, a script `./git-tbedit [commit]` should be used, so that
+the time spent editing the patch is tracked and included in the rebase report.
+
+6) Push for review
+------------------
+
+In the ticket for the rebase work, the rebaser should add a reference to the
+rebased branch that has to be reviewed, and a rebase report, which should
+contain, for every Tor Browser commit in the original branch:
+
+```
+[SKIPPED|PICKED|CONFLICT][original_hash][commit_summary]
+    (optional) Total time editing commit:
+    (optional) Comments:
+        Some comments relevant for the reviewer.
+    (optional) Conflicts:
+        List of conflicting files.
+```
+
+Other
+-----
+
+- Picking Tor Browser patches and changes that landed after the rebase started.
+
+The rebasing and reviewing process can last long enough for newer patches and
+changes to have landed after the process started.
+
+Doing a full rebase with a later tor-browser branch would be too costly, so we
+need to identify the changes that landed between the branch that was originally
+rebased and the newer Tor Browser branch and only apply those.
+
+Until this is properly automated, a suggested manual approach is to do:
+
+`git range-diff original_starting_commit~1..original_ending_commit new_starting_commit~1..new_ending_commit`,
+so basically doing a range-diff between the original set of patches that were
+rebased, and a more up-to-date set of patches. Then, we should manually be able
+to pick the missing changes, as fixup or squash commits.
+
+- Reordering/squashing patches
+
+We should not mix rebasing changes + fixing conflicts with patch reordering and
+squashing. More concretely, it should be possible to check with
+`git diff original_tb_branch..reordered_and_squashed_tb_branch` that the
+reordered branch contents are equivalent to the previous branch.
+
+- Double-checking that no patch was accidentally lost in the process
+
+While this should not be possible if most of the process is properly automated,
+it should not be very costly to double-check it. For this, there could be a
+script that compares the current rebased branch with the latest tor-browser
+branch, and shows the differences (comparing the set of commit messages).
