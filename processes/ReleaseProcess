@@ -7,7 +7,8 @@
 #  In particular: before tagging the tor-browser tag, the final code from
 #  Torbutton needs to get included and in order to avoid unnecessary commit
 #  inflation the commit for bumping the git submodule should be a fixup commit
-#  to the one with "Pick up latest Torbutton code" in its commit message.
+#  to the one with "Bug 25013: Add torbutton as a tor-browser submodule" in
+#  its commit message.
 
 #. Update changelog and relevant config files in tor-browser-build.
    cd tor-browser-build
