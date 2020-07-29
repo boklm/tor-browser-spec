@@ -38,6 +38,17 @@ Key Creation Incantations and Instructions
 20) Send subkeys_n and pubkeys to recipients
 21) `gpg --output revoke.asc --gen-revoke YOURMASTERKEYID`
 
+Publish updated key in Tor's Keyring
+------------------------------------
+
+Update the key in Tor's WKD keyring after the long-term key's expiration date
+is extended or a new subkey is created. Open a new Issue under TPA > team and
+attach the updated key.
+
+https://gitlab.torproject.org/tpo/tpa/team/-/issues
+
+For example: https://gitlab.torproject.org/tpo/tpa/team/-/issues/40039
+
 MAR Signing Key
 ===============
 
