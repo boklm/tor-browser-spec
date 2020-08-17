@@ -1,0 +1,134 @@
+Filename: xxx-canvas-tainting-for-fp-resistance.txt
+Title: Canvas Tainting for Fingerprinting Resistance
+Authors: David Fifield, Matthew Finkel, Sanketh Menda, and Tom Ritter
+Created: 21-Aug-2020
+Status: Draft
+
+1. Motivation
+
+  Canvas permissions currently break the following workflow:
+    1. user uploads image
+    2. website tries to display the image back to the user
+    3. this image is white or noise (if canvas fuzzing is enabled.)
+
+  Here are some instances of this breakage:
+    1. Uploading images to WhatsApp Web:
+    https://bugzilla.mozilla.org/show_bug.cgi?id=1631673
+    2. Image cropping in Expensify:
+    https://bugzilla.mozilla.org/show_bug.cgi?id=1456378
+    3. Uploading images to Craigslist:
+    https://bugzilla.mozilla.org/show_bug.cgi?id=1573834
+
+  This workflow does not seem to be invading the user's privacy so it would be
+  nice to support it. Currently, to unbreak this functionality, the user has to
+  give full canvas permissions which may be abused by websites.
+
+  This proposal specifies an approach towards allowing some use of the canvas
+  without sacrificing privacy.
+
+2. Proposal
+
+2.1 The Key Idea
+
+  Keep track of whether the canvas is safe (in terms of fingerprintability) to
+  extract or not, and allow extractions if it is safe.
+
+  This idea was first proposed by Gijs Kruitbosch [0] in analogy to canvas
+  tainting used to prevent cross-origin image loading [1].
+
+2.2 Canvas Tainting for Fingerprinting Resistance
+
+  We attach a state variable `isFPSafe` to the canvas, define three classes
+  of operations: safe, unsafe, and extraction, and when the canvas is
+  manipulated, we perform the following depending on whether the operation is
+  safe or not.
+
+  ```
+  if (safe operation) pass;
+  elif (unsafe operation) isFPSafe = false;
+  elif (extraction operation) {
+    if (isFPSafe) extract;
+    else return placeholder;
+  }
+  ```
+
+  See the canvas element section of the HTML spec [2] for details on canvas
+  operations.
+
+2.2.1 Safe Operations
+
+  - `canvas.getContext`: returns the canvas object
+  - `canvas.drawImage` for user uploaded images: draws the given image onto the
+    canvas
+
+  We hypothesize that allowing these operations unbreaks the aforementioned
+  workflow (see Research Question 1) and is safe (see Research Question 2).
+
+  These operations are also probably safe:
+    - `canvas.getContextAttributes`
+
+2.2.2 Unsafe Operations
+
+  All operations that have not been classified as safe (i.e., not listed in
+  Section 2.2.1) are considered unsafe.
+
+2.2.3 Extraction Operations
+
+  - .toDataURL`: returns a dataURL of the canvas
+  - `canvas.toBlob`: returns a blob of the canvas
+
+3. Concerns
+
+3.1 Scaling inside drawImage
+
+  The specification [3] does not specify how to scale images, so the scaling
+  algorithm may be implementation dependent and is a possible fingerprinting
+  vector.
+
+3.2 Image format encoding
+
+  The specification [4] does not specify how to do image format encoding so it
+  may be implementation dependent and is a possible fingerprinting vector.
+
+  Gómez-Boix, Laperdrix, and Baudry [3, p.314] noticed that compressing a canvas
+  to an image format adds entropy. However, in the case of user uploaded images,
+  this might be less of an issue (see Research Question 3.)
+
+3.2.1 `quality` levels
+
+  `quality` levels add another layer of uncertainty to image format encoding as
+  they are not standardized [4].
+
+3.2.1 Wide-gamut colors
+
+  This does not seem to be in the HTML standard yet but it seems like WebKit and
+  Chrome already support it so it is worth looking into (see Research Question
+  3).
+
+  WebKit: https://github.com/whatwg/html/issues/299
+  Chrome: https://github.com/whatwg/html/issues/4167
+
+4. Research
+
+  We would like to perform experiments to answer the following questions.
+    1. Does this approach unbreak the motivating workflow?
+    2. Are "safe operations" (the ones listed in 2.2.1) safe against
+    fingerprinting attacks?
+    3. How bad are issues mentioned in the concerns?
+
+5. Acknowledgements
+
+  We thank Alex Catarineu and Gijs Kruitbosch for insightful conversations,
+  and Georg Koppen for valuable comments on drafts of this document.
+
+6. References
+
+[0]: https://bugzilla.mozilla.org/show_bug.cgi?id=1631673#c8
+[1]: https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+[2]: https://html.spec.whatwg.org/multipage/canvas.html
+[3]: https://html.spec.whatwg.org/multipage/canvas.html#drawing-images
+[4]:
+https://html.spec.whatwg.org/multipage/canvas.html#serialising-bitmaps-to-a-file
+[5]: Hiding in the Crowd: an Analysis of the Effectiveness of Browser
+Fingerprinting at Large Scale. Gómez-Boix, Laperdrix, and Baudry. WWW '18.
+https://doi.org/10.1145/3178876.3186097
