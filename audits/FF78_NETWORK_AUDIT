@@ -1,0 +1,376 @@
+Summary of findings: https://gitlab.torproject.org/tpo/applications/fenix/-/issues/34177
+
+`git diff esrA esrB` and then go over all the changes containing the
+above mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+netwerk/dns/GetAddrInfo.cpp
+  - NativeDNSResolverOverride.. Don't see where stuff is added to this.. but
+    doesn't use DNS itself
+
+GetAddrInfo()
+  + checks network.dns.disabled pref..
+  - Only used by nsHostResolver
+
+MDNS
+  + Some use by mtransport, which should be disabled by webrtc
+
+TRR (DNS Trusted Recursive Resolver)
+  - Has a perf test that uses nsDNSService
+  - Governed by network.trr.* prefs
+  - Bundled addon doh-rollout, govererned by doh-rollout.*
+  + TRR itself uses http channels which follow proxy prefs
+    - This impl is TRRServiceChannel
+      + Proxy passed in via CreateTRRServiceChannel proxyInfo arg
+  - TRR has its own cache that gets cleared on pref change
+
+Direct Paths to DNS resolution:
+nsHostResolver::ResolveHost
+  - Does not check for SOCKS proxy or DNS pref
+  - Uses nsResolveHostCallback
+  + Calls down to NativeResolve, which checks network.dns.disabled pref
+nsDNSService::Resolve
+  + Uses nsHostResolver::ResolveHost
+nsDNSService::AsyncResolve
+  + -> AsyncResolveInternal
+nsDNSService::AsyncResolveNative
+  + -> AsyncResolveInternal
+nsDNSService::AsyncResolveWithTrrServer
+  + -> AsyncResolveInternal
+nsDNSService::AsyncResolveInternal
+  + uses nsHostResolver::ResolveHost
+
+============ Misc Socket Portion ==============
+
+SOCK_
+  + nsNetworkLinkService; checks routing tables but does not make connections
+  - RCNetStreamIO
+    - Just reformatting
+  + python tests
+  - third_party/rust/nix/src/sys/socket/mod.rs
+  - third_party/rust/socket2/src/sys/redox/mod.rs
+SOCKET_
+  + nsSocketTransport::ResolveHost
+    + Calls down to native, is blocked by pref
+  - nsSocketTransport::BuildSocket
+    - XXX now can connect via quic?? (mTypes[0] == quic)
+    - XXX: mUsingQuic
+    - uses mProxyHost + port??
+    - pushes to nsSocketProvider layer (with quic)
+_SOCKET
+  - Some kind of socket process sandbox?
+  + Errors and tests
+UDPSocket
+  - nsSocketTransport::BuildSocket
+    - XXX: quic again
+TCPSocket
+  - nsSocketTransport::BuildSocket
+
+PR_OpenUDPSocket
+PR_NewUDPSocket
+  + No usage outside of tests
+PR_NewTCPSocket
+  + No usage outside of tests
+AsyncTCPSocket
+  + No usage
+Misc PR_Socket
+  + No signficant changes
+
+
+HTTP3
+  Http3Session, Http3Stream
+  HttpConnectionUDP
+  nsHttpConnection::UsingHttp3
+  nsHttpConnectionMgr::DispatchTransaction
+  + Live testing found no quic/http leaks unless http3 pref was flipped
+
+TCPFastOpen (https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/27614)
+  - Attached in nsSocketTransport::InitiateSocket
+  - mProxyTransparent
+  - nsHttpConnectionMgr::nsHalfOpenSocket::FastOpenEnabled
+    - nsHttphandler::mUsingFastOpen
+      - Set by network.tcp.tcp_fastopen_enable pref..
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+   - "quic does not have a SocketProvider"
+ grep -R udp-socket .
+  + No changes
+ grep -R tcp-socket .
+  + No changes
+ grep for tcpsocket
+  + Just tests
+ grep -R "NS_" | grep SOCKET | grep "_C"
+  + NS_SOCKETTRANSPORTSERVICE_CONTRACTID
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+  + socket-transport-service
+    + just tests
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+============ Android Portion =============
+
+XXX: Fenix
+   18:42 <+GeKo> application-services, android-components, fenix
+   18:43 <+GeKo> for the former i applied the patches we already have in our tor-browser repo
+   https://bugs.torproject.org/34101 (Build Project for application-services)
+   https://bugs.torproject.org/33939
+   https://gitlab.torproject.org/tpo/applications/fenix/-/issues/34440
+   https://gitlab.torproject.org/legacy/trac/-/issues/34324
+   https://gitlab.torproject.org/tpo/applications/fenix/-/issues/40004
+   18:47 <+GeKo> fenix mentions the android-components version at
+      https://gitlab.torproject.org/tpo/applications/fenix/-/blob/tor-browser-79.0-10.0-1/buildSrc/src/main/java/AndroidComponents.kt
+   18:47 <+GeKo> you could look at the respective tag in the android-components repo
+    https://gitlab.torproject.org/tpo/applications/fenix/-/issues/40008
+   18:54 <+GeKo> mikeperry: for completeness sake: android-components hardcode the application-services version in
+              buildSrc/src/main/java/Dependencies.kt
+   18:54 <+GeKo> in mozilla_appservices
+   18:57 <+GeKo> mikeperry: the application-services repo is at: https://github.com/mozilla/application-services
+   18:58 <+GeKo> the android-components one is at https://github.com/mozilla-mobile/android-components
+   18:59 <+GeKo> you find the version of the first one used in the latter one at
+              https://github.com/mozilla-mobile/android-components/blob/master/buildSrc/src/main/java/Dependencies.kt#L30
+   18:59 <+GeKo> (currently)
+   18:59 <+GeKo> which should give you a link from the fenix commit you look at down to application-services
+
+
+
+
+=== Android: gecko-dev ===
+
+Android Java calls
+ - URLConnection
+   - mobile/android/geckoview/src/main/java/org/mozilla/gecko/GeckoAppShell.java
+     - XXX: Uses 'ProxySelector' to make http conns
+   - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/upstream/DefaultHttpDataSource.java
+     - XXX: Also ProxySelector
+ - ProxySelector
+   - mobile/android/geckoview/src/main/java/org/mozilla/gecko/util/ProxySelector.java
+   - XXX: Seems to only inspect system proxy settings?
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - okhttp
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - android.net
+   - mobile/android/geckoview/src/main/java/org/mozilla/gecko/util/BitmapUtils.java
+     - XXX: Does URI.openStream() ...
+   - mobile/android/geckoview/src/main/java/org/mozilla/geckoview/GeckoSession.java
+     - XXX: LOAD_FLAGS_BYPASS_PROXY :/
+   - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/drm/HttpMediaDrmCallback.java
+     - XXX: DataSourceInputStream; DataSource
+     - DownloadRequest
+   - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/offline/ProgressiveDownloader.java
+     - XXX: DataSpec
+   - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/offline/SegmentDownloader.java
+     - XXX: CacheUtil
+   - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/upstream/DefaultDataSource.java
+     - XXX: can do rtmp and udp via superclasses
+   - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/upstream/DefaultHttpDataSource.java
+     - Uses ProxySelector
+     - Can also use java.net.URL
+   - XXX: Whole exoplayer is a mess of stuff :/
+ - android.webkit
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+     - mobile/android/geckoview_example/src/main/java/org/mozilla/geckoview_example/GeckoViewActivity.java
+       - onExternalResponse - ???
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+     - mobile/android/geckoview/src/thirdparty/java/org/mozilla/thirdparty/com/google/android/exoplayer2/offline/DownloadService.java
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+ - Intent wrappers:
+   - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksInterceptor.kt
+     - External app intercepter
+   - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksUseCases.kt
+
+=== android-components ===
+
+Android Java calls
+ - URLConnection
+ - HttpURLConnection
+   - components/lib/crash/src/main/java/mozilla/components/lib/crash/service/MozillaSocorroService.kt
+     - XXX: Crash reporting
+   - components/lib/fetch-httpurlconnection/src/main/java/mozilla/components/lib/fetch/httpurlconnection/HttpURLConnectionClient.kt
+     - XXX: No proxy, but doesn't seem used except perhaps by Glean
+   - components/service/glean/src/main/java/mozilla/components/service/glean/net/ConceptFetchHttpUploader.kt
+     - XXX: glean ping
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+   - components/concept/fetch/src/main/java/mozilla/components/concept/fetch/Client.kt
+     - Abstract client interface: implementors use this to download stuff;
+       geckoview is a Client impl
+   - components/lib/fetch-httpurlconnection/src/main/java/mozilla/components/lib/fetch/httpurlconnection/HttpURLConnectionClient.kt
+     - XXX: Generic http Client; No proxy; does not seem used
+   - components/lib/crash/src/main/java/mozilla/components/lib/crash/service/MozillaSocorroService.kt
+     - XXX: Crash service openSteam
+ - java.net
+   - components/browser/engine-gecko-beta/src/main/java/mozilla/components/browser/engine/gecko/fetch/GeckoViewFetchClient.kt
+     - Calls into GeckoWebExecutor to fetch things
+   + components/lib/fetch-okhttp/src/main/java/mozilla/components/lib/fetch/okhttp/OkHttpClient.kt
+     + only used in tests
+ - javax.net
+ - okhttp3
+   + components/lib/fetch-okhttp/src/main/java/mozilla/components/lib/fetch/okhttp/OkHttpClient.kt
+     + just used in tests
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - android.net
+   - components/browser/engine-gecko/src/main/java/mozilla/components/browser/engine/gecko/GeckoEngineSession.kt
+   - components/browser/engine-system/src/main/java/mozilla/components/browser/engine/system/SystemEngineView.kt
+     - XXX: Seems to use webkit to do stuff??
+   - components/browser/icons/src/main/java/mozilla/components/browser/icons/loader/HttpIconLoader.kt
+     - Uses whatever httpclient is passed in
+ - android.webkit ************
+   - components/browser/engine-system/src/main/java/mozilla/components/browser/engine/system/SystemEngine.kt
+     - Provides way to launch system webkit views; probably unsafe
+   - components/browser/engine-system/src/main/java/mozilla/components/browser/engine/system/NestedWebView.kt
+   - components/browser/engine-system/src/main/java/mozilla/components/browser/engine/system/SystemEngineSession.kt
+     - XXX: loadURL via NestedWebView which I think comes from android.webkit?
+       (scoping unclear)
+   - components/browser/engine-system/src/main/java/mozilla/components/browser/engine/system/SystemEngineView.kt
+   - components/browser/engine-system/src/main/java/mozilla/components/browser/engine/system/window/SystemWindowRequest.kt
+     - XXX: unclear if this is requests for "default browser" or another way
+       to launch webkit
+   - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/AbstractFetchDownloadService.kt
+     - XXX: Abstract downloader that can use any HTTPClient (may be unsafe)
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+     - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksUseCases.kt
+       - needs AppLinkInterceptor; no warning currently
+     - components/feature/contextmenu/src/main/java/mozilla/components/feature/contextmenu/ContextMenuCandidate.kt
+       - probably safe? just link sharing
+     - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/AbstractFetchDownloadService.kt
+     - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/DownloadsFeature.kt
+       Downloader apps
+     - components/feature/prompts/src/main/java/mozilla/components/feature/prompts/PromptContainer.kt
+       wrapper?
+     - components/feature/prompts/src/main/java/mozilla/components/feature/prompts/file/FilePicker.kt
+     - components/feature/pwa/src/main/java/mozilla/components/feature/pwa/WebAppInterceptor.kt
+     - components/feature/pwa/src/main/java/mozilla/components/feature/pwa/WebAppLauncherActivity.kt
+       - can launch "standalone actvity" for browser urls..
+     - components/lib/crash/src/main/java/mozilla/components/lib/crash/prompt/CrashReporterActivity.kt
+     - components/support/ktx/src/main/java/mozilla/components/support/ktx/android/content/Context.kt
+       can call and access adressbook..
+     - samples/browser/src/main/java/org/mozilla/samples/browser/DefaultComponents.kt
+       - can start "systemengine"
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+   - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/AbstractFetchDownloadService.kt
+     - uses httpClient rather than native android download manager
+   - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/DownloadsFeature.kt
+     - uses android download mamanager :/
+   - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/manager/AndroidDownloadManager.kt
+   - components/feature/downloads/src/main/java/mozilla/components/feature/downloads/manager/FetchDownloadManager.kt
+ - ActivityHandlerHelper.startIntentAndCatch
+ - Intent wrappers:
+   - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksInterceptor.kt
+     - External app intercepter
+   - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksUseCases.kt
+
+=== application-services ===
+
+Rust:
+ - components/fxa-client/src/http_client.rs
+   - XXX: Does oauth token refresh without proxy :/
+ - XXX: More rust.. Suspicious components:
+   - fxa-client
+   - mozilla sync
+   - mozilla app service login
+   - Push notification support
+
+XXX: re-check this with script. Is this cut+paste error? nothing here, really?
+Android Java calls
+ - URLConnection
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - okhttp3
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - android.net
+ - android.webkit ************
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+ - Intent wrappers:
+   - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksInterceptor.kt
+     - External app intercepter
+   - components/feature/app-links/src/main/java/mozilla/components/feature/app/links/AppLinksUseCases.kt
+
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
