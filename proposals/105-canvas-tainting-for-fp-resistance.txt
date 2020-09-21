@@ -1,8 +1,8 @@
-Filename: xxx-canvas-tainting-for-fp-resistance.txt
+Filename: 105-canvas-tainting-for-fp-resistance.txt
 Title: Canvas Tainting for Fingerprinting Resistance
 Authors: David Fifield, Matthew Finkel, Sanketh Menda, and Tom Ritter
 Created: 21-Aug-2020
-Status: Draft
+Status: Open
 
 1. Motivation
 
