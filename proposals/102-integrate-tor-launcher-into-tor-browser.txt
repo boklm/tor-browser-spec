@@ -3,8 +3,9 @@ Title: Integration of Tor Launcher into Tor Browser Core
 Author: Mark Smith and Kathleen Brade
 Created: 22-Jan-2019
 Updated: 7-Feb-2019
-Status: Accepted
+Status: Finished
 Ticket: #28044
+Implemented-In: Tor Browser 9 (Firefox ESR 68)
 
 1. Overview
 

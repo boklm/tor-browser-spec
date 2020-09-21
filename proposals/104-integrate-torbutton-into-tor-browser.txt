@@ -2,9 +2,9 @@ Filename: 104-integrate-torbutton-into-tor-browser.txt
 Title: Integration of Torbutton into Tor Browser Core
 Author: Alex Catarineu
 Created: 13-May-2019
-Status: Accepted
+Status: Finished
 Ticket: #10760
-Target: Tor Browser 9 (Firefox ESR 68)
+Implemented-In: Tor Browser 9 (Firefox ESR 68)
 
 1. Overview
 

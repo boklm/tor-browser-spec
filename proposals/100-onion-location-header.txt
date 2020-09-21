@@ -2,8 +2,9 @@ Filename: 100-onion-location-header.txt
 Title: Onion redirects using Onion-Location HTTP header
 Author: George Kadianakis
 Created: 02-02-2018
-Status: Open
+Status: Finished
 Ticket: #21952
+Implemented-In: Tor Browser 9.5
 
 1. Motivation:
 
