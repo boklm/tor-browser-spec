@@ -1,0 +1,125 @@
+`git diff cb11d5556759bd5bf174fbac719f51b2f02e2f0b 763b45bd9edb0073a2c6058dd3edc9254ec901e9`
+and then go over all the changes containing the
+above mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+  - Adds |doh-rollout.clearModeOnShutdown| pref for resetting |doh-rollout.mode| when the browser shuts down
+
+Direct Paths to DNS resolution
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF82: Nothing of interest
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+Misc PR_Socket
+
+# FF82: Nothing of interest
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+   - New usage of ResolveNative in nsHttpConnectionMgr::nsHalfOpenSocket::SetupStreams
+     (netwerk/protocol/http/nsHttpConnectionMgr.cpp) but resolution is blocked by
+     DNSForbiddenByActiveProxy
+   - New usage of @mozilla.org/network/dns-service;1 in toolkit/content/aboutNetworking.js
+     but it only allows clearing the DNS cache
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+# FF82: Zero new instances of sendmsg/recvmsg/connect
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF82: Nothing of interest (using `java_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: 160239424a37088ec84e15fb1bae82aed2cbee8f
+End: 8e63363359c3d20385ed55f5308d19e321816898 # v63.0.0
+
+Zero new usage found of known proxy-bypass APIs
+
+============ Android Components Portion =============
+
+Start: c84cf8e7736ee77c22c75ca9f0397b202e489991
+End: 0a93a5ecd39e5a7f80e453a0d1a863057465aca0 # v60.0.3
+
+Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Fenix Portion =============
+
+Start: b54949e58f9fda3698ada3e64b9f4337177d84f0
+End: 998b62866dee35929ca0d81641df101c83ac1224 # v82.0.0-beta.4
+
+Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
