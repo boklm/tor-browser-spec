@@ -78,7 +78,7 @@ GREP_LINE="$(join_by \| ${KEYWORDS[@]})"
 
 export GREP_COLOR="05;37;41"
 
-# XXX: Arg this sometimes misses file context 
+# XXX: Arg this sometimes misses file context
 egrep -A40 -B40 --color=always "${GREP_LINE}" release-${base}-${NEW}.diff > keywords-${base}-${NEW}-$SCOPE.diff
 
 echo "Diff generated. View it with:"
