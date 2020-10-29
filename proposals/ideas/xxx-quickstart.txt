@@ -1,0 +1,131 @@
+Filename: xxx-quickstart.txt
+Title: Tor Browser Quickstart
+Author: antonela
+Created: 09-Sep-2020
+Status: Draft
+Target: Tor Browser 10.5
+
+1. Introduction
+
+  This proposal aims to improve the user experience of Tor Browser when connecting to the Tor network.
+
+2. Motivation
+
+  Tor Browser is opened more than 2 million times a day. In the last years, we have been working on qualitatively improving the entire Tor browser user journey: from discovering, finding, downloading, installing, starting, and browsing, we released a seamless and familiar experience for our largest set of users. But, launching the Tor Browser for the first time is still being a frictional experience.
+
+  Tor Launcher has been confusing for users. Past research exposed those pain points and how that confusion delays the decision making flow by cognitive overloading [0]. Also, known issues around Tor Launcher like the time gap between Tor Launcher and the main browser windows opening on first-time installers have made Tor Browser starting even more disappointing for first-time users.
+
+  This proposal aims to improve the bootstrapping flow for first-time and recurrent users by removing Tor Launcher UI, making Tor bootstrapping automatic, and relying on a better UI embedded in the main browser screen as visual progress feedback. We will also consider the censored user's experience by informing detected censorship and suggesting and providing bridges to connect to the Tor network successfully.
+
+3. The case of the censored user
+
+  Around 2% of daily Tor users need bridges to reach the Tor network [1]. In any case, this small percentage doesn't enable us to de-prioritize the need of these users. Instead, this proposal will also provide a user experience that contemplates censored users' need to access the network by making Tor Browser proactive to detect censorship and suggest Bridges.
+
+3.1 Bridges
+
+  It is difficult for a user to select between a different bridge option relying on its name if they don't know what that bridge does for them. A usual flow for users requesting bridges is trying in-build Tor Browser bridges and failing to connect until they work. As well, users with specific needs are pointed to specific bridges by trusted community members, and they pick the recommended choice without a technical background.
+
+  Over the years, Bridges' technology has been improving as how the censorship arms race has been developing. OBSF3, OBSF4, Meek, Snowflake, and more proxy techniques are available for successfully reaching the Tor network. Regular users cannot differentiate between the technologies under the construction of Bridges.
+
+  I suggest attaching the name **"bridge"** to any intermediate node that allows users to reach the network. By unifying the vocabulary in the interface and our user manuals, we will simplify the complexity behind all this technology by warning and educating users about bridges uses.
+
+  This strategic decision will allow the community to continue developing technology for bridges without moving the attention to the technical name but the conceptual solution [2].
+
+3.2 Detecting censorship
+
+  As discussed in the past, it is plausible for us to use retrospective data or a Tor reachability test in any fashion to detect network interference in the user's NAT and act upon that [3][4][7].
+
+  Most of the time, users get aware of a kind of network interference when they try to connect to the network, and the bootstrapping fails. But even in those cases, most users have not the technical background to understand nor explain that censorship experience.
+
+  Within this proposal, the Tor Browser will be able to detect censorship for users and suggest the best bridge available to connect.
+
+3.3 Suggesting Bridges
+
+  With this iteration, we aim to make Tor Browser proactive on detecting censorship, respectful on asking user consent to use a Bridge and smart enough to open the best bridge available.
+
+  Advanced users will be able to configure custom bridges, private bridges, friends bridges, and any tunnel they want via `about:preferences#Tor` - Bridges.
+
+  Once censorship has been detected, Tor users will be able to opt-in for a Bridge connection to reach a successful connection [5].
+
+4. Proposal
+
+  Specifically, this proposal will handle this issues:
+
+  - Remove gap between Tor Launcher window and main browser window https://bugs.torproject.org/27476
+  - Improve user visual feedback on bootstrapping connection https://bugs.torproject.org/23486, https://bugs.torproject.org/23971
+  - Show Tor log in Tor Browser https://bugs.torproject.org/9516
+  - Firewall option is visible behind Tor Network Settings... but not during start-up https://bugs.torproject.org/24452
+  - "Tor is censored in my country" does not cover some scenarios https://bugs.torproject.org/25431
+  - Tor Launcher should suggest the use of bridges if Tor is dangerous in user's area https://bugs.torproject.org/11132
+  - Inform users in Tor Launcher of which settings are best for them based on their country https://bugs.torproject.org/24527
+  - Make it easier to add a bridge in network settings https://bugs.torproject.org/14638
+  - Use OONI to inform Tor Launcher user workflow https://bugs.torproject.org/23838
+
+4.1 Requirements
+
+  R1 Remove Tor Launcher UI from the entire starting flow
+
+  R2 Allow users to give consent on the first time use of automatic connection
+
+  R3 Implement a new UI integrated with the main windows that provide visual feedback during tor bootstrapping.
+
+  R4 Allow advanced users to customize their bootstrapping experience using an extra startup parameter. [8][13]
+
+  R5 Develop a detecting network interference that allows users to request a bridge if it is needed. Users under controlled networks are detailed in section 3.
+
+  R6 Continue keeping Tor Launcher repository for 3rd parties using their controllers or UI.
+
+4.2 User flow
+
+  The user opens the Tor Browser and automatically connects. If interference is detected, then an explainer error page appears, and a Use a Bridge is offered.
+
+4.3 Quickstart
+
+  Previous experiences of clients bootstrapping Tor without asking to Connect have been successful. Onionshare, the popular Tor sharing files app, doesn't request user action to bootstrap Tor. Instead, a minimal UI progress bar is shown during the 1 or 2 seconds bootstrapping happens. OnionBrowser, the Tor Browser for iOS also bootstrap automatically. Brave's Tor startup is transparent to the user and the bootstrapping visual progress feedback happens at the URL bar.
+
+  Quickstart is the feature that enables an automatic Tor connection in Tor Browser.
+
+  As a first step in introducing this feature, we may want to make this Opt-In by allowing users to give consent and save this setting in our persistent configuration.
+
+  * Phase One - Userflow
+
+  The user opens the app; the connecting screen appears. Like the current flow, user needs to click in the Connect button to connect to Tor. On first time users, we ask consent for automatic connections. [9, IMG 0.0]
+
+  Opted-in recurrent users will go directly to `about:tor`. We will disable the URL bar and we will rely on a loading bar UI to render immediate visual feedback.
+
+  A work in progress user interface for desktop [9] and mobile [10] is attached to the main ticket [12].
+
+  * Phase Two - Userflow
+
+  The user opens the app; Tor bootstraps automatically. To enable phase two, we need a Tor reachability test in place as part of the Tor bootstrapping. If there is network interference, the interference detected screen appears and Use a Bridges is offered.
+
+4.4 Customizing Tor connection
+
+  Specific use cases, as in users who want to hide the fact that are using Tor or users aware of censorship in their network, should be able to start Tor Browser offline, be directed to `about:preferences#tor` and configure their connection before Connect. A startup parameter should allow this option.
+
+4.5 Recovering from error
+
+  During our product iteration cycles in this flow, there may be the case where the bridge that is being suggested does not work. We will allow users to try a Bridge again, and then we will move them to the manual configuration in `about:preferences#Tor` - Bridges.
+
+  General Tor bootstrapping errors handling will not be covered in this proposal.
+
+5. User research
+
+  Our ongoing user research over Tor Browser Start pain-points and bridges' use is being tracked in its corresponding ticket [14][15].
+
+[0] https://github.com/lindanlee/PETS2017-paper
+[1] https://metrics.torproject.org/userstats-relay-country.html vs https://metrics.torproject.org/userstats-bridge-country.html
+[2] https://gitlab.torproject.org/tpo/anti-censorship/rdsys/-/issues/8
+[3] https://gitlab.torproject.org/tpo/community/outreach/-/issues/28531
+[4] https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/23839
+[5] https://gitlab.torproject.org/tpo/applications/tor-launcher/-/issues/34343
+[6] https://gitlab.torproject.org/tpo/anti-censorship/trac/-/issues/40004/designs/quickstart-userflow.png
+[7] https://gitlab.torproject.org/tpo/core/tor/-/issues/30477
+[8] https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/34345
+[9] https://gitlab.torproject.org/tpo/anti-censorship/trac/-/issues/40004/designs/Desktop-UI.png
+[10] https://gitlab.torproject.org/tpo/anti-censorship/trac/-/issues/40004/designs/Mobile-UI.png
+[11] https://trac.torproject.org/projects/tor/ticket/31286
+[12] https://gitlab.torproject.org/tpo/anti-censorship/trac/-/issues/40004
+[13] https://tails.boum.org/blueprint/network_connection/
+[14] https://gitlab.torproject.org/tpo/anti-censorship/trac/-/issues/40003
+[15] https://gitlab.torproject.org/groups/tpo/-/milestones/7
