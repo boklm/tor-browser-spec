@@ -1,0 +1,132 @@
+`git diff da52a0a45d57d5cb6fb6eb399e7fc112bf4c9c95 1cb2c4893850a5b0a246f821a6390c07064c1227`
+and then go over all the changes containing the
+above mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+# New DNS pref: network.dns.dns_query_single_label
+# tor-browser#issues/40230
+
+MDNS
+
+# FF83: Nothing new
+
+TRR (DNS Trusted Recursive Resolver)
+
+# FF83: trr moved to static prefs
+
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF83: eDontResolveRedirection - kernel things
+# FF83: ResolveHost, asyncResolve - Adding IP hint support (1652670)
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+
+# FF83: Bug 1664900 - P5 - mv peerconnection to jsapi
+
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+# FF83: Bug 1650145 - Replace all value uses of Empty[C]String by 0-length _ns literals
+
+Misc PR_Socket
+
+# FF83: Zero new instances of PR_Socket
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+# FF83: Zero instances outside of tests and moved code
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+# FF83: Zero new instances of sendmsg/recvmsg/connect outside of neqo
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF83: Only Google SafeBrowsing
+https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/40217
+
+============ Application Services Portion =============
+
+(Same as FF82)
+
+============ Android Components Portion =============
+
+Start: 0a93a5ecd39e5a7f80e453a0d1a863057465aca0 # v60.0.3
+End: 0a2993d44aae3d877bb97cee925096f83af01b3a # v63.0.8
+
+Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Fenix Portion =============
+
+Start: 998b62866dee35929ca0d81641df101c83ac1224 # v82.0.0-beta.4
+End: 5441935698f4d9e3606f3d6baf892f6e0106a2f6 # v83.1.0-rc.1
+
+Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
