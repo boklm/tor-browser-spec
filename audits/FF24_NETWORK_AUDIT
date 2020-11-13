@@ -35,7 +35,6 @@ Misc UDP (SOCK_DGRAM, PR_DESC_SOCKET_UDP):
    + PR_Socket
  + ./nsprpub/pr/src/pthreads/ptio.c
  + ./netwerk/socket/nsUDPSocketProvider.cpp
- 
 
 Misc TCP (SOCK_STREAM, PR_DESC_SOCKET_TCP):
  + ./nsprpub/pr/src/pthreads/ptio.c
@@ -61,5 +60,3 @@ Misc XPCOM:
      + ./netwerk/protocol/ftp/nsFtpControlConnection.cpp:
    + ./dom/network/src/TCPSocket.js
      + open()
-
-
