@@ -15,7 +15,7 @@ Lowest level resolver calls:
          - pkix_HttpCertStore_FindSocketConnection
            - pkix_pl_HttpDefaultClient_RequestCreate
              - pkix_pl_HttpDefaultClient_RequestCreateFcn
-               - SEC_HttpClientFcnV1 vtable.createFcn and 
+               - SEC_HttpClientFcnV1 vtable.createFcn and
                  + ./security/manager/ssl/src/nsNSSCallbacks.cpp
                    + Uses nsHTTPHttpInterface::createFcn()
                  + ./security/manager/ssl/src/nsNSSCallbacks.h
