@@ -1,4 +1,3 @@
-
 Lowest level resolver calls:
  - PR_GetHostByName
    + ./profile/dirserviceprovider/src/nsProfileLock.cpp
@@ -64,7 +63,7 @@ Misc XPCOM:
      + open()
 
 Android may have DNS leaks..
- - ./mobile/android/base/httpclientandroidlib/impl/conn/DefaultClientConnectionOperator.java 
+ - ./mobile/android/base/httpclientandroidlib/impl/conn/DefaultClientConnectionOperator.java
 
 nsDNSService/nsPIDNSService/nsIDNSService
  + calls nsHostResolver::ResolveHost
@@ -73,12 +72,10 @@ nsDNSService/nsPIDNSService/nsIDNSService
    + ./netwerk/base/src/nsIOService.cpp (offline mode only)
    + ./netwerk/build/nsNetModule.cpp
    + ./netwerk/protocol/websocket/WebSocketChannel.cpp
-   + ./netwerk/build/nsNetCID.h 
+   + ./netwerk/build/nsNetCID.h
    + ./netwerk/socket/nsSOCKSIOLayer.cpp (proxy lookup only)
 
 netwerk/base/src/nsSocketTransport2.cpp
  + nsSocketTransport::ResolveHost() has proper remote dns checks
    + Resolution is done by using hostname as sockaddr
  + PROXY_RESOLVES_HOST
-
-
