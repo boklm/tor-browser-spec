@@ -69,3 +69,24 @@ You can roll back the update with the following steps on staticiforme:
 
  - run "static-update-component aus1.torproject.org"
 
+Rolling back an update only for Android users on Google Play
+------------------------------------------------------------
+
+The rollout may be slowed or halted (paused) while an issue is investigated.
+On the "Releases" tab of the "Production" page
+("Release"->"Production"->"Releases") two options are available for
+this case.
+  1) Use the "Update rollout" option and decrease the percentage
+  2) Use the "Halt rollout" option and include a note about which issue is
+     being investigated
+
+Google Play does not provide a mechanism for rolling back installations to a
+previous version, so a new version must be released if the current version is
+problematic. If a bug is present (or suspected) in the currently rolling out
+version, then halting the rollout as soon as possible (thus preventing many
+devices updating) is the safest action.
+
+If the rollout is halted and later the decision is made to continue the
+rollout, then on the "Releases" tab (as above) select "Resume rollout". You may
+adjust the rollout percentage, if needed, and then click the "Resume rollout"
+button.

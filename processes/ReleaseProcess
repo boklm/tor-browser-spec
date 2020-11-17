@@ -139,19 +139,6 @@
    # XXX: TORBROWSER_VERSION_OLDEST needs to be set
    rm -rf /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION_OLDEST
    static-update-component dist.torproject.org
-   # We must use $TORBROWSER_VERSION here because signed result dirs should omit the build number suffix
-   wget -nH --cut-dirs=2 -r -l 1 https://people.torproject.org/~gk/builds/$TORBROWSER_VERSION
-   rm $TORBROWSER_VERSION/index.html*
-   mv $TORBROWSER_VERSION /srv/dist-master.torproject.org/htdocs/torbrowser/
-   chmod 775 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
-   chmod 664 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION/*
-   # XXX: Need to manually get .htaccess :(
-   chmod 664 /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION/.htaccess
-   chown -R :torwww /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
-   # Verify everything was downloaded/copied correctly
-   cd /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION
-   for i in *.asc; do echo $i ; gpg -q $i || break; done
-   static-update-component dist.torproject.org
 
 #. Check diskspace available on cdn.tpo
 #  We currently have enough disk space to host two alpha and stable
@@ -159,19 +146,25 @@
 #  it may become necessary to increase disk space. The server hosting
 #  the files for cdn.tpo is savii.tpo and its disk usage can be monitored
 #  by going to https://grafana.torproject.org/d/Z7T7Cfemz/node-exporter-full
-#  and selecting the host savii.torproject.org.
+#  and selecting the hosts: web-fsn-02.torproject.org, web-cymru-01.torproject.org,
+#  web-fsn-01.torproject.org, and cdn-backend-sunet-01.torproject.org
 
-#. Upload the *.mar files to cdn.tpo
-#. Local to staticiforme:
-   mkdir /srv/cdn-master.torproject.org/htdocs/aus1/torbrowser/$TORBROWSER_VERSION
-   chmod 775 /srv/cdn-master.torproject.org/htdocs/aus1/torbrowser/$TORBROWSER_VERSION
-   cd /srv/cdn-master.torproject.org/htdocs/aus1/torbrowser/$TORBROWSER_VERSION
-   for marfile in /srv/dist-master.torproject.org/htdocs/torbrowser/$TORBROWSER_VERSION/*.mar; do ln $marfile; done
+#. Remove the oldest *.mar files from cdn.tpo to save space
+   rm -rf /srv/cdn-master.torproject.org/htdocs/aus1/torbrowser/$TORBROWSER_VERSION_OLDEST
    static-update-component cdn.torproject.org
 
+#. Sync files to dist.tpo and cdn.tpo mirrored web servers
+   # Obtain publish_version.sh from the tor-browser-build repo under tools/update/.
+   # $PREV_TORBROWSER_VERSION is one of the previously published versions remaining
+   # on staticiforme from where the .htaccess is copied.
+   ./publish_version.sh $TORBROWSER_VERSION $PREV_TORBROWSER_VERSION release # or alpha
+
 #. Make sure we really built from the proper Mozilla build tag by consulting
-   # the respective ESR release branch (for a good overview for ESR60 see
-   # https://hg.mozilla.org/releases/mozilla-esr60/graph/).
+   # the respective ESR release branch (for a good overview for ESR78 see
+   # https://hg.mozilla.org/releases/mozilla-esr78/graph/). For the platforms following
+   # rapid release (only Android, currently), consult the beta repo
+   # (https://hg.mozilla.org/releases/mozilla-beta/graph/) or the release repo
+   # (https://hg.mozilla.org/releases/mozilla-release/graph/)
 
 #. Update website's torbrowser versions file in the website git
    cd tpo
@@ -179,12 +172,13 @@
    # Update `win32` in the `torbrowser-stable` section as well if we
    # include a new stable tor version (called the Windows Expert Bundle
    # on the website). See: #14152.
-   # In the RecommendedTBBVersions file, only add the new version. Don't
-   # remove the old one yet. That comes later.
-   vim databags/versions.ini content/projects/torbrowser/RecommendedTBBVersions/contents.lr
-   git commit databags/versions.ini content/projects/torbrowser/RecommendedTBBVersions/contents.lr -m "Add new Tor Browser version"
+   vim databags/versions.ini
+   git commit databags/versions.ini -m "Add new Tor Browser version"
    torsocks git push origin master:master
    cd ..
+   # Check build success/failure:
+   # https://jenkins.torproject.org/job/lektor-website-tpo-translation/
+   # https://jenkins.torproject.org/job/lektor-website-tpo-translation-install/
 
 #. Add new locales to the download page
    # If this release is introducing new locales, add them to the
@@ -201,14 +195,25 @@
 #. Create blog post from changelog
    # See https://blog.torproject.org/blog/tor-browser-352-released for now
    # Don't forget to link to Mozilla's security advisories if this is a security
-   # update, or Nadim will yell at you.
+   # update.
+
+#. Check whether the .exe files got properly signed and timestamped
+   # Point OSSLSIGNCODE to your osslsigncode binary
+   pushd tor-browser-build/${channel}/signed/$TORBROWSER_VERSION
+   OSSLSIGNCODE=/path/to/osslsigncode
+   ../../../tools/authenticode_check.sh
+   popd
 
 #. Check whether the MAR files got properly signed
+   # Point NSSDB to your nssdb containing the mar signing certificate
    # Point SIGNMAR to your signmar binary
    # Point LD_LIBRARY_PATH to your mar-tools directory
-   cd tor-browser-build/$TORBROWSER_VERSION
-   ../tools/marsigning_check.sh
-   cd ..
+   pushd tor-browser-build/${channel}/signed/$TORBROWSER_VERSION
+   NSSDB=/path/to/nssdb
+   SIGNMAR=/path/to/mar-tools/signmar
+   LD_LIBRARY_PATH=/path/to/mar-tools/
+   ../../../tools/marsigning_check.sh
+   popd
 
 #. Update and upload new update responses for the updater
    # IMPORTANT: Copy the signed MAR files back before creating the update
@@ -220,27 +225,56 @@
    chmod 664 ${TORBROWSER_UPDATE_CHANNEL}/*
    chmod 664 ${TORBROWSER_UPDATE_CHANNEL}/.htaccess
    chmod 775 ${TORBROWSER_UPDATE_CHANNEL}/
-   # Rename the update responses directory to .old to make it easier to
-   # revert in case of problem (see the file RollingBackUpdate for more
-   # details about this)
-   torsocks ssh staticiforme.torproject.org "rm -rf /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}.old"
-   torsocks ssh staticiforme.torproject.org "mv -v /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL} /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}.old"
    torsocks rsync -avP $TORBROWSER_UPDATE_CHANNEL staticiforme.torproject.org:/srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/
-   torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}/*"
+   torsocks ssh staticiforme.torproject.org "chown -R :torwww /srv/aus1-master.torproject.org/htdocs/torbrowser/update_3/${TORBROWSER_UPDATE_CHANNEL}"
    torsocks ssh staticiforme.torproject.org "static-update-component aus1.torproject.org"
+
+#  Upload APKs to Google Play
+   Log into https://play.google.com/apps/publish
+   Select correct app (Tor Browser or Tor Browser Alpha)
+   Under left-side navigation bar, select "Production" under "Release"
+   Select "Create new release" button at upper right-side
+   Under "App bundles and APKs" section, "Upload" each signed APK
+   After uploading APKs:
+     - The "Release Name" should be automatically filled with the Firefox version
+     - Next to "Release notes" click "Copy from a previous release"
+     - Select the previous release and adjust the blog post url for this release
+     - Save, review, and configure rollout percentage at the bottom
+       - Use 25% rollout when publishing a scheduled update (without a security driver)
+       - Use 100% rollout when publishing an unscheduled update or security-driven release
+   Roll out.
+
+   Note, you may receive three warning messages about:
+     1) app is larger than it is necessary (android app bundle),
+     2) missing deobfuscation file for better crash analysis
+     3) missing debug symbol file
+
+   These warnings are expected and should be accepted.
+
+   See below for updating the rollout percentage.
+
+# Release on F-Droid
+  Publication on F-Droid via the Guardian Project's repository should be
+  automatic. Hans is responsible for maintaining this automation.
+
+# Update rollout percentage
+   After 24 hours, check the Release Daskboard:
+     - "Release"->"Production" and select the "Release Dashboard" tab
+   If the Release Dashboard does not show any concerning trends (significant
+   increase in crashes or ANRs (Application Not Responding)), then continue on
+   to the next paragraph and increase rollout from 25% to 100%. Otherwise
+   consider halting rollout as described in the `RollingBackUpdate` process.
+
+   Select the "Releases" tab on the "Production" page. The current released
+   version should indicate 25% rollout: "Available to 25% of users on Google Play"
+   On the right-side of the "View release details" button of the release there
+   should be a button labeled "Manage rollout" with a down-arrow. Clicking on
+   that button should show two options:
+     - Update rollout
+     - Halt rollout
+
+   Select "Update rollout" and increase to 100% and click "Update". The change
+   should be immediately implemented and the "Manage rollout" button disappears.
 
 #. Write an email to tor-announce in case this release is concerned with getting
 #  a stable version out. Using the contents of the blog entry should do it.
-
-#. Update website's torbrowser versions file to remove old versions
-#  NOTE: You probably want to wait some hours (12-24?) after pushing the
-#  update responses before doing this, so that people have a chance to see
-#  the Firefox notification first before their browser starts weirdly blinking
-#  at them.
-   cd tpo
-   torsocks git pull origin
-   # Now it's time to remove the obsolete version(s)
-   vim content/projects/torbrowser/RecommendedTBBVersions/contents.lr
-   git commit content/projects/torbrowser/RecommendedTBBVersions/contents.lr -m "Deprecate old Tor Browser version"
-   torsocks git push origin master:master
-   cd ..
