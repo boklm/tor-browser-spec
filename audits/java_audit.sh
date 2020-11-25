@@ -53,6 +53,13 @@ KEYWORDS+=(ActivityHandlerHelper.startIntentAndCatch)
 KEYWORDS+=(AppLinksInterceptor)
 KEYWORDS+=(AppLinksUseCases)
 
+# Rust symbols
+KEYWORDS+=("connect\(")
+KEYWORDS+=("recvmsg\(")
+KEYWORDS+=("sendmsg\(")
+KEYWORDS+=("::post\(")
+KEYWORDS+=("::get\(")
+
 cd $REPO_DIR
 #function join_by { local d=$1; shift; local f=$1; shift; printf %s "$f" "${@/#/ $d}"; }
 #GREP_LINE="$(join_by \-G ${KEYWORDS[@]})"
