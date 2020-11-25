@@ -1,0 +1,158 @@
+`git diff 1cb2c4893850a5b0a246f821a6390c07064c1227 9e429e392ec8446ff0f078f991d6332a307bc98f`
+and then go over all the changes containing the
+below mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+# FF84:
+# Bug 1220810:
+#   - When |network.proxy.allow_hijacking_localhost| is false, then localhost == loopback
+#   - Tor Browser set |network.proxy.allow_hijacking_localhost| as true in #31065
+# Proxy-safe when pref is true
+
+# Bug 1667579:
+#   - New pref |network.connectivity-service.nat64-prefix| for specifying a NAT64 prefix
+#     for use if IPv4 is not available (default "")
+# Proxy-safe, only affects order of internal DNS records
+
+
+MDNS
+
+# FF84: Nothing new
+
+
+TRR (DNS Trusted Recursive Resolver)
+
+# FF84:
+# Bug 1673590:
+#  - Still protected by https://bugzil.la/1636411
+
+
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF84:
+# Bug 1667356
+#   - Protected by Mozilla's proxy-bypass protection for https://bugzil.la/1618271
+
+# Bug 1671939:
+#   - Protected by Mozilla's proxy-bypass protection for https://bugzil.la/1618271
+
+# Bug 1220810:
+#   - Protected by Mozilla's proxy-bypass protection for https://bugzil.la/1636411
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+
+# FF84: Nothing of interest (mostly reformatting)
+
+
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+# FF84: Nothing of interest (mostly reformatting)
+
+
+Misc PR_Socket
+
+# FF84: Nothing new
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+# FF84: Zero instances outside of tests and moved code
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+# FF84: Nothing of interest (mostly reformatting and new web audio behavior for 1346880, and Pipewire for 1672945)
+
+
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF84: Nothing new (using `java_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: 8e63363359c3d20385ed55f5308d19e321816898 # v63.0.0
+End: 6a234c2b1e1972f11e585551d4cf2e40e84bf16f # v67.0.0
+
+# FF84: Nothing related to networking in Java/Koltlin/Rust code (using `java_audit.sh`)
+
+============ Android Components Portion =============
+
+Start: 0a2993d44aae3d877bb97cee925096f83af01b3a # v63.0.8
+End: 614386935ec94cac531eb8cb061409e9a8410d09 # v67.0.3
+
+# FF84: Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Fenix Portion =============
+
+Start: 5441935698f4d9e3606f3d6baf892f6e0106a2f6 # v83.1.0-rc.1
+End: 670e61b2b97d4f8066497e79178729c5802fe428 # v84.0.0-beta.2
+
+# FF84: Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
