@@ -1,5 +1,5 @@
 `git diff esrA esrB` and then go over all the changes containing the
-above mentioned potentially dangerous calls and features. Grep the diff for
+below mentioned potentially dangerous calls and features. Grep the diff for
 the following strings and examine surrounding usage.
 
 =============== Native DNS Portion =============
