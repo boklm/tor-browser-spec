@@ -1,4 +1,4 @@
-`git diff 1cb2c4893850a5b0a246f821a6390c07064c1227 11898884c81cd84cfaec46dffe1dbf42517e8301`
+`git diff 1cb2c4893850a5b0a246f821a6390c07064c1227 7969cebe593fccee033e8533482d4cb3e084d1d8`
 and then go over all the changes containing the
 below mentioned potentially dangerous calls and features. Grep the diff for
 the following strings and examine surrounding usage.
@@ -146,14 +146,14 @@ End: 6a234c2b1e1972f11e585551d4cf2e40e84bf16f # v67.0.0
 ============ Android Components Portion =============
 
 Start: 0a2993d44aae3d877bb97cee925096f83af01b3a # v63.0.8
-End:   89973898761d54c7512bb74ea2c3489fca07bf8e # v67.0.10
+End:   50435d74a958ad964dd177953a4d15fb0e86bbf8 # v67.0.11
 
 # FF84: Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
 
 ============ Fenix Portion =============
 
 Start: 5441935698f4d9e3606f3d6baf892f6e0106a2f6 # v83.1.0-rc.1
-End: 8b4b9bde5f2dab9fec1631fbfc70d4e2c3b2d24e # v84.1.0-rc.1
+End:   dc3f8958efa103a411f54667f1360fc69bb3208e # v84.1.0
 
 # FF84: Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
 
