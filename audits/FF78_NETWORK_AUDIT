@@ -1,6 +1,7 @@
 Summary of findings: https://gitlab.torproject.org/tpo/applications/fenix/-/issues/34177
 
-`git diff esrA esrB` and then go over all the changes containing the
+`git diff 8da33f6c34c0ca5b1d7bca58ca86cb5e436333e8 0b024105bfcb2304529100c159eda55374dceec3`
+and then go over all the changes containing the
 above mentioned potentially dangerous calls and features. Grep the diff for
 the following strings and examine surrounding usage.
 
