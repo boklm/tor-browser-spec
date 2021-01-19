@@ -1,0 +1,159 @@
+`git diff 2a47450172493d64c311336281c1860802b3c9fc 5a2e34d5821fa203454eb9a8b12d7749a7c50d00`
+and then go over all the changes containing the
+below mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+# FF85: Nothing new
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF85:
+# Bug 1667743:
+#  - Deleting unused esni code
+#  - Review Result: Safe
+
+# Bug 1634065:
+#  - ensure nsIDNSService is only created on the main thread
+#  - Review Result: Safe
+
+# Bug 1678614
+#  - Don't retry with native DNS if it's trr only mode
+#  - Review Result: Safe
+
+# Bug 1670982
+#  - Make the bitfields in nsHostResolver atomic
+#  - Review Result: Safe
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+
+# FF85:
+# - Bug 1675491
+#    - Count number of bytes send and received over a socket
+#    - Review Result: Safe
+
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+# FF85: Nothing of interest
+
+
+Misc PR_Socket
+
+# FF85: Nothing new
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+# FF85:
+# Bug 1673931:
+#  - Resolve Document/Element cycle, no harm
+#  - Review Result: Safe
+
+# Bug 1626278
+#  - Shutdown MediaTransportHandlerSTS on STS shutdown
+#  - Review Result: Safe
+
+# Bug 1677759
+#  - Mark STUN/TURN client contexts failed when we encounter a socket read/write failure for TCP
+#  - Review Result: Safe
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+# FF85:
+# Bug 1662868
+#  - Create a Viaduct-based Glean uploader
+#  - Review Result: Safe
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF85: Nothing new (using `java_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: 6a234c2b1e1972f11e585551d4cf2e40e84bf16f # v67.0.0
+End:   4cc798c8cd8a1e38ce88e0bb22a05692be63b164 # v67.2.0
+
+# FF85: Nothing related to networking in Java/Koltlin/Rust code (using `java_audit.sh`)
+
+============ Android Components Portion =============
+
+Start: 2095f1a5d0ed42c3680aa8582934ea2739ff02c9 # v67.0.17
+End:   21ce9abdda0bc4001a72835fbbe7d71026ac0e66 # v70.0.16
+
+# FF85: Zero new usage found of known proxy-bypass APIs (using `java_audit.sh`)
+
+============ Fenix Portion =============
+
+Start: 2d1e15692ebe5ec697abdeacaa332f25ce406a3b # v84.1.4
+End:   24995d51a12d8e0bb10166f9f286c68d23b84a6a # v85.1.0
+
+# FF85: Nothing new (using `java_audit.sh`)
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
