@@ -11,6 +11,7 @@ OLD=$2
 NEW=$3
 
 SCOPE="java" # string: this is the java audit
+EXT="java kt"
 
 declare -a KEYWORDS
 
@@ -62,21 +63,28 @@ KEYWORDS+=("::get\(")
 
 cd $REPO_DIR
 
-if [ ! -f "release-${OLD}-${NEW}.diff" ];
-then
-  echo "Diffing release-${OLD}-${NEW}.diff"
-  git diff --color=always --color-moved $OLD $NEW -U20 > release-${OLD}-${NEW}.diff
-fi
-
-echo "Done with diff"
-
+# Step 1: Generate match pattern based on in-scope keywords
 function join_by { local d=$1; shift; local f=$1; shift; printf %s "$f" "${@/#/$d}"; }
 GREP_LINE="$(join_by \| ${KEYWORDS[@]})"
 
+# Step 2: Obtain patches for all in-scope files where a keyword is present
+echo "Diffing patches-${OLD}-${NEW}-${SCOPE}.diff"
+path=
+for ext in ${EXT}; do
+    path="${path} *.${ext}"
+done
+# Exclude Deleted and Unmerged files from diff
+DIFF_FILTER=ACMRTXB
+git diff --color=always --color-moved --diff-filter="${DIFF_FILTER}" -U20 -G"${GREP_LINE}" $OLD $NEW -- ${path} > patches-${OLD}-${NEW}-${SCOPE}.diff
+
+# Step 3: Highlight the keyword with an annoying, flashing color
 export GREP_COLOR="05;37;41"
+# Capture the entire file and/or overlap with the previous match, add GREP_COLOR highlighting
+egrep -A10000 -B10000 --color=always "${GREP_LINE}" patches-${OLD}-${NEW}-${SCOPE}.diff > keywords-$OLD-$NEW-$SCOPE.diff
 
-# XXX: Arg this sometimes misses file context
-egrep -A40 -B40 --color=always "${GREP_LINE}" release-${OLD}-${NEW}.diff > keywords-${OLD}-${NEW}-$SCOPE.diff
+# Add a 'XXX MATCH XXX' at the end of each matched line, easily searchable.
+sed -i 's/\(\x1b\[05;37;41.*\)/\1    XXX MATCH XXX/' keywords-$OLD-$NEW-$SCOPE.diff
 
+# Step 4: Review the code changes
 echo "Diff generated. View it with:"
 echo "  less -R $REPO_DIR/keywords-$OLD-$NEW-$SCOPE.diff"
