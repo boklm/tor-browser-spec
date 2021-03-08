@@ -116,7 +116,7 @@ End:   4cc798c8cd8a1e38ce88e0bb22a05692be63b164 # v67.2.0
 ============ Android Components Portion =============
 
 Start: 21ce9abdda0bc4001a72835fbbe7d71026ac0e66 # v70.0.16
-End:   4f36d0f93dab50e946a0dede0732c901c9942851 # v72.0.5
+End:   095c0ef007ada4dab8561bef69e43bf6db1d3298 # v72.0.15
 
 # FF86 (using `java_audit.sh`)
 # Issue 8598:
@@ -128,7 +128,7 @@ End:   4f36d0f93dab50e946a0dede0732c901c9942851 # v72.0.5
 ============ Fenix Portion =============
 
 Start: 24995d51a12d8e0bb10166f9f286c68d23b84a6a # v85.1.0
-End:   159c13ba04cdd8e4cd888b637d65e11e95241696 # v86.0.0-beta.2
+End:   db196d0e49eb0f69ab620856491deb8c4c7ccf57 # v86.1.0
 
 # FF86: Nothing new (using `java_audit.sh`)
 
