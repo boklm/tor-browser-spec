@@ -1,0 +1,153 @@
+Start: fe9560804bef331ff346f3fd3b05e74122fdd30b # FIREFOX_86_0_BUILD2
+End:   1be3d58406ce4dd8af63a169482ae4ca1709d8e5 # FIREFOX_87_0b9_BUILD1
+
+`git diff fe9560804bef331ff346f3fd3b05e74122fdd30b 1be3d58406ce4dd8af63a169482ae4ca1709d8e5`
+and then go over all the changes containing the
+below mentioned potentially dangerous calls and features. Grep the diff for
+the following strings and examine surrounding usage.
+
+=============== Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF87:
+# Bug 902346:
+#  - Support socks proxy in TCPSocket
+#  - Review Result: Safe
+
+# Bug 1684040
+#  - Introduce new ODoH class for sending ODoH queries
+#  - Review Result: Safe (if TRR is safe)
+
+# Bug 1690615
+#  - Move DNS lookup into DnsAndConnectSocket
+#  - Review Result: Safe
+
+============ Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+
+# FF87:
+# Bug 1693270
+#  - Switch audioipc-2 to vendored code
+#  - Review Result: Probably safe.
+
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+Misc PR_Socket
+
+# FF87: Nothing of interest
+
+=========== Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+# FF87: Nothing of interest
+
+============ Rust Portion ================
+
+Rust
+ - XXX: What do we grep for here? Or do we rely on Ritter's compile-time tool?
+ - Check for new sendmsg and recvmsg usage
+
+# FF87: Nothing of interest (using `java_audit.sh`)
+
+============ Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF87: Nothing new (using `java_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: 4cc798c8cd8a1e38ce88e0bb22a05692be63b164 # v67.2.0
+End:   1ee6b32f3ee569036fdf1015cf7ffc01ded2860f # v71.0.0
+
+# FF87: Nothing related to networking in Java/Koltlin/Rust code (using `java_audit.sh`)
+
+============ Android Components Portion =============
+
+Start: 095c0ef007ada4dab8561bef69e43bf6db1d3298 # v72.0.15
+End:   ecccbf2da2b0572a1d600cce447d47f2eae0de9a # v73.0.3
+
+# FF87 (using `java_audit.sh`)
+# Commit 6edfec5fe464e4b1d0eb82ed8825526036d861c8
+#  - Add prototype component to support Android's autofill framework.
+#  - Review Result: Conditionally Safe
+#  - Comments:
+#    - 1) Hooks into Android's Autofill service
+#    - 2) Uses PendingIntent, safety depends on usage. Not currently used
+#         in Fenix.
+
+# Issue #9417
+#  - Add support for sharing actual website images (#9420)
+#  - Review Result: Patch with external app prompt
+
+============ Fenix Portion =============
+
+Start: db196d0e49eb0f69ab620856491deb8c4c7ccf57 # v86.1.0
+End:   82c8a64ca0b8bd5e6ea88395cba41c0db68d0a36 # v87.0.0-beta.4
+
+# FF87: (using `java_audit.sh`)
+#  - c9b8f57f96e9188746391885a065428df62f3ff9
+#  - Refactor BrowserToolbarMenuController to use browser store
+#  - Review Result: Safe
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
