@@ -1,6 +1,6 @@
 Summary of findings: https://gitlab.torproject.org/tpo/applications/fenix/-/issues/34177
 
-`git diff 8da33f6c34c0ca5b1d7bca58ca86cb5e436333e8 bace0d2a46cabd36f5bdc738c000f15ae4a4225c`
+`git diff 8da33f6c34c0ca5b1d7bca58ca86cb5e436333e8 4735a392536150f49518c48aa9510cf313603b92`
 and then go over all the changes containing the
 above mentioned potentially dangerous calls and features. Grep the diff for
 the following strings and examine surrounding usage.

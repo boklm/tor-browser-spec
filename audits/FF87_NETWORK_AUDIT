@@ -1,7 +1,7 @@
 Start: fe9560804bef331ff346f3fd3b05e74122fdd30b # FIREFOX_86_0_BUILD2
-End:   1be3d58406ce4dd8af63a169482ae4ca1709d8e5 # FIREFOX_87_0b9_BUILD1
+End:   4068febfd76d9ec557591240d7496be42c27c17f # FIREFOX_87_0_BUILD3
 
-`git diff fe9560804bef331ff346f3fd3b05e74122fdd30b 1be3d58406ce4dd8af63a169482ae4ca1709d8e5`
+`git diff fe9560804bef331ff346f3fd3b05e74122fdd30b 4068febfd76d9ec557591240d7496be42c27c17f`
 and then go over all the changes containing the
 below mentioned potentially dangerous calls and features. Grep the diff for
 the following strings and examine surrounding usage.
@@ -120,7 +120,7 @@ End:   1ee6b32f3ee569036fdf1015cf7ffc01ded2860f # v71.0.0
 ============ Android Components Portion =============
 
 Start: 095c0ef007ada4dab8561bef69e43bf6db1d3298 # v72.0.15
-End:   ecccbf2da2b0572a1d600cce447d47f2eae0de9a # v73.0.3
+End:   bea80bbaccc431994a534a087b223563826ac256 # v73.0.11
 
 # FF87 (using `java_audit.sh`)
 # Commit 6edfec5fe464e4b1d0eb82ed8825526036d861c8
@@ -138,7 +138,7 @@ End:   ecccbf2da2b0572a1d600cce447d47f2eae0de9a # v73.0.3
 ============ Fenix Portion =============
 
 Start: db196d0e49eb0f69ab620856491deb8c4c7ccf57 # v86.1.0
-End:   82c8a64ca0b8bd5e6ea88395cba41c0db68d0a36 # v87.0.0-beta.4
+End:   9d91b8eeb9d287ee95937b5edfffde383982267a # v87.0.0-rc.1
 
 # FF87: (using `java_audit.sh`)
 #  - c9b8f57f96e9188746391885a065428df62f3ff9

@@ -53,6 +53,8 @@ initialize_java_symbols() {
     KEYWORDS+=(AppLinksInterceptor)
     KEYWORDS+=(AppLinksUseCases)
     KEYWORDS+=(ActivityDelegate)
+    # Added in FF87 audit
+    KEYWORDS+=(AutofillService)
 }
 
 initialize_rust_symbols() {
