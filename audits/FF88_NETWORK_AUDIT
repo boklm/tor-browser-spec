@@ -1,0 +1,141 @@
+=============== Firefox General =============
+
+Start: 4068febfd76d9ec557591240d7496be42c27c17f # FIREFOX_87_0_BUILD3
+End:   676143236541851e068696fa4528d87a9bb0088d # FIREFOX_88_0_BUILD1
+
+=============== Firefox Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF88: Nothing of interest
+
+============ Firefox Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+Misc PR_Socket
+
+# FF88: Nothing of interest
+
+=========== Firefox Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+# FF88: Nothing of interest
+
+============ Firefox Rust Portion ================
+
+Rust
+
+# FF88: Nothing of interest (using `java_audit.sh`)
+
+============ Firefox Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF88
+# Bug 1694481
+#  - Removes unused code
+
+============ Application Services Portion =============
+
+Start: 1ee6b32f3ee569036fdf1015cf7ffc01ded2860f # v71.0.0
+End:   ad7b64fa03eeeb00815125e635d1fb8809befd40 # v74.0.1
+
+# FF88: Nothing related to networking in Java/Koltlin/Rust code (using `code_audit.sh`)
+
+============ Android Components Portion =============
+
+Start: bea80bbaccc431994a534a087b223563826ac256 # v73.0.11
+End:   e09d8a00b5eae63767d905a74966be301b5dd059 # v74.0.11
+
+# FF88 (using `code_audit.sh`)
+# Issue #9823
+#  - Make users aware that download was not performed because of a denied permission
+#  - Review Result: Safe
+#  - Comments:
+#    - Calls startActivity(), but the target is hard-coded as the Android Settings
+
+# Issue #9757
+#  - Remove downloads notification when private tabs are closed
+#  - Review Result: Safe
+#  - Comment:
+#    - Calls startService(), but the target is hard-coded as the internal Downloads Service
+
+# Issue #9713
+#  - Autofill: Support alternative authentication methods
+#  - Review Result: Conditionally Safe
+#  - Comment:
+#    - Calls startActivityForResult() with an arbitrary target Activity.
+#    - Fenix instantiates the configuration using itself as the target.
+
+============ Fenix Portion =============
+
+Start: 9d91b8eeb9d287ee95937b5edfffde383982267a # v87.0.0-rc.1
+End:   5f98c4ec98d663c763dc4ec5ea84a14cdf342d04 # v88.1.1
+
+# FF88: (using `java_audit.sh`)
+#  - 8856a3c1d769586bfd6daa7b3b2df48fb26f1bc3
+#  - Integrate Android Autofill support into Nightly and debug builds.
+#  - Review Result: Safe (but see fenix#40160)
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+

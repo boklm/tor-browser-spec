@@ -55,6 +55,10 @@ initialize_java_symbols() {
     KEYWORDS+=(ActivityDelegate)
     # Added in FF87 audit
     KEYWORDS+=(AutofillService)
+    # Added in FF88 audit
+    KEYWORDS+=(AutofillConfiguration)
+    KEYWORDS+=(Authenticator)
+    KEYWORDS+=(AutofillUnlockActivity)
 }
 
 initialize_rust_symbols() {
@@ -155,7 +159,7 @@ done
 echo "Diffing patches-${OLD}-${NEW}-${SCOPE}.diff from all ${path[*]} files"
 # Exclude Deleted and Unmerged files from diff
 DIFF_FILTER=ACMRTXB
-git diff --color=always --color-moved --diff-filter="${DIFF_FILTER}" -U20 -G"${GREP_LINE}" "$OLD" "$NEW" -- "${path[@]}" > "patches-${OLD}-${NEW}-${SCOPE}.diff"
+git diff --stat --color=always --color-moved --diff-filter="${DIFF_FILTER}" -U20 -G"${GREP_LINE}" "$OLD" "$NEW" -- "${path[@]}" > "patches-${OLD}-${NEW}-${SCOPE}.diff"
 
 # Step 4: Highlight the keyword with an annoying, flashing color
 export GREP_COLOR="05;37;41"
