@@ -1,0 +1,124 @@
+=============== Firefox General =============
+
+Start: 676143236541851e068696fa4528d87a9bb0088d # FIREFOX_88_0_BUILD1
+End:   3862f77749dd50e54c3d9eea32fb59e84d978c96 # FIREFOX_89_0_RELEASE
+
+=============== Firefox Native DNS Portion =============
+
+PR_GetHostByName
+PR_GetIPNodeByName
+PR_GetAddrInfoByName
+PR_StringToNetAddr (itself is good as it passes AI_NUMERICHOST to getaddrinfo. No resolution.)
+
+MDNS
+TRR (DNS Trusted Recursive Resolver)
+Direct Paths to DNS resolution:
+nsDNSService::Resolve
+nsDNSService::AsyncResolve
+nsHostResolver::ResolveHost
+
+# FF89: Nothing of interest (using `code_audit.sh`)
+
+============ Firefox Misc Socket Portion ==============
+
+SOCK_
+SOCKET_
+_SOCKET
+
+UDPSocket
+TCPSocket
+  PR_NewTCPSocket
+  AsyncTCPSocket
+
+Misc PR_Socket
+
+# FF89: Nothing of interest (using `code_audit.sh`)
+
+=========== Firefox Misc XPCOM Portion ================
+
+Misc XPCOM (including commands for pre-diff review approach)
+ *SocketProvider
+ grep -R udp-socket .
+ grep -R tcp-socket .
+ grep for tcpsocket
+ grep -R "NS_" | grep SOCKET | grep "_C"
+ grep -R "@mozilla.org/network/" . | grep socket | grep -v udp-socket
+
+# FF89: Nothing of interest (using `code_audit.sh`)
+
+============ Firefox Rust Portion ================
+
+Rust
+
+# FF89: Nothing of interest (using `code_audit.sh`)
+
+============ Firefox Android Portion =============
+
+Android Java calls
+ - URLConnection
+   - XXX: getInputStream? other methods?
+ - HttpURLConnection
+ - UrlConnectionDownloader
+ - ch.boye.httpclientandroidlib.impl.client.* (look for execute() calls)
+ - grep -n openConnection\( mobile/android/thirdparty/
+ - java.net.URL -- has SEVERAL proxy bypass URL fetching methods :/
+ - java.net
+ - javax.net
+ - ch.boye.httpclientandroidlib.conn.* (esp ssl)
+ - ch.boye.httpclientandroidlib.impl.conn.* (esp ssl)
+ - Sudden appearance of thirdparty libs:
+   - OkHttp
+   - Retrofit
+   - Glide
+   - com.amitshekhar.android
+ - IntentHelper
+   - openUriExternal (can come from GeckoAppShell too)
+   - getHandlersForMimeType
+   - getHandlersForURL
+   - getHandlersForIntent
+ - android.content.Intent - too common; instead find launch methods:
+   - startActivity
+   - startActivities
+   - sendBroadcast
+   - sendOrderedBroadcast
+   - startService
+   - bindService
+ - android.app.PendingIntent
+ - android.app.DownloadManager
+ - ActivityHandlerHelper.startIntentAndCatch
+
+# FF89: Nothing of interest (using `code_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: ad7b64fa03eeeb00815125e635d1fb8809befd40 # v74.0.1
+End:   ad7b64fa03eeeb00815125e635d1fb8809befd40 # v74.0.1
+
+# FF89: No change
+
+============ Android Components Portion =============
+
+Start: e09d8a00b5eae63767d905a74966be301b5dd059 # v74.0.11
+End:   5204f4025ce8b60c64f92eb3f60ee644cafd4fc8 # v75.0.22
+
+# FF89 (using `code_audit.sh`)
+# Issue #9857
+#  - Add first test cases for FillRequestHandler.
+#  - Review Result: Safe
+
+============ Fenix Portion =============
+
+Start: 5f98c4ec98d663c763dc4ec5ea84a14cdf342d04 # v88.1.1
+End:   edea181c543ffee077bb3ca52830ba8d320358b2 # v89.1.1
+
+# FF89: (using `code_audit.sh`)
+# For #18608
+#  - made set a default browser functionality publicly available.
+#  - Review Result: Safe
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+   - Look for new features like these. Especially external app launch vectors
+
