@@ -2,7 +2,7 @@ Filename: xxx-quickstart.txt
 Title: Tor Browser Quickstart
 Author: antonela
 Created: 09-Sep-2020
-Status: Draft
+Status: Open
 Target: Tor Browser 10.5
 
 1. Introduction
