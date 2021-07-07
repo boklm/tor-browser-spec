@@ -135,6 +135,6 @@ End:   db196d0e49eb0f69ab620856491deb8c4c7ccf57 # v86.1.0
 ============ Regression/Prior Vuln Review =========
 
 Review proxy bypass bugs; check for new vectors to look for:
- - https://trac.torproject.org/projects/tor/query?keywords=~tbb-proxy
+ - https://gitlab.torproject.org/groups/tpo/applications/-/issues?scope=all&utf8=%E2%9C%93&state=all&label_name%5B%5D=Proxy%20Bypass
    - Look for new features like these. Especially external app launch vectors
 
