@@ -1,0 +1,77 @@
+============ General =============
+
+The audit begins at the commit hash where the previous audit ended. Use
+code_audit.sh for creating the diff and highlighting potentially problematic
+code. The audit is scoped to a specific language (currently C/C++, Rust,
+Java/Kotlin, and Javascript).
+
+The output includes the entire patch where the new problematic code was
+introduced. Search for "XXX MATCH XXX" to find the next potential violation.
+
+code_audit.sh contains the list of known problematic APIs. New usage of these
+functions are documented and analyzed in this audit.
+
+============ Firefox General Portion =============
+
+Start: 3862f77749dd50e54c3d9eea32fb59e84d978c96 # FIREFOX_89_0_RELEASE
+End:   5e8ffbe1bf6d448cb235cb0a64a56646a6537b22 # FIREFOX_90_0b12_BUILD1
+
+# Nothing of interest (using `code_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: ad7b64fa03eeeb00815125e635d1fb8809befd40 # v74.0.1
+End:   dd09c25f14dbf45f1637ed8dca2d1e5ff668479f # v77.0.2
+
+# a994a18d2cfec9ef404029885a64985126d8e265
+#  - Restructured Nimbus-SDK to prep for move to app-services repo.
+#  - Review Result: Safe
+
+# 5cbae43a3cc4c461108c2a7ff9f57018f982046f
+#  - Move Nimbus.kt from Android Components (#4036)
+#  - Review Result: Safe
+
+============ Android Components Portion =============
+
+Start: 5204f4025ce8b60c64f92eb3f60ee644cafd4fc8 # v75.0.22
+End:   536cb9fe133e555109c3f25024148260aace6dab # v90.0.11
+
+# Issue #10162
+#  - Don't show the contextual menu for blocked urls
+#  - Review Result: Safe
+
+# 8ef0c763d42c554c50dc37815d6e3cdd4361373f
+#  - Move Nimbus.kt to Application Services
+#  - Review Result: Safe
+
+# b19c84beca0d6f31e145cd5e49896176b8b592c6
+#  - Restore Nimbus object passing in threads, observers and logtag
+#  - Review Result: Safe
+
+# Issue #9189
+#  - Refactor service-pocket to support recommended articles.
+#  - Review Result: Safe (background requests are not isolated)
+
+============ Fenix Portion =============
+
+Start: edea181c543ffee077bb3ca52830ba8d320358b2  # v89.1.1
+End:   6d43c622b4515becbf29ba7956ec2fbe1e5bdc31  # v90.0.0-beta.6
+
+# Issue #19693
+#  - Display a biometric prompt when a credit card is selected to autofill (#19697)
+#  - Review Result: Safe
+
+# Issue #11819
+#  - Show the mic in widget only if setting is enabled
+#  - Review Result: Safe
+
+# Issue #18264
+#  - Add biometric prompt to credit card settings (#19505)
+#  - Review Result: Safe
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://gitlab.torproject.org/groups/tpo/applications/-/issues?scope=all&utf8=%E2%9C%93&state=opened&label_name[]=Proxy%20Bypass
+   - Look for new features like these. Especially external app launch vectors
+
