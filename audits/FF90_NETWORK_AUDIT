@@ -14,7 +14,7 @@ functions are documented and analyzed in this audit.
 ============ Firefox General Portion =============
 
 Start: 3862f77749dd50e54c3d9eea32fb59e84d978c96 # FIREFOX_89_0_RELEASE
-End:   5e8ffbe1bf6d448cb235cb0a64a56646a6537b22 # FIREFOX_90_0b12_BUILD1
+End:   bf8b9c6630fca1b774dbf1573bf14c9315349514 # FIREFOX_90_0_BUILD1
 
 # Nothing of interest (using `code_audit.sh`)
 
@@ -34,7 +34,7 @@ End:   dd09c25f14dbf45f1637ed8dca2d1e5ff668479f # v77.0.2
 ============ Android Components Portion =============
 
 Start: 5204f4025ce8b60c64f92eb3f60ee644cafd4fc8 # v75.0.22
-End:   536cb9fe133e555109c3f25024148260aace6dab # v90.0.11
+End:   0ab0465c5ca99b9b01a32e4562905fe51a709204 # v90.0.12
 
 # Issue #10162
 #  - Don't show the contextual menu for blocked urls
@@ -55,7 +55,7 @@ End:   536cb9fe133e555109c3f25024148260aace6dab # v90.0.11
 ============ Fenix Portion =============
 
 Start: edea181c543ffee077bb3ca52830ba8d320358b2  # v89.1.1
-End:   6d43c622b4515becbf29ba7956ec2fbe1e5bdc31  # v90.0.0-beta.6
+End:   aeedb6b53781c6d29fda9034267a4ce8aeed6468  # v90.1.1
 
 # Issue #19693
 #  - Display a biometric prompt when a credit card is selected to autofill (#19697)
