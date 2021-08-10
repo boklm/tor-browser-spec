@@ -1,0 +1,50 @@
+============ General =============
+
+The audit begins at the commit hash where the previous audit ended. Use
+code_audit.sh for creating the diff and highlighting potentially problematic
+code. The audit is scoped to a specific language (currently C/C++, Rust,
+Java/Kotlin, and Javascript).
+
+The output includes the entire patch where the new problematic code was
+introduced. Search for "XXX MATCH XXX" to find the next potential violation.
+
+code_audit.sh contains the list of known problematic APIs. New usage of these
+functions are documented and analyzed in this audit.
+
+============ Firefox General Portion =============
+
+Start: bf8b9c6630fca1b774dbf1573bf14c9315349514 # FIREFOX_90_0_BUILD1
+End:   e0fdc6e4749b33693b75b92309ba2a982a9bdfa9 # FIREFOX_91_0_BUILD2
+
+# Nothing of interest (using `code_audit.sh`)
+
+
+============ Application Services Portion =============
+
+Start: dd09c25f14dbf45f1637ed8dca2d1e5ff668479f # v77.0.2
+End:   89ea9cfa6eaa0763d17ec9aa04098839d028004c # v79.0.0
+
+Nothin new.
+
+============ Android Components Portion =============
+
+Start: 0ab0465c5ca99b9b01a32e4562905fe51a709204 # v90.0.12
+End:   1d401758fb29294099f9f155f3db4e15e9a712ec # v91.0.12
+
+# Issue #10386
+#  - Add AutofillUseCases for common Android Autofill tasks.
+#  - Review Result: Safe
+
+============ Fenix Portion =============
+
+Start: aeedb6b53781c6d29fda9034267a4ce8aeed6468 # v90.1.1
+End:   bdf9c3ec4b7cbcf8afc717e9f56b6b03786aa455 # v91.1.0
+
+Nothing new.
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://gitlab.torproject.org/groups/tpo/applications/-/issues?scope=all&utf8=%E2%9C%93&state=opened&label_name[]=Proxy%20Bypass
+   - Look for new features like these. Especially external app launch vectors
+
