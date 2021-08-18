@@ -77,4 +77,15 @@ security create-keychain tbb-signing-alpha.keychain
 security default-keychain -s tbb-signing-alpha.keychain
 security unlock-keychain
 certtool r CertificateSigningRequest.certSigningRequest
+# RSA, 2048, RSA with SHA384, "Thisisachallengestring"
+# Common Name       (e.g, www.apple.com) : Tor Browser Signing Key
+# Country           (e.g, US) :
+# Organization      (e.g, Apple, Inc.) : The Tor Project, Inc.
+# Organization Unit (e.g, Apple Software Engineering) : Applications Engineering
+# State/Province    (e.g, California) : Washington
+# Email Address     (e.g, username@apple.com) : torbrowser@torproject.org
 
+# Submit to Apple, download certificate.
+
+security add-certificates ~/developerID_application.cer
+security find-identity
