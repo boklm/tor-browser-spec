@@ -31,7 +31,7 @@ Key Creation Incantations and Instructions
 15) Repeat step 6, 7 (with "2y" for subkeys), 13 and 14 as often as needed
 16) At the gpg> prompt enter: save
 16) Check whether the keys look good, e.g. with
-   `hkt export-pubkeys YOURMASTERKEYID | hokey lint`
+   `hkt export-pubkeys --keyring /path/to/pubring.gpg YOURMASTERKEYID | hokey lint`
 17) `gpg --export-secret-subkeys SUBKEYID_N! > subkeys_n`
 18) `gpg --export YOURMASTERKEYID > pubkeys`
 19) Repeat 17) as needed
