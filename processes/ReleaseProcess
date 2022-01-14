@@ -50,28 +50,41 @@
    # For stable releases put tails-dev@boum.org into Cc.
 
 #. Codesign the macOS dmg files.
-   # XXX: Update with Notarization bits once they are included in our signing
    # setup
    torsocks ssh mac-signer "mkdir $TORBROWSER_VERSION"
    torsocks rsync -avP $TORBROWSER_BUILDDIR/*.dmg mac-signer:$TORBROWSER_VERSION/
    torsocks ssh mac-signer
    # Unlock the keychain and then...
    cd $TORBROWSER_VERSION
+   # Enable networking
+   networksetup -setsecurewebproxystate Ethernet on
    # Sign the bundles.
    ../gatekeeper-signing.sh $TORBROWSER_VERSION
+   # notarize and staple
+   ../notarization.sh $TORBROWSER_VERSION
+   ../stapler.sh $TORBROWSER_VERSION
    # Check that it worked.
-   tar xf torbrowser-$TORBROWSER_VERSION-osx_zh-CN-signed.tar.bz2
-   spctl -a -t exec -vv TorBrowser.app/
-   rm -rf TorBrowser.app
+   unzip -d test tb-$TORBROWSER_VERSION-osx_zh-CN-stapled.zip
+   pushd test
+   # Both should be "Tor Browser.app: Accepted" with "source=Notarized Developer ID"
+   spctl -vvvv --assess --type=exec --context context:primary-signature Tor\ Browser.app/
+   spctl -vvvv --assess --type=open --context context:primary-signature Tor\ Browser.app/
+   popd
+   rm -rf test
+   # Disable networking
+   networksetup -setsocksfirewallproxystate Ethernet off
    exit
-   torsocks rsync -avP mac-signer:$TORBROWSER_VERSION/*.bz2 .
+   torsocks rsync -avP mac-signer:$TORBROWSER_VERSION/tb-*-stapled.zip /path/to/builddir/$TORBROWSER_VERSION/
+
+   cp -rT tor-browser-build/projects/tor-browser/Bundle-Data/mac-applications.dmg dmg
 
 #. Regenerate macOS MAR files from code signed dmg files.
    # XXX Go to your directory prepared for recreating the .dmg files and containing
-   # the uploaded .bz2 files.
+   # the uploaded .zip files.
    ./gatekeeper-bundling.sh $TORBROWSER_VERSION
-   rsync -avP *.dmg $TORBROWSER_BUILDDIR/
+   rsync -avP ../$TORBROWSER_VERSION-signed/*.dmg $TORBROWSER_BUILDDIR/
    cd tor-browser-build
+   mv $TORBROWSER_BUILDDIR/ release/signed/ (or alpha)
    # The code signed dmg files should be in the $TORBROWSER_VERSION directory
    # Install a recent p7zip version (see ../tools/dmg2mar for instructions)
    make dmg2mar-release # or `make dmg2mar-alpha`
@@ -107,13 +120,14 @@
    export OSSLSIGNCODE=/path/to/osslsigncode
    /path/to/authenticode-timestamping.sh
    # Hashes of the signed bundles
-   ../tools/hash_signed_bundles.sh
+   ../../../tools/hash_signed_bundles.sh
    # All the GPG signatures at last
    torsocks rsync -avP $TORBROWSER_BUILDDIR/* signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/
    cd tor-browser-bundle/gitian/$TORBROWSER_VERSION
    /path/to/tbb-signing.sh
    exit
    torsocks rsync -avP signing-machine:tor-browser-bundle/gitian/$TORBROWSER_VERSION/ $TORBROWSER_BUILDDIR
+   # Fetch signatures on unsigned sha256sums from other builds
 
 #. Sync to people.torproject.org
    torsocks rsync -avP $TORBROWSER_BUILDDIR/ people.torproject.org:public_html/builds/$TORBROWSER_BUILDDIR
