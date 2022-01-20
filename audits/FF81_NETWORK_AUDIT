@@ -1,0 +1,55 @@
+============ General =============
+
+The audit begins at the commit hash where the previous audit ended. Use
+code_audit.sh for creating the diff and highlighting potentially problematic
+code. The audit is scoped to a specific language (currently C/C++, Rust,
+Java/Kotlin, and Javascript).
+
+The output includes the entire patch where the new problematic code was
+introduced. Search for "XXX MATCH XXX" to find the next potential violation.
+
+code_audit.sh contains the list of known problematic APIs. New usage of these
+functions are documented and analyzed in this audit.
+
+============ Firefox General Portion =============
+
+(Note: While we later on use FIREFOX_XXX_BUILDN targets we use the _BASE ones
+ here as we do the audit retrospectively, long after those releases went out.)
+
+Start: 84cb11f03ecea33982cb53086c25d6b6df8b28cf # FIREFOX_RELEASE_80_BASE
+End:   f127e1315fb82a7cc784b0c9928a062ae1e9ca7e # FIREFOX_RELEASE_81_BASE
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1657582 (DNS code related
+  refactoring), looks okay.
+
+# Nothing else of interest (using `code_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: dd09c25f14dbf45f1637ed8dca2d1e5ff668479f # v61.0.10
+End:   89ea9cfa6eaa0763d17ec9aa04098839d028004c # v61.0.13
+
+Nothing new.
+
+============ Android Components Portion =============
+
+Start: cfc360e0587ccb7eb49689d08212f05ff0966fbb # v54.0.6
+End:   eb4aebb91eb39a47c05fdf0b2cb1100c80cd344f # v57.0.4 (which is used by
+                                                           Fenix v81.1.1-beta.3)
+
+Nothing new.
+
+============ Fenix Portion =============
+
+Start: bad13cc48c526fcc8ed2de5c58da1ae4a3b392dd # v80.1.3
+End:   b54949e58f9fda3698ada3e64b9f4337177d84f0 # (HEAD~1 v81.1.1-beta.3)
+
+# Issue #1216 voice input for search
+# - I opened fenix#40204 for further investigation.
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://gitlab.torproject.org/groups/tpo/applications/-/issues?scope=all&utf8=%E2%9C%93&state=opened&label_name[]=Proxy%20Bypass
+   - Look for new features like these. Especially external app launch vectors
+
