@@ -18,13 +18,12 @@ End:   e0fdc6e4749b33693b75b92309ba2a982a9bdfa9 # FIREFOX_91_0_BUILD2
 
 # Nothing of interest (using `code_audit.sh`)
 
-
 ============ Application Services Portion =============
 
 Start: dd09c25f14dbf45f1637ed8dca2d1e5ff668479f # v77.0.2
 End:   89ea9cfa6eaa0763d17ec9aa04098839d028004c # v79.0.0
 
-Nothin new.
+Nothing new.
 
 ============ Android Components Portion =============
 
