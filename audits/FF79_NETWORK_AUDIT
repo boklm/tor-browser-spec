@@ -1,0 +1,60 @@
+============ General =============
+
+The audit begins at the commit hash where the previous audit ended. Use
+code_audit.sh for creating the diff and highlighting potentially problematic
+code. The audit is scoped to a specific language (currently C/C++, Rust,
+Java/Kotlin, and Javascript).
+
+The output includes the entire patch where the new problematic code was
+introduced. Search for "XXX MATCH XXX" to find the next potential violation.
+
+code_audit.sh contains the list of known problematic APIs. New usage of these
+functions are documented and analyzed in this audit.
+
+============ Firefox General Portion =============
+
+(Note: While we later on use FIREFOX_XXX_BUILDN targets we use the _BASE ones
+ here as we do the audit retrospectively, long after those releases went out.)
+
+Start: 53e19ba9c60bf6beb91d1968641e6e56c5fe702b # FIREFOX_RELEASE_78_BASE
+End: 2742c5c7b6a244c28f81391c9e1641cc79281ef6 # FIREFOX_RELEASE_79_BASE
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1628792 updated the exoplayer
+# library. Our proxy safeguard
+# (https://bugzilla.mozilla.org/show_bug.cgi?id=1459420) is kept.
+
+# Nothing else of interest (using `code_audit.sh`)
+
+============ Application Services Portion =============
+
+Start: 762791bd1ae8a7bf750208b6aab6ddb1cc4ea04c # v61.0.2
+End:   dd09c25f14dbf45f1637ed8dca2d1e5ff668479f # v61.0.10
+
+Nothing of interest.
+
+============ Android Components Portion =============
+
+Start: 88694edfb7f97e2d5db9c22db5edd5a4eb621621 # (48.0.20200626213814 is the
+                                                   version that gets used by
+                                                   Fenix v78.0.1-beta.1 but it's
+                                                   not exactly clear which
+                                                   commit that corresponds to.
+                                                   Thus, we play safe and use
+                                                   v47.0.0)
+End: 8755ac0cdd88f2d549f65039413c41b6ccc02c5f # v48.0.15
+
+Nothing of interest.
+
+============ Fenix Portion =============
+
+Start: e0fa1c0db4ff806c991b13906ef6a30ba4d6054d # v78.0.1-beta.1
+End: 6cb548575ff3af5c122c6a80d68a3dd483c596e7 # v79.0.5
+
+Nothing new.
+
+============ Regression/Prior Vuln Review =========
+
+Review proxy bypass bugs; check for new vectors to look for:
+ - https://gitlab.torproject.org/groups/tpo/applications/-/issues?scope=all&utf8=%E2%9C%93&state=opened&label_name[]=Proxy%20Bypass
+   - Look for new features like these. Especially external app launch vectors
+
