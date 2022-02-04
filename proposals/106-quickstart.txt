@@ -60,6 +60,7 @@ Target: Tor Browser 10.5
   - Inform users in Tor Launcher of which settings are best for them based on their country https://bugs.torproject.org/24527
   - Make it easier to add a bridge in network settings https://bugs.torproject.org/14638
   - Use OONI to inform Tor Launcher user workflow https://bugs.torproject.org/23838
+  - "Don't Bootstrap" Startup Mode https://bugs.torproject.org/34345
 
 4.1 Requirements
 
